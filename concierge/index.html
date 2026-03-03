@@ -482,7 +482,67 @@ evts.sort((a,b)=>a.ci.localeCompare(b.ci));
 return evts;
 }
 
-function OwTab({gs,setGs,tpls,setTpls,onEditTpl}){
+function RecsBank({alts,setAlts}){
+const[filter,setFilter]=useState("all");
+const[editIdx,setEditIdx]=useState(null);const[form,setForm]=useState({});
+const[adding,setAdding]=useState(false);
+const allCats=[...new Set(alts.map(a=>a.c))].sort();
+const filt=filter==="all"?alts:alts.filter(a=>a.c===filter);
+const catOpts=["breakfast","lunch","dinner","brunch","drinks","sightseeing","tour"];
+const iS={width:"100%",padding:"8px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:10,fontSize:12,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
+const saveAlt=(idx,data)=>{setAlts(alts.map((a,i)=>i===idx?{...a,...data}:a));setEditIdx(null);};
+const delAlt=(idx)=>{setAlts(alts.filter((_,i)=>i!==idx));setEditIdx(null);};
+const addAlt=(data)=>{setAlts([...alts,data]);setAdding(false);setForm({});};
+return(
+<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginTop:16}}>
+<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+<h3 style={{fontSize:16,fontWeight:600}}>📋 Recommendations ({alts.length})</h3>
+<button onClick={()=>{setAdding(true);setForm({l:"",d:"",c:"dinner",m:"",b:false});}} style={{fontSize:11,color:C.cr,background:C.crS,border:"none",borderRadius:20,padding:"6px 14px",cursor:"pointer",fontWeight:600}}>+ Add</button>
+</div>
+<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>
+<button onClick={()=>setFilter("all")} style={{fontSize:10,padding:"4px 10px",borderRadius:16,border:"1px solid "+(filter==="all"?C.cr:C.bd),background:filter==="all"?C.crS:C.bgS,color:filter==="all"?C.cr:C.mt,cursor:"pointer",fontWeight:600}}>All ({alts.length})</button>
+{allCats.map(c=>{const ct=CT[c]||CT.dinner;const cnt=alts.filter(a=>a.c===c).length;return<button key={c} onClick={()=>setFilter(filter===c?"all":c)} style={{fontSize:10,padding:"4px 10px",borderRadius:16,border:"1px solid "+(filter===c?ct.a+"55":C.bd),background:filter===c?ct.bg:C.bgS,color:filter===c?ct.a:C.mt,cursor:"pointer",fontWeight:500}}>{ct.i} {c} ({cnt})</button>;})}
+</div>
+{adding&&<div style={{background:C.bgS,borderRadius:12,padding:12,border:"2px solid "+C.cr,marginBottom:10}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:6}}>
+<div><label style={{fontSize:10,color:C.mt}}>Name *</label><input value={form.l||""} onChange={e=>setForm({...form,l:e.target.value})} style={iS}/></div>
+<div><label style={{fontSize:10,color:C.mt}}>Category</label><select value={form.c||"dinner"} onChange={e=>setForm({...form,c:e.target.value})} style={{...iS,cursor:"pointer"}}>{catOpts.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+</div>
+<div style={{marginBottom:6}}><label style={{fontSize:10,color:C.mt}}>Description</label><input value={form.d||""} onChange={e=>setForm({...form,d:e.target.value})} style={iS}/></div>
+<div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:6,alignItems:"end"}}>
+<div><label style={{fontSize:10,color:C.mt}}>Maps query</label><input value={form.m||""} onChange={e=>setForm({...form,m:e.target.value})} placeholder="Place+Name+Shanghai" style={iS}/></div>
+<label style={{fontSize:10,color:C.mt,display:"flex",alignItems:"center",gap:4,padding:"8px 0"}}><input type="checkbox" checked={!!form.b} onChange={e=>setForm({...form,b:e.target.checked})}/> Book</label>
+<div style={{display:"flex",gap:4}}><button onClick={()=>form.l&&addAlt(form)} style={{padding:"7px 14px",background:form.l?C.cr:C.bd,color:form.l?"#fff":C.mt,border:"none",borderRadius:10,fontSize:11,fontWeight:600,cursor:"pointer"}}>Save</button><button onClick={()=>setAdding(false)} style={{padding:"7px 10px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:10,fontSize:11,cursor:"pointer"}}>✕</button></div>
+</div>
+</div>}
+<div style={{maxHeight:400,overflowY:"auto"}}>
+{filt.map((a,fi)=>{const ri=alts.indexOf(a);const isEd=editIdx===ri;const ct=CT[a.c]||CT.dinner;
+return isEd?<div key={ri} style={{background:C.bgS,borderRadius:10,padding:10,marginBottom:4,border:"2px solid "+C.cr}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:6}}>
+<div><label style={{fontSize:10,color:C.mt}}>Name</label><input value={form.l||""} onChange={e=>setForm({...form,l:e.target.value})} style={iS}/></div>
+<div><label style={{fontSize:10,color:C.mt}}>Category</label><select value={form.c||""} onChange={e=>setForm({...form,c:e.target.value})} style={{...iS,cursor:"pointer"}}>{catOpts.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+</div>
+<div style={{marginBottom:6}}><label style={{fontSize:10,color:C.mt}}>Description</label><input value={form.d||""} onChange={e=>setForm({...form,d:e.target.value})} style={iS}/></div>
+<div style={{display:"flex",gap:4}}>
+<button onClick={()=>saveAlt(ri,form)} style={{padding:"6px 14px",background:C.sg,color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:600,cursor:"pointer"}}>Save</button>
+<button onClick={()=>setEditIdx(null)} style={{padding:"6px 10px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:10,fontSize:11,cursor:"pointer"}}>Cancel</button>
+<button onClick={()=>delAlt(ri)} style={{padding:"6px 10px",background:"#FEE",color:"#D4766A",border:"1px solid #ECC",borderRadius:10,fontSize:11,cursor:"pointer",marginLeft:"auto"}}>Delete</button>
+</div>
+</div>:
+<div key={ri} onClick={()=>{setEditIdx(ri);setForm({l:a.l,d:a.d,c:a.c,m:a.m||"",b:!!a.b});}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",background:C.bgS,borderRadius:10,marginBottom:3,cursor:"pointer",border:"1px solid "+C.bdL}}>
+<span style={{fontSize:13,width:22,textAlign:"center"}}>{ct.i}</span>
+<div style={{flex:1,minWidth:0}}>
+<div style={{fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.l}</div>
+<div style={{fontSize:11,color:C.mt,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.d}</div>
+</div>
+<span style={{fontSize:9,color:ct.a,background:ct.bg,padding:"2px 7px",borderRadius:10,flexShrink:0,fontWeight:600}}>{a.c}</span>
+{a.b&&<span style={{fontSize:9,color:C.cr,flexShrink:0}}>📞</span>}
+</div>;})}
+</div>
+</div>);
+}
+
+function OwTab({gs,setGs,tpls,setTpls,onEditTpl,alts,setAlts}){
 const[ng,sNg]=useState({name:"",ci:"",co:"",n:"",tpl:""});const[cp,sCp]=useState(null);
 const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[renName,setRenName]=useState("");
 const[editId,setEditId]=useState(null);const[editData,setEditData]=useState({});
@@ -641,6 +701,9 @@ return(<div key={g.id} style={{background:C.wh,borderRadius:14,border:isEd?"2px 
 </div>
 </>}
 </div>)})}
+
+{/* Recommendations Bank */}
+<RecsBank alts={alts} setAlts={setAlts}/>
 </div>);}
 
 const TPL_KEY="ut_templates";const GS_KEY="ut_guests";const INF_KEY="ut_essentials";const RQ_KEY="ut_bookings";
@@ -652,6 +715,7 @@ function loadRq(){try{const s=localStorage.getItem(RQ_KEY);if(s)return JSON.pars
 function App(){
 const[tab,setTab]=useState("week");const[isO,setIsO]=useState(false);
 const[wk,setWk]=useState(JSON.parse(JSON.stringify(IW)));
+const[alts,setAlts]=useState([...ALTS]);
 const[editingTpl,setEditingTpl]=useState(null);const[preEditWk,setPreEditWk]=useState(null);
 const[rq,setRq]=useState(loadRq);
 const[gs,setGs]=useState(loadGs);
@@ -688,7 +752,7 @@ onCancelTpl={()=>{setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditW
 {tab==="essentials"&&<EsTab inf={inf} setInf={setInf} isO={isO}/>}
 {tab==="bookings"&&<BkTab rq={rq} setRq={setRq} isO={isO}/>}
 {tab==="chat"&&<ChTab/>}
-{tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} tpls={tpls} setTpls={setTpls} onEditTpl={(t)=>{setPreEditWk(JSON.parse(JSON.stringify(wk)));setWk(JSON.parse(JSON.stringify(t.wk)));setEditingTpl({id:t.id,name:t.name});setTab("week");}}/>}
+{tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} tpls={tpls} setTpls={setTpls} alts={alts} setAlts={setAlts} onEditTpl={(t)=>{setPreEditWk(JSON.parse(JSON.stringify(wk)));setWk(JSON.parse(JSON.stringify(t.wk)));setEditingTpl({id:t.id,name:t.name});setTab("week");}}/>}
 <div style={{textAlign:"center",padding:"24px 20px",fontSize:11,color:C.mtL}}>Powered by <span style={{color:C.cr,fontWeight:600}}>Arrivo</span></div>
 </div>);
 }
