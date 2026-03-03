@@ -178,6 +178,10 @@ const INF=[
 function fD(s){if(!s)return"";return new Date(s+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
 function aD(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d;}
 
+// UTF-8 safe base64
+function toB64(s){return btoa(unescape(encodeURIComponent(s)));}
+function fromB64(s){return decodeURIComponent(escape(atob(s)));}
+
 // Clipboard helper with fallback
 function copyText(text){
 if(navigator.clipboard&&navigator.clipboard.writeText){
@@ -382,7 +386,7 @@ return(
 function OwTab({gs,setGs,wk}){
 const[ng,sNg]=useState({name:"",ci:"",co:"",n:""});const[cp,sCp]=useState(null);
 const add=()=>{if(!ng.name||!ng.ci)return;setGs([...gs,{...ng,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(wk))}]);sNg({name:"",ci:"",co:"",n:""});};
-const mkLink=(g)=>{const d=btoa(JSON.stringify({name:g.name,ci:g.ci,co:g.co,wk:g.wk}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;};
+const mkLink=(g)=>{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,wk:g.wk}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;};
 const cpy=g=>{copyText(mkLink(g));sCp(g.id);setTimeout(()=>sCp(null),2000);};
 const iS={width:"100%",padding:"11px 14px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:12,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
 return(
@@ -425,7 +429,7 @@ const origin=DEF_ORIGIN;
 useEffect(()=>{
 if(!gid)return;
 try{const s=localStorage.getItem("ut_"+gid);if(s){const d=JSON.parse(s);setWk(d.wk||wk);setGi({name:d.name,ci:d.ci,co:d.co});return;}}catch(e){}
-const d=pr.get("d");if(d){try{const dc=JSON.parse(atob(d));setWk(dc.wk||wk);setGi({name:dc.name,ci:dc.ci,co:dc.co});localStorage.setItem("ut_"+gid,JSON.stringify(dc));}catch(e){}}
+const d=pr.get("d");if(d){try{const dc=JSON.parse(fromB64(d));setWk(dc.wk||wk);setGi({name:dc.name,ci:dc.ci,co:dc.co});localStorage.setItem("ut_"+gid,JSON.stringify(dc));}catch(e){}}
 },[]);
 
 useEffect(()=>{if(gid&&gi)try{localStorage.setItem("ut_"+gid,JSON.stringify({...gi,wk}))}catch(e){}},[wk]);
