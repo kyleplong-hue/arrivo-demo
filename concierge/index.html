@@ -277,7 +277,7 @@ return(
 </div>
 {o&&<div style={{padding:"8px 16px 12px",borderTop:"1px solid "+C.bdL,background:C.bgS,display:"flex",flexWrap:"wrap",gap:5}}>
 <span style={{fontSize:10,color:C.mt,alignSelf:"center",marginRight:4}}>Swap:</span>
-{ALTS.filter(a=>a.l!==item.l).slice(0,8).map((a,i)=><button key={i} onClick={()=>{onSw(di,idx,a);setO(false);}} style={{fontSize:11,padding:"5px 10px",background:C.wh,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer",fontWeight:500}}>{a.l}</button>)}
+{ALTS.filter(a=>a.c===item.c&&a.l!==item.l).concat(ALTS.filter(a=>a.c!==item.c&&a.l!==item.l)).slice(0,8).map((a,i)=><button key={i} onClick={()=>{onSw(di,idx,a);setO(false);}} style={{fontSize:11,padding:"5px 10px",background:a.c===item.c?ct.bg:C.wh,border:"1px solid "+(a.c===item.c?ct.a+"33":C.bd),borderRadius:20,cursor:"pointer",fontWeight:500,color:a.c===item.c?ct.a:C.fg}}>{a.l}</button>)}
 </div>}
 </div>);
 }
@@ -297,6 +297,13 @@ return(<div style={{background:"#F0FAF0",borderRadius:16,border:"2px solid #5A9E
 }
 
 function WkTab({wk,setWk,gi,origin,confirmed,editingTpl,onSaveTpl,onCancelTpl}){
+const[open,setOpen]=useState(0);
+const[dragDay,setDragDay]=useState(null);const[dragItem,setDragItem]=useState(null);
+const onDDS=(e,i)=>{setDragDay(i);setDragItem(null);e.dataTransfer.effectAllowed="move";};
+const onDDO=(e,i)=>{e.preventDefault();if(dragDay===null||dragDay===i)return;setWk(w=>{const n=[...w];const it=n.splice(dragDay,1)[0];n.splice(i,0,it);setDragDay(i);return n;});};
+const onIDS=(e,di,ii)=>{e.stopPropagation();setDragItem({di,ii});setDragDay(null);e.dataTransfer.effectAllowed="move";};
+const onIDO=(e,di,ii)=>{e.preventDefault();e.stopPropagation();if(!dragItem||dragItem.di!==di||dragItem.ii===ii)return;
+setWk(w=>w.map((d,i)=>{if(i!==di)return d;const ni=[...d.items];const it=ni.splice(dragItem.ii,1)[0];ni.splice(ii,0,it);setDragItem({di,ii});return{...d,items:ni};}));};
 const sw=(di,ii,a)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{l:a.l,d:a.d,c:a.c,m:a.m,b:a.b}:t)}:d));};
 const dl=(di,ii)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.filter((_,j)=>j!==ii)}:d));};
 return(
@@ -307,23 +314,32 @@ return(
 <button onClick={onSaveTpl} style={{fontSize:12,padding:"8px 16px",background:C.sg,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600}}>Save Template</button>
 <button onClick={onCancelTpl} style={{fontSize:12,padding:"8px 16px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer"}}>Cancel</button>
 </div>}
-<div style={{textAlign:"center",marginBottom:28}}>
+<div style={{textAlign:"center",marginBottom:20}}>
 <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>{editingTpl?"Template: "+editingTpl.name:"Your Shanghai Food Week"}</h2>
-<p style={{fontSize:14,color:C.mt,marginTop:6}}>{editingTpl?"Remove or swap cards to customize this template.":"Curated by UnTour Food Tours. Tap "+"\u21BB"+" to swap any spot."}</p>
+<p style={{fontSize:13,color:C.mt,marginTop:6}}>{editingTpl?"Remove or swap cards to customize this template.":"Drag days to reorder \u00B7 drag cards within a day \u00B7 swap or delete anything"}</p>
 </div>
+<div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center",marginBottom:16}}>{Object.entries(CT).map(([k,v])=><span key={k} style={{fontSize:10,color:v.a,background:v.bg,padding:"3px 9px",borderRadius:20,fontWeight:600}}>{v.i} {v.l}</span>)}</div>
 {wk.map((day,di)=>{
-const ds=gi&&gi.ci?aD(gi.ci,di).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"}):null;
-return(<div key={di} style={{marginBottom:24}}>
-<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-<div style={{width:40,height:40,borderRadius:12,background:C.crS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{day.emoji}</div>
-<div style={{flex:1}}>
+const ds=gi&&gi.ci?aD(gi.ci,di).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):null;
+const isOpen=open===di;
+return(<div key={di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO(e,di)} onDragEnd={()=>setDragDay(null)} style={{marginBottom:8,opacity:dragDay===di?.5:1,cursor:"grab"}}>
+<button onClick={()=>setOpen(isOpen?-1:di)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:isOpen?C.wh:C.bgS,border:"1px solid "+(isOpen?C.cr+"44":C.bd),borderRadius:isOpen?"14px 14px 0 0":"14px",padding:"12px 16px",cursor:"pointer"}}>
+<span style={{fontSize:11,color:C.mt,cursor:"grab",userSelect:"none"}}>{"\u2800\u2807\u2800\u2807"}</span>
+<span style={{fontSize:20}}>{day.emoji}</span>
+<div style={{textAlign:"left",flex:1}}>
 <div style={{fontSize:11,color:C.cr,fontWeight:600,letterSpacing:.5,textTransform:"uppercase"}}>Day {di+1}{ds?" \u00B7 "+ds:""}</div>
-<div style={{fontSize:17,fontWeight:600,marginTop:1}}>{day.title}</div>
+<div style={{fontSize:16,fontWeight:600,marginTop:1}}>{day.title}</div>
 </div>
-{(()=>{const spots=day.items.filter(x=>x.m).map(x=>x.m.replace(/\+/g," "));if(spots.length<2)return null;const url="https://www.google.com/maps/dir/"+spots.join("/");return <a href={url} target="_blank" rel="noopener" style={{fontSize:11,padding:"6px 12px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none",display:"flex",alignItems:"center",gap:4,flexShrink:0}}>{"\uD83D\uDDFA\uFE0F"} Route</a>;})()}
-</div>
-{day.items.map((it,ii)=><Card key={ii} item={it} idx={ii} di={di} onSw={sw} onDl={dl} origin={origin}/>)}
+{(()=>{const spots=day.items.filter(x=>x.m).map(x=>x.m.replace(/\+/g," "));if(spots.length<2)return null;const url="https://www.google.com/maps/dir/"+spots.join("/");return <a href={url} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:10,padding:"5px 10px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none",flexShrink:0}}>{"\uD83D\uDDFA\uFE0F"} Route</a>;})()}
+<span style={{color:C.cr,transform:isOpen?"rotate(180deg)":"none",fontSize:14,transition:"transform .15s"}}>{"\u25BE"}</span>
+</button>
+{isOpen&&<div style={{background:C.wh,borderRadius:"0 0 14px 14px",padding:"8px 8px 4px",border:"1px solid "+C.cr+"22",borderTop:"none"}}>
+{day.items.map((it,ii)=>{const isDI=dragItem&&dragItem.di===di&&dragItem.ii===ii;return(
+<div key={ii} draggable onDragStart={e=>onIDS(e,di,ii)} onDragOver={e=>onIDO(e,di,ii)} onDragEnd={()=>setDragItem(null)} style={{opacity:isDI?.4:1,cursor:"grab"}}>
+<Card item={it} idx={ii} di={di} onSw={sw} onDl={dl} origin={origin}/>
+</div>);})}
 {confirmed&&confirmed.filter(b=>{if(!b.d||!gi||!gi.ci)return false;const bd=new Date(b.d);const ci=new Date(gi.ci);const diff=Math.round((bd-ci)/864e5);return diff===di;}).map((b,i)=><ConfCard key={"bk"+i} bk={b}/>)}
+</div>}
 </div>);})}
 </div>);
 }
