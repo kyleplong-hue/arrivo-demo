@@ -324,17 +324,40 @@ function CrTab({origin}){return(
 </div>))}
 </div>);}
 
-function EsTab(){return(
+function EsTab({inf,setInf,isO}){
+const[ed,setEd]=useState(null);
+const[et,setEt]=useState("");const[edesc,setEdesc]=useState("");
+const startEdit=(si,ii)=>{if(!isO)return;setEd({si,ii});setEt(inf[si].items[ii].t);setEdesc(inf[si].items[ii].d);};
+const save=()=>{if(!ed)return;const n=inf.map((s,si)=>si===ed.si?{...s,items:s.items.map((m,ii)=>ii===ed.ii?{...m,t:et,d:edesc}:m)}:s);setInf(n);setEd(null);};
+const addItem=(si)=>{const n=inf.map((s,i)=>i===si?{...s,items:[...s.items,{t:"New Item",d:"Description here"}]}:s);setInf(n);};
+const delItem=(si,ii)=>{const n=inf.map((s,i)=>i===si?{...s,items:s.items.filter((_,j)=>j!==ii)}:s);setInf(n);};
+const iS={width:"100%",padding:"8px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:10,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
+return(
 <div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
 <div style={{textAlign:"center",marginBottom:24}}>
 <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Shanghai Essentials</h2>
+{isO&&<p style={{fontSize:12,color:C.cr,marginTop:4}}>Tap any card to edit</p>}
 </div>
-{INF.map((s,i)=>(<div key={i} style={{marginBottom:20}}>
+{inf.map((s,si)=>(<div key={si} style={{marginBottom:20}}>
 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:18}}>{s.icon}</span><h3 style={{fontSize:16,fontWeight:600}}>{s.title}</h3></div>
-{s.items.map((m,j)=>(<div key={j} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"12px 16px",marginBottom:6}}>
+{s.items.map((m,ii)=>(
+ed&&ed.si===si&&ed.ii===ii?
+<div key={ii} style={{background:C.wh,borderRadius:14,border:"2px solid "+C.cr,padding:"12px 16px",marginBottom:6}}>
+<input value={et} onChange={e=>setEt(e.target.value)} style={{...iS,fontWeight:600,marginBottom:6}} placeholder="Title"/>
+<textarea value={edesc} onChange={e=>setEdesc(e.target.value)} rows={2} style={{...iS,resize:"vertical"}} placeholder="Description"/>
+<div style={{display:"flex",gap:6,marginTop:8}}>
+<button onClick={save} style={{fontSize:12,padding:"6px 16px",background:C.sg,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600}}>Save</button>
+<button onClick={()=>setEd(null)} style={{fontSize:12,padding:"6px 16px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer"}}>Cancel</button>
+{isO&&<button onClick={()=>{delItem(si,ii);setEd(null);}} style={{fontSize:12,padding:"6px 16px",background:"#FEE",color:"#D4766A",border:"1px solid #ECC",borderRadius:20,cursor:"pointer",marginLeft:"auto"}}>Delete</button>}
+</div>
+</div>
+:<div key={ii} onClick={()=>startEdit(si,ii)} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"12px 16px",marginBottom:6,cursor:isO?"pointer":"default"}}>
 <div style={{fontSize:14,fontWeight:600,marginBottom:2}}>{m.t}</div>
 <div style={{fontSize:13,color:C.fgS,lineHeight:1.5}}>{m.d}</div>
-</div>))}
+{isO&&<div style={{fontSize:10,color:C.mtL,marginTop:4}}>✏️ click to edit</div>}
+</div>
+))}
+{isO&&<button onClick={()=>addItem(si)} style={{fontSize:12,color:C.cr,background:C.crS,border:"none",borderRadius:20,padding:"8px 16px",cursor:"pointer",fontWeight:600,marginTop:4}}>+ Add Item</button>}
 </div>))}
 </div>);}
 
@@ -478,9 +501,10 @@ return(
 </div>))}
 </div>);}
 
-const TPL_KEY="ut_templates";const GS_KEY="ut_guests";
+const TPL_KEY="ut_templates";const GS_KEY="ut_guests";const INF_KEY="ut_essentials";
 function loadTpls(){try{const s=localStorage.getItem(TPL_KEY);if(s){const t=JSON.parse(s);if(t.length)return t;}}catch(e){}return[{id:"default",name:"Default",wk:JSON.parse(JSON.stringify(IW)),isDefault:true}];}
 function loadGs(){try{const s=localStorage.getItem(GS_KEY);if(s)return JSON.parse(s);}catch(e){}return[];}
+function loadInf(){try{const s=localStorage.getItem(INF_KEY);if(s)return JSON.parse(s);}catch(e){}return JSON.parse(JSON.stringify(INF));}
 
 function App(){
 const[tab,setTab]=useState("week");const[isO,setIsO]=useState(false);
@@ -488,6 +512,7 @@ const[wk,setWk]=useState(JSON.parse(JSON.stringify(IW)));
 const[rq,setRq]=useState([]);
 const[gs,setGs]=useState(loadGs);
 const[tpls,setTpls]=useState(loadTpls);
+const[inf,setInf]=useState(loadInf);
 const pr=new URLSearchParams(window.location.search);
 const gid=pr.get("g");
 const[gi,setGi]=useState(null);
@@ -495,6 +520,7 @@ const origin=DEF_ORIGIN;
 
 useEffect(()=>{try{localStorage.setItem(TPL_KEY,JSON.stringify(tpls))}catch(e){}},[tpls]);
 useEffect(()=>{try{localStorage.setItem(GS_KEY,JSON.stringify(gs))}catch(e){}},[gs]);
+useEffect(()=>{try{localStorage.setItem(INF_KEY,JSON.stringify(inf))}catch(e){}},[inf]);
 
 useEffect(()=>{
 if(!gid)return;
@@ -511,7 +537,7 @@ return(
 <Header tab={tab} setTab={setTab} isO={isO} setIsO={setIsO} gi={gi}/>
 {tab==="week"&&<WkTab wk={tw} setWk={setWk} gi={gi} origin={origin}/>}
 {tab==="crawls"&&<CrTab origin={origin}/>}
-{tab==="essentials"&&<EsTab/>}
+{tab==="essentials"&&<EsTab inf={inf} setInf={setInf} isO={isO}/>}
 {tab==="bookings"&&<BkTab rq={rq} setRq={setRq} isO={isO}/>}
 {tab==="chat"&&<ChTab/>}
 {tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} tpls={tpls} setTpls={setTpls}/>}
