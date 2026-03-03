@@ -296,14 +296,20 @@ return(<div style={{background:"#F0FAF0",borderRadius:16,border:"2px solid #5A9E
 </div>);
 }
 
-function WkTab({wk,setWk,gi,origin,confirmed}){
+function WkTab({wk,setWk,gi,origin,confirmed,editingTpl,onSaveTpl,onCancelTpl}){
 const sw=(di,ii,a)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{l:a.l,d:a.d,c:a.c,m:a.m,b:a.b}:t)}:d));};
 const dl=(di,ii)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.filter((_,j)=>j!==ii)}:d));};
 return(
 <div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
+{editingTpl&&<div style={{background:C.crS,border:"2px solid "+C.cr,borderRadius:14,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
+<span style={{fontSize:14}}>📝</span>
+<div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:C.cr}}>Editing: {editingTpl.name}</div><div style={{fontSize:12,color:C.mt}}>Swap or remove cards, then save your template.</div></div>
+<button onClick={onSaveTpl} style={{fontSize:12,padding:"8px 16px",background:C.sg,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600}}>Save Template</button>
+<button onClick={onCancelTpl} style={{fontSize:12,padding:"8px 16px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer"}}>Cancel</button>
+</div>}
 <div style={{textAlign:"center",marginBottom:28}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Your Shanghai Food Week</h2>
-<p style={{fontSize:14,color:C.mt,marginTop:6}}>Curated by UnTour Food Tours. Tap {"\u21BB"} to swap any spot.</p>
+<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>{editingTpl?"Template: "+editingTpl.name:"Your Shanghai Food Week"}</h2>
+<p style={{fontSize:14,color:C.mt,marginTop:6}}>{editingTpl?"Remove or swap cards to customize this template.":"Curated by UnTour Food Tours. Tap "+"\u21BB"+" to swap any spot."}</p>
 </div>
 {wk.map((day,di)=>{
 const ds=gi&&gi.ci?aD(gi.ci,di).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"}):null;
@@ -460,7 +466,7 @@ evts.sort((a,b)=>a.ci.localeCompare(b.ci));
 return evts;
 }
 
-function OwTab({gs,setGs,tpls,setTpls}){
+function OwTab({gs,setGs,tpls,setTpls,onEditTpl}){
 const[ng,sNg]=useState({name:"",ci:"",co:"",n:"",tpl:""});const[cp,sCp]=useState(null);
 const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[renName,setRenName]=useState("");
 const[editId,setEditId]=useState(null);const[editData,setEditData]=useState({});
@@ -517,6 +523,7 @@ return(
 {t.isDefault&&<span style={{fontSize:10,color:C.cr,marginLeft:6,fontWeight:600}}>DEFAULT</span>}
 <span style={{fontSize:11,color:C.mt,marginLeft:6}}>{t.wk.length} days</span>
 </div>
+<button onClick={()=>onEditTpl(t)} style={{fontSize:10,color:C.cr,background:C.crS,border:"none",borderRadius:8,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>Edit</button>
 <button onClick={()=>{setRenId(t.id);setRenName(t.name);}} style={{fontSize:10,color:C.mt,background:C.bgS,border:"1px solid "+C.bd,borderRadius:8,padding:"4px 8px",cursor:"pointer"}}>Rename</button>
 {tpls.length>1&&<button onClick={()=>delTpl(t.id)} style={{width:24,height:24,borderRadius:6,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:10,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
 </>}
@@ -629,6 +636,7 @@ function loadRq(){try{const s=localStorage.getItem(RQ_KEY);if(s)return JSON.pars
 function App(){
 const[tab,setTab]=useState("week");const[isO,setIsO]=useState(false);
 const[wk,setWk]=useState(JSON.parse(JSON.stringify(IW)));
+const[editingTpl,setEditingTpl]=useState(null);const[preEditWk,setPreEditWk]=useState(null);
 const[rq,setRq]=useState(loadRq);
 const[gs,setGs]=useState(loadGs);
 const[tpls,setTpls]=useState(loadTpls);
@@ -657,12 +665,14 @@ const tw=gi&&gi.ci&&gi.co?(function(){const n=Math.round((new Date(gi.co)-new Da
 return(
 <div style={{minHeight:"100vh",background:C.bg}}>
 <Header tab={tab} setTab={setTab} isO={isO} setIsO={setIsO} gi={gi}/>
-{tab==="week"&&<WkTab wk={tw} setWk={setWk} gi={gi} origin={origin} confirmed={rq.filter(r=>r.st==="confirmed")}/>}
+{tab==="week"&&<WkTab wk={editingTpl?wk:tw} setWk={setWk} gi={editingTpl?null:gi} origin={origin} confirmed={rq.filter(r=>r.st==="confirmed")} editingTpl={editingTpl}
+onSaveTpl={()=>{if(editingTpl){setTpls(tpls.map(t=>t.id===editingTpl.id?{...t,wk:JSON.parse(JSON.stringify(wk))}:t));setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditWk(null);}}}}
+onCancelTpl={()=>{setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditWk(null);}}}/>}
 {tab==="crawls"&&<CrTab origin={origin}/>}
 {tab==="essentials"&&<EsTab inf={inf} setInf={setInf} isO={isO}/>}
 {tab==="bookings"&&<BkTab rq={rq} setRq={setRq} isO={isO}/>}
 {tab==="chat"&&<ChTab/>}
-{tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} tpls={tpls} setTpls={setTpls}/>}
+{tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} tpls={tpls} setTpls={setTpls} onEditTpl={(t)=>{setPreEditWk(JSON.parse(JSON.stringify(wk)));setWk(JSON.parse(JSON.stringify(t.wk)));setEditingTpl({id:t.id,name:t.name});setTab("week");}}/>}
 <div style={{textAlign:"center",padding:"24px 20px",fontSize:11,color:C.mtL}}>Powered by <span style={{color:C.cr,fontWeight:600}}>Arrivo</span></div>
 </div>);
 }
