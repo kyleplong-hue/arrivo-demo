@@ -79,40 +79,40 @@ function decodeGuestURL(){const d=new URLSearchParams(window.location.search).ge
 const initWeek=()=>[
 {id:"d1",title:"Old City & Grand Bazaar",sub:"Monuments, masters & hidden gems",emoji:"🏛️",accent:T.terra,blocks:[
 {id:"d1b1",t:"9:00 AM",l:"Boris'in Yeri",d:"Start with kaymak & egg breakfast. White Russian heritage since early Republic era. Ayaspaşa.",tag:"breakfast",cat:"breakfast",map:"Boris'in+Yeri+Ayaspaşa+Istanbul"},
-{id:"d1b2",t:"10:30 AM",l:"Sultanahmet Sights",d:"Hagia Sophia, Blue Mosque, Hippodrome. Hit these early before the crowds.",tag:"sight",cat:"sight",map:"Sultanahmet+Istanbul"},
-{id:"d1b3",t:"1:00 PM",l:"Aynen Dürüm",d:"Microscopic kebab shack at Grand Bazaar's edge. Best lamb dürüm in the old city.",tag:"street",cat:"street",map:"Aynen+Dürüm+Grand+Bazaar+Istanbul"},
-{id:"d1b4",t:"2:30 PM",l:"Tea near Süleymaniye",d:"Find a tea garden with a view near the mosque. This is how Istanbullus pause.",tag:"coffee",cat:"coffee",map:"Süleymaniye+Camii+Istanbul"},
-{id:"d1b5",t:"4:00 PM",l:"Lezzet-i Şark",d:"Mind-blowing künefe. Crispy shredded pastry, melting cheese, sugar syrup, pistachios.",tag:"sweet",cat:"sweet",map:"Lezzet-i+Şark+Istanbul"},
-{id:"d1b6",t:"7:30 PM",l:"Karaköy Lokantası",d:"Lokanta by day, meyhane by night. Order the meze spread and let them guide you.",tag:"dinner",cat:"dinner",map:"Karaköy+Lokantası+Istanbul"},
+{id:"d1b2",t:"10:30 AM",l:"Sultanahmet Sights",d:"Hagia Sophia, Blue Mosque, Hippodrome. Hit these early before the crowds.",tag:"sight",cat:"sight",map:"Sultanahmet+Istanbul",dr:"20 min taxi"},
+{id:"d1b3",t:"1:00 PM",l:"Aynen Dürüm",d:"Microscopic kebab shack at Grand Bazaar's edge. Best lamb dürüm in the old city.",tag:"street",cat:"street",map:"Aynen+Dürüm+Grand+Bazaar+Istanbul",dr:"10 min walk"},
+{id:"d1b4",t:"2:30 PM",l:"Tea near Süleymaniye",d:"Find a tea garden with a view near the mosque. This is how Istanbullus pause.",tag:"coffee",cat:"coffee",map:"Süleymaniye+Camii+Istanbul",dr:"15 min walk"},
+{id:"d1b5",t:"4:00 PM",l:"Lezzet-i Şark",d:"Mind-blowing künefe. Crispy shredded pastry, melting cheese, sugar syrup, pistachios.",tag:"sweet",cat:"sweet",map:"Lezzet-i+Şark+Istanbul",dr:"10 min walk"},
+{id:"d1b6",t:"7:30 PM",l:"Karaköy Lokantası",d:"Lokanta by day, meyhane by night. Order the meze spread and let them guide you.",tag:"dinner",cat:"dinner",map:"Karaköy+Lokantası+Istanbul",dr:"15 min tram"},
 ]},
 {id:"d2",title:"Two Continents",sub:"Ferries, markets & the Asian side",emoji:"⛴️",accent:T.sky,blocks:[
 {id:"d2b1",t:"9:00 AM",l:"Namlı Gurme",d:"Karaköy deli breakfast. Cheeses, olives, sausages, pastries. Load up.",tag:"breakfast",cat:"breakfast",map:"Namlı+Gurme+Karaköy+Istanbul"},
-{id:"d2b2",t:"10:30 AM",l:"Karaköy Market Walk",d:"Wander the backstreets. Pickle shops, spice stalls, börek windows.",tag:"market",cat:"market",map:"Karaköy+Istanbul"},
-{id:"d2b3",t:"11:30 AM",l:"Karaköy Güllüoğlu",d:"The baklava institution. Pistachio, walnut, or chocolate — every bite is perfect.",tag:"sweet",cat:"sweet",map:"Karaköy+Güllüoğlu+Istanbul"},
-{id:"d2b4",t:"12:30 PM",l:"Ferry to Kadıköy",d:"Hop the ferry from Karaköy. Tea on the deck, Bosphorus breeze, skyline views.",tag:"ferry",cat:"ferry",map:"Kadıköy+Istanbul"},
-{id:"d2b5",t:"1:30 PM",l:"Kadıköy Market",d:"The Asian side's food heart. Pickles, nuts, produce, fish. Follow your nose.",tag:"market",cat:"market",map:"Kadıköy+Çarşı+Istanbul"},
-{id:"d2b6",t:"7:00 PM",l:"Çiya Sofrası",d:"Very likely the best restaurant in Istanbul. Rotating Anatolian menu. A profound taste experience.",tag:"dinner",cat:"dinner",map:"Çiya+Sofrası+Kadıköy+Istanbul"},
+{id:"d2b2",t:"10:30 AM",l:"Karaköy Market Walk",d:"Wander the backstreets. Pickle shops, spice stalls, börek windows.",tag:"market",cat:"market",map:"Karaköy+Istanbul",dr:"5 min walk"},
+{id:"d2b3",t:"11:30 AM",l:"Karaköy Güllüoğlu",d:"The baklava institution. Pistachio, walnut, or chocolate — every bite is perfect.",tag:"sweet",cat:"sweet",map:"Karaköy+Güllüoğlu+Istanbul",dr:"3 min walk"},
+{id:"d2b4",t:"12:30 PM",l:"Ferry to Kadıköy",d:"Hop the ferry from Karaköy. Tea on the deck, Bosphorus breeze, skyline views.",tag:"ferry",cat:"ferry",map:"Kadıköy+Istanbul",dr:"5 min walk to pier"},
+{id:"d2b5",t:"1:30 PM",l:"Kadıköy Market",d:"The Asian side's food heart. Pickles, nuts, produce, fish. Follow your nose.",tag:"market",cat:"market",map:"Kadıköy+Çarşı+Istanbul",dr:"25 min ferry"},
+{id:"d2b6",t:"7:00 PM",l:"Çiya Sofrası",d:"Very likely the best restaurant in Istanbul. Rotating Anatolian menu. A profound taste experience.",tag:"dinner",cat:"dinner",map:"Çiya+Sofrası+Kadıköy+Istanbul",dr:"5 min walk"},
 ]},
 {id:"d3",title:"Bazaar Quarter Deep Dive",sub:"Grand Bazaar masters & street food",emoji:"🏪",accent:T.gold,blocks:[
 {id:"d3b1",t:"8:30 AM",l:"Esnaf Lokantası Breakfast",d:"Start like locals: lentil soup, bread, tea. Find any steaming window near Eminönü.",tag:"breakfast",cat:"breakfast",map:"Eminönü+Istanbul"},
-{id:"d3b2",t:"10:00 AM",l:"CB: Bazaar Quarter Walk",d:"6-hour CB food tour. Meet craftsmen-masters, eat at the area's most classic spots.",tag:"tour",cat:"tour",book:true},
-{id:"d3b3",t:"4:30 PM",l:"Spice Bazaar",d:"Mısır Çarşısı. Saffron, dried fruits, lokum. Smell your way through centuries.",tag:"bazaar",cat:"bazaar",map:"Mısır+Çarşısı+Istanbul"},
-{id:"d3b4",t:"6:00 PM",l:"Galata Bridge Sunset",d:"Walk across at sunset. Fishermen on top, fish restaurants below. Grab a balık ekmek.",tag:"walk",cat:"walk",map:"Galata+Bridge+Istanbul"},
-{id:"d3b5",t:"8:30 PM",l:"Sofyalı 9",d:"Classic Beyoğlu meyhane. Meze, rakı, and conversation. This is the Turkish way.",tag:"meyhane",cat:"meyhane",map:"Sofyalı+9+Beyoğlu+Istanbul"},
+{id:"d3b2",t:"10:00 AM",l:"CB: Bazaar Quarter Walk",d:"6-hour CB food tour. Meet craftsmen-masters, eat at the area's most classic spots.",tag:"tour",cat:"tour",book:true,dr:"10 min walk"},
+{id:"d3b3",t:"4:30 PM",l:"Spice Bazaar",d:"Mısır Çarşısı. Saffron, dried fruits, lokum. Smell your way through centuries.",tag:"bazaar",cat:"bazaar",map:"Mısır+Çarşısı+Istanbul",dr:"5 min walk"},
+{id:"d3b4",t:"6:00 PM",l:"Galata Bridge Sunset",d:"Walk across at sunset. Fishermen on top, fish restaurants below. Grab a balık ekmek.",tag:"walk",cat:"walk",map:"Galata+Bridge+Istanbul",dr:"8 min walk"},
+{id:"d3b5",t:"8:30 PM",l:"Sofyalı 9",d:"Classic Beyoğlu meyhane. Meze, rakı, and conversation. This is the Turkish way.",tag:"meyhane",cat:"meyhane",map:"Sofyalı+9+Beyoğlu+Istanbul",dr:"15 min walk uphill"},
 ]},
 {id:"d4",title:"Kebab Trail & Backstreets",sub:"Döner masters, kokoreç legends & hidden gems",emoji:"🔥",accent:T.terraL,blocks:[
 {id:"d4b1",t:"9:00 AM",l:"Simit & Tea",d:"Sesame-crusted simit from a red street cart. Eat it with cheese and olives at any çay bahçesi.",tag:"breakfast",cat:"breakfast"},
-{id:"d4b2",t:"11:00 AM",l:"Kaya Döner",d:"Bomonti's excellent new spot (2024). Young couple, stellar döner, great attention to detail.",tag:"street",cat:"street",map:"Kaya+Döner+Bomonti+Istanbul"},
-{id:"d4b3",t:"1:00 PM",l:"Mahir Lokantası",d:"Osmanbey. Wood-fired oven, Diyarbakır recipes. The esnaf lokantası at its finest.",tag:"lunch",cat:"lunch",map:"Mahir+Lokantası+Osmanbey+Istanbul"},
-{id:"d4b4",t:"3:30 PM",l:"Mezme",d:"Kurtuluş gem. Meze deli by chef Sasun — Armenian & Hatay traditions. Recently reopened.",tag:"meyhane",cat:"meyhane",map:"Mezme+Kurtuluş+Istanbul"},
-{id:"d4b5",t:"6:00 PM",l:"Ozzie's Kokoreç",d:"Usta Oğuzhan's legendary kokoreç in Asmalımescit. Grilled lamb intestines — trust us.",tag:"street",cat:"street",map:"Ozzie's+Kokoreç+Asmalımescit+Istanbul"},
-{id:"d4b6",t:"8:00 PM",l:"Kavurmacı Goze",d:"Hidden beneath a copper-domed bank in Sirkeci. One menu item: braised beef (kavurma).",tag:"dinner",cat:"dinner",map:"Kavurmacı+Goze+Sirkeci+Istanbul"},
+{id:"d4b2",t:"11:00 AM",l:"Kaya Döner",d:"Bomonti's excellent new spot (2024). Young couple, stellar döner, great attention to detail.",tag:"street",cat:"street",map:"Kaya+Döner+Bomonti+Istanbul",dr:"15 min metro"},
+{id:"d4b3",t:"1:00 PM",l:"Mahir Lokantası",d:"Osmanbey. Wood-fired oven, Diyarbakır recipes. The esnaf lokantası at its finest.",tag:"lunch",cat:"lunch",map:"Mahir+Lokantası+Osmanbey+Istanbul",dr:"10 min walk"},
+{id:"d4b4",t:"3:30 PM",l:"Mezme",d:"Kurtuluş gem. Meze deli by chef Sasun — Armenian & Hatay traditions. Recently reopened.",tag:"meyhane",cat:"meyhane",map:"Mezme+Kurtuluş+Istanbul",dr:"12 min walk"},
+{id:"d4b5",t:"6:00 PM",l:"Ozzie's Kokoreç",d:"Usta Oğuzhan's legendary kokoreç in Asmalımescit. Grilled lamb intestines — trust us.",tag:"street",cat:"street",map:"Ozzie's+Kokoreç+Asmalımescit+Istanbul",dr:"20 min taxi"},
+{id:"d4b6",t:"8:00 PM",l:"Kavurmacı Goze",d:"Hidden beneath a copper-domed bank in Sirkeci. One menu item: braised beef (kavurma).",tag:"dinner",cat:"dinner",map:"Kavurmacı+Goze+Sirkeci+Istanbul",dr:"15 min tram"},
 ]},
 {id:"d5",title:"Bosphorus & Asian Side",sub:"Waterside neighborhoods & ferry feasts",emoji:"🌊",accent:T.skyL,blocks:[
 {id:"d5b1",t:"9:00 AM",l:"CB: Born on the Bosphorus",d:"Full-day CB tour. Workingman's breakfast to fish lunch in waterside neighborhoods.",tag:"tour",cat:"tour",book:true},
-{id:"d5b2",t:"4:00 PM",l:"Kadıköy Backstreets",d:"Vintage record shops, craft coffee, street art. The hipster-meets-grandma side of Istanbul.",tag:"walk",cat:"walk",map:"Moda+Kadıköy+Istanbul"},
-{id:"d5b3",t:"7:00 PM",l:"Çiya Sofrası — Return Visit",d:"The menu changes daily. Spring: meat stew with unripe green plums. Always a revelation.",tag:"dinner",cat:"dinner",map:"Çiya+Sofrası+Kadıköy+Istanbul"},
-{id:"d5b4",t:"9:30 PM",l:"Moda Nightcap",d:"Walk the Moda seafront. Pick a rooftop bar, watch the lights of the European shore.",tag:"drinks",cat:"drinks",map:"Moda+Kadıköy+Istanbul"},
+{id:"d5b2",t:"4:00 PM",l:"Kadıköy Backstreets",d:"Vintage record shops, craft coffee, street art. The hipster-meets-grandma side of Istanbul.",tag:"walk",cat:"walk",map:"Moda+Kadıköy+Istanbul",dr:"10 min walk"},
+{id:"d5b3",t:"7:00 PM",l:"Çiya Sofrası — Return Visit",d:"The menu changes daily. Spring: meat stew with unripe green plums. Always a revelation.",tag:"dinner",cat:"dinner",map:"Çiya+Sofrası+Kadıköy+Istanbul",dr:"8 min walk"},
+{id:"d5b4",t:"9:30 PM",l:"Moda Nightcap",d:"Walk the Moda seafront. Pick a rooftop bar, watch the lights of the European shore.",tag:"drinks",cat:"drinks",map:"Moda+Kadıköy+Istanbul",dr:"5 min walk"},
 ]},
 ];
 
@@ -225,8 +225,12 @@ return<div style={{padding:"16px 14px",maxWidth:700,margin:"0 auto"}}>
 </button>
 {open===di&&<div style={{background:T.wh,borderRadius:"0 0 12px 12px",padding:"8px 6px 6px",border:"1px solid "+day.accent+"22",borderTop:"none"}}>
 {day.blocks.map((b,bi)=>{const s=TS[b.tag]||TS.lunch;const iDB=dragBlock&&dragBlock.di===di&&dragBlock.bi===bi;
-return(
-<div key={b.id||bi} draggable onDragStart={e=>onBDS(e,di,bi)} onDragOver={e=>onBDO(e,di,bi)} onDragEnd={()=>setDragBlock(null)}
+return(<React.Fragment key={b.id||bi}>
+{b.dr&&bi>0&&<div style={{display:"flex",gap:7,marginBottom:1}}>
+<div style={{width:52,flexShrink:0}}/><div style={{width:14,display:"flex",justifyContent:"center"}}><div style={{width:1,height:14,background:T.mt+"30"}}/></div>
+<div style={{fontSize:9,color:T.mt,fontStyle:"italic",paddingTop:1,lineHeight:1}}>{b.dr}</div>
+</div>}
+<div draggable onDragStart={e=>onBDS(e,di,bi)} onDragOver={e=>onBDO(e,di,bi)} onDragEnd={()=>setDragBlock(null)}
 style={{display:"flex",gap:7,marginBottom:5,opacity:iDB?.4:1,cursor:"grab"}}>
 <div style={{width:52,textAlign:"right",paddingTop:9,flexShrink:0}}><span style={{fontSize:10,color:T.mt}}>{b.t}</span></div>
 <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:14}}><div style={{width:7,height:7,borderRadius:"50%",background:s.a,marginTop:11,flexShrink:0}}/><div style={{width:1,flex:1,background:s.a+"18",marginTop:2}}/></div>
@@ -240,7 +244,7 @@ style={{display:"flex",gap:7,marginBottom:5,opacity:iDB?.4:1,cursor:"grab"}}>
 <p style={{fontSize:12,color:T.fgS,lineHeight:1.5,marginTop:3}}>{b.d}</p>
 <div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:4}}>{b.map&&<MapsBtn q={b.map}/>}{b.book&&<BookBadge/>}</div>
 </div>
-</div>);})}
+</div></React.Fragment>);})}
 </div>}
 </div>);})}
 </div>;}
