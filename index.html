@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Arrivo — Pre-Trip Planning for Tour Companies</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#FDFCF9;--fg:#1A1A18;--mut:#6B6860;--gold:#B8963E;--goldL:#D4B36A;--goldD:#8A6F2E;--card:#F7F4EE;--bdr:#E8E3D8;--dark:#1A1A18;--cream:#FDFCF9;--wine:#7A3040;--olive:#4A5A2C;--sky:#3A6090}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;line-height:1.6}
+h1,h2,h3{font-family:'Newsreader',serif}
+a{color:inherit;text-decoration:none}
+.container{max-width:1080px;margin:0 auto;padding:0 24px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes countUp{from{opacity:0}to{opacity:1}}
+.fade-up{animation:fadeUp .8s ease both}
+.delay-1{animation-delay:.15s}.delay-2{animation-delay:.3s}.delay-3{animation-delay:.45s}.delay-4{animation-delay:.6s}
+
+/* ═══ PASSWORD GATE ═══ */
+#gate{position:fixed;inset:0;background:var(--dark);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px}
+#gate.hidden{display:none}
+#gate h2{font-family:'Newsreader',serif;color:var(--cream);font-size:28px;font-weight:500}
+#gate p{color:#7A746A;font-size:14px;max-width:340px;text-align:center}
+#gate input{width:280px;padding:14px 18px;background:#1C1A17;border:1px solid #332F2A;border-radius:10px;color:var(--cream);font-size:15px;font-family:'Outfit',sans-serif;outline:none;text-align:center;letter-spacing:2px}
+#gate input:focus{border-color:var(--gold)}
+#gate button{padding:12px 36px;background:var(--gold);color:var(--dark);border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
+#gate .err{color:#E85050;font-size:12px;height:16px}
+
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg)ee;backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr)}
+nav .inner{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:1080px;margin:0 auto}
+nav .logo{font-family:'Newsreader',serif;font-size:22px;font-weight:600;letter-spacing:-.5px}
+nav .logo span{color:var(--gold)}
+nav .cta-nav{padding:10px 22px;background:var(--gold);color:#fff;border-radius:8px;font-size:13px;font-weight:600;transition:all .2s}
+nav .cta-nav:hover{background:var(--goldD)}
+
+/* ═══ HERO ═══ */
+.hero{padding:140px 0 80px;text-align:center}
+.hero h1{font-size:clamp(32px,5vw,52px);font-weight:500;line-height:1.15;max-width:800px;margin:0 auto 20px;letter-spacing:-.5px}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero .sub{font-size:17px;color:var(--mut);max-width:560px;margin:0 auto 36px;font-weight:300;line-height:1.6}
+.hero .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero .cta-primary{padding:14px 32px;background:var(--gold);color:#fff;border-radius:10px;font-size:15px;font-weight:600;transition:all .2s;box-shadow:0 4px 20px #B8963E33}
+.hero .cta-primary:hover{background:var(--goldD);transform:translateY(-1px)}
+.hero .cta-secondary{padding:14px 32px;background:transparent;color:var(--fg);border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;font-weight:500;transition:all .2s}
+.hero .cta-secondary:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ═══ BEFORE/AFTER ═══ */
+.before-after{padding:0 0 60px}
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px;margin:0 auto}
+.ba-card{border-radius:14px;padding:28px 24px;position:relative;overflow:hidden}
+.ba-card.before{background:#FDF5F5;border:1.5px solid #F0D0D0}
+.ba-card.after{background:#F2F8F0;border:1.5px solid #C8E0C0}
+.ba-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:14px}
+.ba-card.before .ba-label{color:#C44}
+.ba-card.after .ba-label{color:#4A8}
+.ba-msg{padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:6px;line-height:1.4}
+.ba-card.before .ba-msg{background:#fff;border:1px solid #F0D0D0;color:#8B4040}
+.ba-card.after .ba-msg{background:#fff;border:1px solid #C8E0C0;color:#3A7040}
+
+/* ═══ STATS ═══ */
+.stats{background:var(--dark);padding:48px 0;margin:0 0 70px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
+.stat-num{font-family:'Newsreader',serif;font-size:36px;color:var(--gold);font-weight:500}
+.stat-label{font-size:12px;color:#7A746A;margin-top:2px;letter-spacing:.5px}
+
+/* ═══ SECTION ═══ */
+.section{padding:70px 0}
+.section-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;text-align:center;margin-bottom:8px}
+.section-title{font-family:'Newsreader',serif;font-size:clamp(26px,3.5vw,38px);text-align:center;font-weight:500;margin-bottom:12px;letter-spacing:-.3px}
+.section-title em{font-style:italic;color:var(--gold)}
+.section-sub{font-size:15px;color:var(--mut);text-align:center;max-width:520px;margin:0 auto 40px;font-weight:300}
+
+/* ═══ HOW IT WORKS ═══ */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.step{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:28px 24px;text-align:center}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;margin:0 auto 14px}
+.step h3{font-size:17px;font-weight:600;font-family:'Outfit',sans-serif;margin-bottom:6px}
+.step p{font-size:13px;color:var(--mut);line-height:1.5}
+
+/* ═══ INTEGRATIONS ═══ */
+.integrations{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:40px;margin-top:50px}
+.int-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-top:20px}
+.int-pill{background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;text-align:center;font-size:14px;font-weight:500;transition:all .2s}
+.int-pill:hover{border-color:var(--gold);transform:translateY(-2px)}
+.int-pill .api{font-size:10px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;display:block;margin-top:2px}
+
+/* ═══ FEATURES ═══ */
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.feat{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:24px}
+.feat-icon{font-size:22px;margin-bottom:8px}
+.feat h3{font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;margin-bottom:4px}
+.feat p{font-size:13px;color:var(--mut);line-height:1.5}
+
+/* ═══ REVENUE ═══ */
+.revenue-card{background:linear-gradient(135deg,#1A1A18,#2A2520);border-radius:16px;padding:48px;color:var(--cream);text-align:center;margin-top:40px}
+.revenue-card h3{font-family:'Newsreader',serif;font-size:28px;color:var(--gold);margin-bottom:12px}
+.revenue-card p{font-size:15px;color:#AAA59A;max-width:500px;margin:0 auto 24px;line-height:1.6}
+.revenue-options{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:500px;margin:0 auto}
+.rev-opt{background:#2A2520;border:1px solid #3A352E;border-radius:12px;padding:20px}
+.rev-opt h4{font-size:14px;color:var(--goldL);margin-bottom:4px}
+.rev-opt p{font-size:12px;color:#7A746A}
+
+/* ═══ DEMO ═══ */
+.demo-section{background:var(--dark);padding:60px 0;text-align:center;margin:60px 0 0}
+.demo-section h2{font-family:'Newsreader',serif;font-size:32px;color:var(--cream);margin-bottom:10px}
+.demo-section p{color:#7A746A;margin-bottom:24px;font-size:15px}
+.demo-btn{display:inline-block;padding:16px 40px;background:var(--gold);color:#fff;border-radius:10px;font-size:16px;font-weight:600;transition:all .2s;box-shadow:0 4px 24px #B8963E44}
+.demo-btn:hover{background:var(--goldD);transform:translateY(-2px)}
+.demo-note{font-size:11px;color:#5A5650;margin-top:12px}
+
+/* ═══ QUOTE ═══ */
+.quote-section{padding:60px 0;text-align:center}
+.quote{font-family:'Newsreader',serif;font-size:24px;font-style:italic;color:var(--fg);max-width:600px;margin:0 auto 12px;line-height:1.5}
+.quote-attr{font-size:13px;color:var(--mut)}
+
+/* ═══ FOOTER ═══ */
+footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-top:1px solid var(--bdr)}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  .ba-grid,.steps,.feat-grid,.stats-grid,.revenue-options{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .hero{padding:110px 0 50px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ PASSWORD GATE ═══ -->
+<div id="gate">
+  <div style="font-size:28px;margin-bottom:-8px">🧭</div>
+  <h2>Arrivo <span style="color:#B8963E">for Tours</span></h2>
+  <p>This is a private demo. Enter the password to continue.</p>
+  <input id="gatePw" type="password" placeholder="••••••••" autofocus>
+  <button onclick="tryGate()">Enter</button>
+  <div class="err" id="gateErr"></div>
+</div>
+<script>
+function tryGate(){
+  const pw=document.getElementById('gatePw').value;
+  if(pw==='untour'||pw==='arrivo'){
+    document.getElementById('gate').classList.add('hidden');
+    document.body.style.overflow='auto';
+  }else{
+    document.getElementById('gateErr').textContent='Wrong password';
+    document.getElementById('gatePw').value='';
+  }
+}
+document.getElementById('gatePw').addEventListener('keydown',e=>{if(e.key==='Enter')tryGate()});
+document.body.style.overflow='hidden';
+</script>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="inner">
+    <div class="logo">arrivo<span>.</span></div>
+    <div style="display:flex;gap:24px;align-items:center;font-size:13px;color:var(--mut)">
+      <a href="#how" style="transition:color .2s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--mut)'">How It Works</a>
+      <a href="#features" style="transition:color .2s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--mut)'">Features</a>
+      <a href="#demo" style="transition:color .2s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--mut)'">Live Demo</a>
+      <a href="#demo" class="cta-nav">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <h1 class="fade-up">Turn your city expertise into a <em>pre-trip planning tool</em> for every guest.</h1>
+    <p class="sub fade-up delay-1">Give guests a personalized trip planner built from your insider knowledge. They arrive prepared, explore deeper, and stop asking the same questions in your DMs.</p>
+    <div class="ctas fade-up delay-2">
+      <a href="#demo" class="cta-primary">See the Live Demo →</a>
+      <a href="#how" class="cta-secondary">How It Works</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BEFORE / AFTER ═══ -->
+<section class="before-after">
+  <div class="container">
+    <div class="ba-grid">
+      <div class="ba-card before fade-up delay-1">
+        <div class="ba-label">📱 Your inbox right now</div>
+        <div class="ba-msg">"What should we eat the night before our tour?"</div>
+        <div class="ba-msg">"Any bars you'd recommend near the Bund?"</div>
+        <div class="ba-msg">"Is there a good dumpling spot near our hotel?"</div>
+        <div class="ba-msg">"Do we need a VPN? Which apps should we get?"</div>
+        <div class="ba-msg">"Can you book us a restaurant for Saturday?"</div>
+        <div class="ba-msg">"Where should we go for brunch on Sunday?"</div>
+        <div style="font-size:11px;color:#C44;text-align:center;margin-top:10px;font-weight:600">× 40 guests per week × every week</div>
+      </div>
+      <div class="ba-card after fade-up delay-2">
+        <div class="ba-label">✅ With Arrivo</div>
+        <div class="ba-msg">📅 Day 1: Dumpling Deep Dive — Jia Jia Tangbao → Wei Xiang Zhai → Pengyuan Guotie</div>
+        <div class="ba-msg">🥢 Day 2: Spice Route — Ben Zhen → Liu Tang Men → Maolago</div>
+        <div class="ba-msg">🍸 Day 3: Bund & Fine Dining — Canton Table → Tai'An Table → Flair rooftop</div>
+        <div class="ba-msg">📱 Essentials: VPN setup, WeChat, Didi, spice levels cheat sheet</div>
+        <div class="ba-msg">💬 Live concierge for anything else</div>
+        <div style="font-size:11px;color:#4A8;text-align:center;margin-top:10px;font-weight:600">Sent automatically when they book ✓</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS ═══ -->
+<div class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div><div class="stat-num">80%</div><div class="stat-label">fewer pre-trip DMs</div></div>
+      <div><div class="stat-num">5 min</div><div class="stat-label">to set up your guide</div></div>
+      <div><div class="stat-num">$15–30</div><div class="stat-label">paid add-on potential</div></div>
+      <div><div class="stat-num">∞</div><div class="stat-label">guests, one setup</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <div class="section-title">Five minutes of setup. <em>Weeks of silence.</em></div>
+    <div class="section-sub">Your knowledge, pre-delivered to every guest before they arrive.</div>
+    <div class="steps">
+      <div class="step fade-up delay-1">
+        <div class="step-num">1</div>
+        <h3>Build Your Guide</h3>
+        <p>Drop in your favorite restaurants, bars, tips, and insider knowledge. Organize by day, theme, or neighborhood. We make it beautiful.</p>
+      </div>
+      <div class="step fade-up delay-2">
+        <div class="step-num">2</div>
+        <h3>Connect Your Bookings</h3>
+        <p>Plug into Rezdy, FareHarbor, TourHarbour, Peek, or Bokun. When a guest books, they automatically get their trip planner.</p>
+      </div>
+      <div class="step fade-up delay-3">
+        <div class="step-num">3</div>
+        <h3>Guests Plan Together</h3>
+        <p>Guests customize their itinerary, add travel companions as editors, request restaurant bookings, and arrive fully prepared.</p>
+      </div>
+    </div>
+
+    <!-- INTEGRATIONS -->
+    <div class="integrations">
+      <div style="text-align:center">
+        <div class="section-label" style="margin-bottom:4px">Integrations</div>
+        <div style="font-family:'Newsreader',serif;font-size:22px;font-weight:500">Connects to the tools you already use.</div>
+        <p style="font-size:13px;color:var(--mut);margin-top:6px">Auto-send trip planners when guests book. No manual work.</p>
+      </div>
+      <div class="int-grid">
+        <div class="int-pill">Rezdy<span class="api">API</span></div>
+        <div class="int-pill">FareHarbor<span class="api">API</span></div>
+        <div class="int-pill">TourHarbour<span class="api">API</span></div>
+        <div class="int-pill">Peek Pro<span class="api">API</span></div>
+        <div class="int-pill">Bokun<span class="api">API</span></div>
+        <div class="int-pill">Checkfront<span class="api">API</span></div>
+        <div class="int-pill">Zapier<span class="api">Webhook</span></div>
+        <div class="int-pill">Custom<span class="api">REST API</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <div class="section-title">Not a guidebook. Not a chatbot. <em>A pre-trip experience.</em></div>
+    <div class="section-sub">Everything your guests need, delivered before they land.</div>
+    <div class="feat-grid">
+      <div class="feat fade-up delay-1">
+        <div class="feat-icon">🗺️</div>
+        <h3>Custom Day-by-Day Itineraries</h3>
+        <p>Build themed food crawls, neighborhood guides, or full week plans from your expert knowledge. Guests swap recommendations to fit their taste.</p>
+      </div>
+      <div class="feat fade-up delay-2">
+        <div class="feat-icon">👥</div>
+        <h3>Collaborative Planning</h3>
+        <p>Guests add travel companions as editors or viewers. Everyone sees the same plan. No more screenshot chains in group chats.</p>
+      </div>
+      <div class="feat fade-up delay-1">
+        <div class="feat-icon">📍</div>
+        <h3>One-Tap Maps & Directions</h3>
+        <p>Every restaurant, bar, and landmark links directly to Google Maps. Bilingual addresses for taxi drivers included.</p>
+      </div>
+      <div class="feat fade-up delay-2">
+        <div class="feat-icon">📋</div>
+        <h3>Booking Requests</h3>
+        <p>Guests request restaurant reservations and experience bookings through the app. You confirm or delegate — all tracked in one place.</p>
+      </div>
+      <div class="feat fade-up delay-1">
+        <div class="feat-icon">💬</div>
+        <h3>Built-In Concierge</h3>
+        <p>A smart concierge trained on your recommendations answers guest questions 24/7. Your expertise, always available — even when you're asleep.</p>
+      </div>
+      <div class="feat fade-up delay-2">
+        <div class="feat-icon">🏷️</div>
+        <h3>Your Brand, Your Voice</h3>
+        <p>White-labeled with your logo, colors, and tone. Guests see your brand, not ours. Feels like a natural extension of your tour experience.</p>
+      </div>
+    </div>
+
+    <!-- REVENUE CARD -->
+    <div class="revenue-card">
+      <h3>A new revenue stream from what you already know.</h3>
+      <p>Monetize your city expertise beyond tour bookings. Offer the trip planner as a premium add-on or include it to boost your booking rate.</p>
+      <div class="revenue-options">
+        <div class="rev-opt">
+          <h4>Included with Booking</h4>
+          <p>Increase your booking conversion by offering more value. Guests choose you over competitors because they get more than just a tour.</p>
+        </div>
+        <div class="rev-opt">
+          <h4>Paid Add-On · $15–30</h4>
+          <p>Sell the trip planner as an upsell at checkout. 100 bookings/month × $20 add-on = $2,000/month in new revenue.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ QUOTE ═══ -->
+<section class="quote-section">
+  <div class="container">
+    <div class="quote">"I answer the same 47 questions for every guest. Now they get answered before they even board the plane."</div>
+    <div class="quote-attr">— The question Arrivo was built to solve</div>
+  </div>
+</section>
+
+<!-- ═══ LIVE DEMO ═══ -->
+<section class="demo-section" id="demo">
+  <div class="container">
+    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#B8963E;font-weight:600;margin-bottom:8px">Live Demo</div>
+    <h2>See it working for <span style="color:#B8963E">UnTour Food Tours, Shanghai</span></h2>
+    <p>A real trip planner built from real restaurant data. Click around, swap recommendations, try the concierge.</p>
+    <a href="concierge/" class="demo-btn">Open the UnTour Demo →</a>
+    <div class="demo-note">Password: untour2024 (host login) · Guests see their own personalized view</div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="section" style="text-align:center;padding:70px 0">
+  <div class="container">
+    <div class="section-title">Ready to stop answering the same questions?</div>
+    <p style="font-size:15px;color:var(--mut);max-width:480px;margin:8px auto 28px">Set up your Arrivo in five minutes. Your guests arrive prepared. You get your inbox back.</p>
+    <a href="mailto:kyle@arrivo.io?subject=Arrivo for my tour company" class="cta-primary" style="display:inline-block;padding:16px 40px;background:var(--gold);color:#fff;border-radius:10px;font-size:16px;font-weight:600;text-decoration:none">Get Early Access →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    © 2025 Arrivo · Built for tour operators who know their city better than anyone.
+  </div>
+</footer>
+
+</body>
+</html>

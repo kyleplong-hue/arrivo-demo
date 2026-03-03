@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UnTour Food Tours — Your Shanghai Food Concierge</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥟</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body,#root{height:100%;background:#0C0B09;color:#F5F0E8;font-family:'Lato',sans-serif;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0C0B09}::-webkit-scrollbar-thumb{background:#3A362F;border-radius:3px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+a:hover{opacity:.85}
+input:focus,textarea:focus,select:focus{border-color:#C5A255!important}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useRef,useEffect,useCallback}=React;
+const T={dark:"#0C0B09",dw:"#141210",card:"#1C1A17",gold:"#C5A255",gl:"#E8D5A3",gd:"#9E8344",cream:"#F5F0E8",wine:"#8B3A42",olive:"#5C6B3C",ol:"#A3B876",terra:"#C17246",tl:"#E8A87A",sky:"#5B7FA6",sl:"#8BB4D9",mut:"#7A746A",bdr:"#282522",red:"#E85050"};
+const MB="https://www.google.com/maps/search/?api=1&query=";
+const OWNER_PIN="untour2024";
+
+const PLACES={"Jia Jia Tangbao":"Jia+Jia+Tangbao+Shanghai","Lin Long Fang":"Lin+Long+Fang+Shanghai","Fu Chun":"Fu+Chun+Xiaolongbao+Shanghai","Dong Tai Xiang":"Dong+Tai+Xiang+Shanghai","Wei Xiang Zhai":"Wei+Xiang+Zhai+Shanghai","FU 1088":"FU+1088+Shanghai","Jianguo 328":"Jianguo+328+Shanghai","Old Jesse":"Lao+Ji+Shi+Old+Jesse+Shanghai","Kong Yi Ji":"Kong+Yi+Ji+Shanghai","Jianbing Stall":"Jianbing+1370+Xikang+Rd+Shanghai","Pengyuan Guotie":"Pengyuan+Guotie+Shanghai","Yili Baozi":"Yili+Baozi+Shanghai","Ben Zhen":"Ben+Zhen+Sichuan+Shanghai","Liu Tang Men":"Liu+Tang+Men+Shanghai","Huma":"Huma+Yunnan+Shanghai","Lotus Eatery":"Lotus+Eatery+Shanghai","Four Seasons Dumpling King":"Si+Ji+Minfu+Dumpling+Shanghai","Peking Chamber":"Siji+Minfu+Peking+Duck+Shanghai","Yanji Old Beijing Hotpot":"Yanji+Old+Beijing+Hotpot+Shanghai","Sister Hong Hotpot":"Sister+Hong+Hotpot+Shanghai","A Niang Mian":"A+Niang+Mian+Shanghai","Lazy Monkey Paomo":"Lazy+Monkey+Paomo+Shanghai","Maolago":"Maolago+Shanghai","Bastard":"Bastard+Shanghai+Restaurant","Oha":"Oha+Anfu+Rd+Shanghai","Canton Table":"Canton+Table+Three+on+the+Bund+Shanghai","Imperial Treasure":"Imperial+Treasure+Shanghai","Seventh Son":"Seventh+Son+Shanghai","Drunk Baker":"Drunk+Baker+Shanghai","Egg":"Egg+Cafe+Shanghai","Highline":"Highline+Shanghai+Ascott","Beef & Liberty":"Beef+and+Liberty+Shanghai","Homeslice":"Homeslice+Pizza+Shanghai","Tai'An Table":"Tai+An+Table+Shanghai","Bistro 321":"Bistro+321+Villa+Le+Bec+Shanghai","Mr & Mrs Bund":"Mr+Mrs+Bund+Shanghai","8½ Otto e Mezzo":"Otto+e+Mezzo+Bombana+Shanghai","Alimentari":"Alimentari+Anfu+Rd+Shanghai","High Yaki":"High+Yaki+Shanghai","Pirata":"Pirata+Shanghai","Cantina Agave":"Cantina+Agave+Shanghai","Avenue Joffre":"Avenue+Joffre+Shanghai","Union Trading Company":"Union+Trading+Company+Shanghai","The Captain":"The+Captain+Bar+Shanghai","Flair":"Flair+Ritz+Carlton+Pudong","KEV":"KEV+Bund+18+Shanghai","Cages":"Cages+Sports+Bar+Shanghai","233 Shop":"233+Craft+Beer+Shanghai","Guan Guan Ji":"Guan+Guan+Ji+Shanghai","Xibo":"Xibo+Shanghai","Nabi & Wuli":"Nabi+Wuli+Shanghai","Qin Xiang Ge":"Qin+Xiang+Ge+Shanghai"};
+
+function linkP(text){if(!text)return text;let parts=[];let rem=text;const sk=Object.keys(PLACES).sort((a,b)=>b.length-a.length);while(rem.length>0){let e={idx:Infinity,key:null};for(const k of sk){const i=rem.indexOf(k);if(i!==-1&&i<e.idx)e={idx:i,key:k};}if(!e.key){parts.push(rem);break;}if(e.idx>0)parts.push(rem.slice(0,e.idx));parts.push({place:e.key,query:PLACES[e.key]});rem=rem.slice(e.idx+e.key.length);}return parts;}
+
+/* ═══ IDEA BANK ═══ */
+const ALTS=[
+  {l:"Breakfast — Jia Jia Tangbao",d:"Shanghai's best soup dumplings. Pork XLB, salted egg yolk, hairy crab filling. 127 Huanghe Rd. Chinese only.",tag:"food",cat:"breakfast",map:"Jia+Jia+Tangbao+Shanghai"},
+  {l:"Breakfast — Yili Baozi",d:"Juicy pork buns & egg custard buns near Shanghai Library. Get there before 10am for custard! 1 Gao'an Rd.",tag:"food",cat:"breakfast",map:"Yili+Baozi+Shanghai"},
+  {l:"Breakfast — Jianbing Stall",d:"Best Chinese crepe in town. Street vendor at 1370 Xikang Rd. 7-11am only. Chinese only.",tag:"food",cat:"breakfast",map:"Jianbing+1370+Xikang+Rd+Shanghai"},
+  {l:"Breakfast — Dong Tai Xiang",d:"Fried soup dumplings (sheng jian bao). 24hr location at 188 Chongqing North Rd. Chinese only.",tag:"food",cat:"breakfast",map:"Dong+Tai+Xiang+Shanghai"},
+  {l:"Breakfast — Egg Cafe",d:"Western-style all-day breakfast & great coffee. 12 Xiangyang North Rd. 8am-6:30pm.",tag:"food",cat:"breakfast",map:"Egg+Cafe+Shanghai"},
+  {l:"Lunch — Jianguo 328",d:"Clean Shanghainese flavors. Noodles with pork sauce, red-braised pork, yellow croaker spring rolls. English menu.",tag:"food",cat:"lunch",map:"Jianguo+328+Shanghai"},
+  {l:"Lunch — A Niang Mian",d:"Famous Ningbo seafood noodles. Yellow croaker noodles in fish-bone broth. Tiny, expect a wait. Chinese only.",tag:"food",cat:"lunch",map:"A+Niang+Mian+Shanghai"},
+  {l:"Lunch — Wei Xiang Zhai",d:"Legendary sesame-peanut noodles. Elbow your way to a shared table. 14 Yandang Rd. Chinese only.",tag:"food",cat:"lunch",map:"Wei+Xiang+Zhai+Shanghai"},
+  {l:"Lunch — Liu Tang Men",d:"Fiery Sichuan noodles from a Chengdu rocker. Indicate spice preference on placard. 419-1 Xinhua Rd.",tag:"food",cat:"lunch",map:"Liu+Tang+Men+Shanghai"},
+  {l:"Lunch — Pengyuan Guotie",d:"Best potstickers in the French Concession. Husband-and-wife stall. 102 Gao'an Rd. 6am-5pm.",tag:"food",cat:"lunch",map:"Pengyuan+Guotie+Shanghai"},
+  {l:"Lunch — Lazy Monkey Paomo",d:"Xi'an comfort food: lamb stew with hand-shredded pita & roujiamo 'Chinese burgers'. 6 Zhaojiabang Rd.",tag:"food",cat:"lunch",map:"Lazy+Monkey+Paomo+Shanghai"},
+  {l:"Dinner — Old Jesse",d:"Best Shanghainese in town. Reservations essential! Pre-order codfish head & pork shank. 41 Tianping Rd.",tag:"food",cat:"dinner",map:"Lao+Ji+Shi+Old+Jesse+Shanghai",book:true},
+  {l:"Dinner — FU 1088",d:"Celebrity chef Tony Lu's art deco villa. Min ¥500/head. Smoked fish, fried wasabi shrimp. 375 Zhenning Rd.",tag:"food",cat:"dinner",map:"FU+1088+Shanghai",book:true},
+  {l:"Dinner — Ben Zhen",d:"Spicy Sichuan in a stylish setting. Craft beer to cool the burn. Expect queues. 168 Hubin Rd.",tag:"food",cat:"dinner",map:"Ben+Zhen+Sichuan+Shanghai"},
+  {l:"Dinner — Peking Chamber",d:"Best Peking duck outside Beijing. Siji Minfu at 1168 West Nanjing Rd. English menu.",tag:"food",cat:"dinner",map:"Siji+Minfu+Peking+Duck+Shanghai"},
+  {l:"Dinner — Lotus Eatery",d:"Yunnan cuisine. Try deep-fried insects & edible flowers. English picture menu. 1112 Dingxi Rd.",tag:"food",cat:"dinner",map:"Lotus+Eatery+Shanghai"},
+  {l:"Dinner — Four Seasons Dumpling King",d:"Huge Dongbei menu. Fragrant chicken, honey pork, three earthen treasures. 1791 Huaihai Middle Rd.",tag:"food",cat:"dinner",map:"Si+Ji+Minfu+Dumpling+Shanghai"},
+  {l:"Dinner — Maolago",d:"Guizhou food, construction-chic setting. Sour tomato fish hotpot & cocktails. 100-2 Fuxing West Rd.",tag:"food",cat:"dinner",map:"Maolago+Shanghai"},
+  {l:"Dinner — Oha",d:"The OG Chinese bistro. Guizhou izakaya style. Menu changes frequently. 23 Anfu Rd.",tag:"food",cat:"dinner",map:"Oha+Anfu+Rd+Shanghai"},
+  {l:"Dinner — Bastard",d:"Modern Chinese small plates + excellent wine. 319 Jiaozhou Rd. English menu.",tag:"food",cat:"dinner",map:"Bastard+Shanghai+Restaurant"},
+  {l:"Dinner — Canton Table",d:"High-end Cantonese with Bund views. Tea sommelier on hand. Three on the Bund.",tag:"food",cat:"dinner",map:"Canton+Table+Three+on+the+Bund+Shanghai",book:true},
+  {l:"Dinner — Seventh Son",d:"Michelin-starred dim sum from HK. Don't skip the roasted suckling pig. 500 Weihai Rd.",tag:"food",cat:"dinner",map:"Seventh+Son+Shanghai",book:true},
+  {l:"Dinner — Tai'An Table",d:"Three Michelin stars. Open kitchen, seasonal menu. THE splurge. 465 Zhenning Rd.",tag:"food",cat:"dinner",map:"Tai+An+Table+Shanghai",book:true},
+  {l:"Hotpot — Yanji Old Beijing",d:"Northern hotpot: coal steamboat, thinly sliced lamb, sesame dip. 346 Wulumuqi Middle Rd. 5pm-1am.",tag:"food",cat:"dinner",map:"Yanji+Old+Beijing+Hotpot+Shanghai"},
+  {l:"Hotpot — Sister Hong",d:"Fiery Chongqing style. Go half-and-half for spicy/mild. 102 Xiangyang South Rd. Until 2am.",tag:"food",cat:"dinner",map:"Sister+Hong+Hotpot+Shanghai"},
+  {l:"Brunch — Highline",d:"Best brunch in Shanghai. Southern hospitality, amazing patio, reserve the fireplace table. 282 Huaihai Middle Rd.",tag:"food",cat:"brunch",map:"Highline+Shanghai+Ascott",book:true},
+  {l:"International — Mr & Mrs Bund",d:"Paul Pairet's French modern eatery. Bund views, funky decor. 18 Zhongshan East 1st Rd.",tag:"food",cat:"dinner",map:"Mr+Mrs+Bund+Shanghai",book:true},
+  {l:"International — 8½ Otto e Mezzo",d:"Two Michelin stars. 'King of White Truffles'. Italian fine dining. 169 Yuanmingyuan Rd.",tag:"food",cat:"dinner",map:"Otto+e+Mezzo+Bombana+Shanghai",book:true},
+  {l:"International — Alimentari",d:"Italian grocery-to-restaurant. Paninis, charcuterie, wine. 10 locations. 158 Anfu Rd.",tag:"food",cat:"lunch",map:"Alimentari+Anfu+Rd+Shanghai"},
+  {l:"International — High Yaki",d:"Modern izakaya: yakitori + yakiniku + wagyu. 481 Jianguo West Rd. 6-10pm.",tag:"food",cat:"dinner",map:"High+Yaki+Shanghai"},
+  {l:"International — Pirata",d:"Mediterranean tapas. Late night. Octopus, chorizo, chocolate toasts. 110 Xingfu Rd.",tag:"food",cat:"dinner",map:"Pirata+Shanghai"},
+  {l:"International — Cantina Agave",d:"Best Mexican. Potent margaritas, great patio. 291 Fumin Rd.",tag:"food",cat:"dinner",map:"Cantina+Agave+Shanghai"},
+  {l:"Drinks — Flair at the Ritz",d:"58th floor, highest patio bar. Pearl Tower views. Ritz-Carlton Pudong.",tag:"activity",cat:"drinks",map:"Flair+Ritz+Carlton+Pudong"},
+  {l:"Drinks — The Captain",d:"Cheapest Bund skyline drink in town. Since 2005. 37 Fuzhou Rd.",tag:"activity",cat:"drinks",map:"The+Captain+Bar+Shanghai"},
+  {l:"Drinks — KEV",d:"Top of Bund 18. Champagne, DJs, skyline terrace. Leave the flip-flops. Opens May.",tag:"activity",cat:"drinks",map:"KEV+Bund+18+Shanghai"},
+  {l:"Drinks — Avenue Joffre",d:"Japanese-style cocktail perfection. Classics done right. 570 Yongjia Rd. 8pm-2am.",tag:"activity",cat:"drinks",map:"Avenue+Joffre+Shanghai"},
+  {l:"Drinks — Union Trading Co",d:"Killer cocktails + great bar bites. 306 Hengshan Rd. 6pm-2am.",tag:"activity",cat:"drinks",map:"Union+Trading+Company+Shanghai"},
+  {l:"Drinks — 233 Shop",d:"60 craft beers. World-class imports. 233 Xuanhua Rd. 4pm-2am.",tag:"activity",cat:"drinks",map:"233+Craft+Beer+Shanghai"},
+  {l:"Coffee — Drunk Baker",d:"Great bread & coffee, locations all over town. 277 Wuxing Rd.",tag:"food",cat:"breakfast",map:"Drunk+Baker+Shanghai"},
+  {l:"Gelato — Luneurs",d:"Best artisanal gelato in Shanghai. Multiple locations.",tag:"food",cat:"snack",map:"Luneurs+Shanghai"},
+  {l:"UnTour Street Eats Breakfast",d:"Skip the hotel buffet! French Concession street food tour with bilingual guide. Book via untourfoodtours.com.",tag:"activity",cat:"tour",book:true},
+  {l:"UnTour Night Eats Tour",d:"Five regional cuisines in one night. Local beers & spirits. Book via untourfoodtours.com.",tag:"activity",cat:"tour",book:true},
+  {l:"The Bund Walk",d:"Stroll the historic waterfront. Best at sunset. Free.",tag:"activity",cat:"sightseeing",map:"The+Bund+Shanghai"},
+  {l:"French Concession Walk",d:"Tree-lined streets, boutiques, cafes. Start at Wukang Mansion.",tag:"activity",cat:"sightseeing",map:"Wukang+Mansion+Shanghai"},
+  {l:"Yu Garden",d:"Classic Chinese garden & bazaar. Go early to avoid crowds.",tag:"activity",cat:"sightseeing",map:"Yu+Garden+Shanghai"},
+  {l:"Tianzifang",d:"Artsy lane of shops, galleries & cafes in old shikumen houses. 210 Taikang Rd.",tag:"activity",cat:"sightseeing",map:"Tianzifang+Shanghai"},
+  {l:"Propaganda Poster Museum",d:"Hidden gem in a residential basement. Fascinating collection.",tag:"activity",cat:"sightseeing",map:"Propaganda+Poster+Museum+Shanghai"},
+];
+
+const STYLES=[
+  {bg:"linear-gradient(135deg,#C17246,#8B3A42)",a:"#E8A87A",c:"🥟"},
+  {bg:"linear-gradient(135deg,#5C6B3C,#3D5A2E)",a:"#A3B876",c:"🍜"},
+  {bg:"linear-gradient(135deg,#5B7FA6,#3A5A7A)",a:"#8BB4D9",c:"🥢"},
+  {bg:"linear-gradient(135deg,#8B3A42,#6B2A32)",a:"#D4788A",c:"🫕"},
+  {bg:"linear-gradient(135deg,#C5A255,#9E8344)",a:"#E8D5A3",c:"🍻"},
+];
+
+const WEEK=[
+  {title:"Dumpling Day",items:[
+    {l:"Breakfast — Jia Jia Tangbao",d:"Shanghai's best soup dumplings. Order: pork XLB, salted duck egg yolk & pork. 127 Huanghe Rd.",s:0},
+    {l:"Morning — French Concession Walk",d:"Stroll tree-lined streets from Wukang Mansion. Boutiques, cafes, gorgeous architecture.",s:2},
+    {l:"Lunch — Pengyuan Guotie",d:"Best potstickers from a husband-and-wife stall in the French Concession. 102 Gao'an Rd.",s:0},
+    {l:"Afternoon — Yu Garden",d:"Classic Chinese garden & bazaar. Nanxiang dumplings nearby (tourist trap, but historic).",s:2},
+    {l:"Dinner — Old Jesse",d:"Best Shanghainese restaurant. Pre-order the codfish head & red-braised pork shank! 41 Tianping Rd.",s:0},
+  ]},
+  {title:"Street Food & Noodles",items:[
+    {l:"Breakfast — Jianbing Stall",d:"Best Chinese crepe vendor. 1370 Xikang Rd, 7-11am only. Ask 'búlà' for no chili.",s:1},
+    {l:"Morning — UnTour Street Eats Tour",d:"Skip the hotel buffet! Guided street food crawl through the French Concession. Book ahead!",s:1},
+    {l:"Lunch — Wei Xiang Zhai",d:"Legendary sesame-peanut noodles. Fight for a seat. 14 Yandang Rd.",s:1},
+    {l:"Afternoon — Tianzifang",d:"Artsy lane of shops & galleries in old shikumen houses. Great for souvenirs.",s:2},
+    {l:"Dinner — Liu Tang Men",d:"Fiery Sichuan noodles from a Chengdu rocker. Start mild! 419-1 Xinhua Rd.",s:1},
+  ]},
+  {title:"Regional Flavors",items:[
+    {l:"Breakfast — Dong Tai Xiang",d:"Sheng jian bao (fried soup dumplings). Half-leavened, delicious. 188 Chongqing North Rd. Open 24hrs!",s:0},
+    {l:"Lunch — Lotus Eatery",d:"Yunnan cuisine: deep-fried insects, edible flowers, goat cheese, mushrooms. English menu. 1112 Dingxi Rd.",s:1},
+    {l:"Afternoon — Propaganda Poster Museum",d:"Hidden gem in a residential basement. Fascinating Cold War-era collection.",s:2},
+    {l:"Dinner — Ben Zhen",d:"Spicy Sichuan in style. Craft beer to cool the burn. Peppercorn poached fish is incredible. 168 Hubin Rd.",s:0},
+    {l:"Late Night — Avenue Joffre",d:"Japanese-style cocktail bar. Classics done to perfection. 570 Yongjia Rd. 8pm-2am.",s:4},
+  ]},
+  {title:"The Bund & Fine Dining",items:[
+    {l:"Breakfast — Egg Cafe",d:"Western-style all-day breakfast & great coffee. 12 Xiangyang North Rd.",s:0},
+    {l:"Morning — The Bund Walk",d:"Shanghai's iconic waterfront promenade. Art Deco buildings meet Pudong skyline.",s:2},
+    {l:"Lunch — Canton Table",d:"High-end dim sum with Bund views. Tea sommelier on hand. Three on the Bund.",s:0},
+    {l:"Afternoon — Nanjing Road & Shopping",d:"Walk Nanjing East Rd pedestrian street, then cab to Jing'an for upscale shopping.",s:2},
+    {l:"Dinner — Tai'An Table",d:"Three Michelin stars. Chef Stefan Stiller's seasonal menu. THE Shanghai splurge. Book well ahead!",s:0},
+  ]},
+  {title:"Hotpot & Night Life",items:[
+    {l:"Brunch — Highline",d:"Shanghai's best brunch. Southern hospitality, incredible patio. Reserve the fireplace table! 282 Huaihai Middle Rd.",s:0},
+    {l:"Afternoon — Xintiandi",d:"Restored shikumen neighborhood. Great for wandering, shopping, people-watching.",s:2},
+    {l:"Dinner — Yanji Old Beijing Hotpot",d:"Coal steamboat, thin-sliced lamb, sesame dip. Authentic northern hotpot. 346 Wulumuqi Middle Rd.",s:0},
+    {l:"Drinks — Flair at the Ritz",d:"58th floor — highest patio bar in the city. Pearl Tower views. Ritz-Carlton Pudong.",s:4},
+    {l:"Late Night — KEV or INS",d:"KEV: Bund 18 rooftop champagne. INS: six floors of clubs. Dress up!",s:4},
+  ]},
+];
+
+const TRIPS=[
+  {title:"Dumpling Deep Dive",d:"Hit all the dumpling spots in one day: XLB at Jia Jia Tangbao → sheng jian bao at Dong Tai Xiang → potstickers at Pengyuan Guotie → boiled dumplings at Four Seasons Dumpling King. Stretchy pants recommended.",items:["Jia Jia Tangbao","Dong Tai Xiang","Pengyuan Guotie","Four Seasons Dumpling King"]},
+  {title:"Spice Route",d:"Sichuan → Hunan → Guizhou → Xi'an. Start mild, end sweating. Liu Tang Men → Ben Zhen → Maolago → Lazy Monkey Paomo for relief.",items:["Liu Tang Men","Ben Zhen","Maolago","Lazy Monkey Paomo"]},
+  {title:"Modern Chinese Bistros",d:"Shanghai's hottest trend: Chinese food meets wine bar. Bastard → Oha → Maolago · Bitter. All have English menus and excellent cocktails/wine.",items:["Bastard","Oha","Maolago"]},
+  {title:"Bund Bar Crawl",d:"Start at The Captain (cheap) → Mr & Mrs Bund (dinner) → KEV (champagne views) → Flair at the Ritz (58th floor nightcap).",items:["The Captain","Mr & Mrs Bund","KEV","Flair"]},
+  {title:"Fine Dining Circuit",d:"Shanghai's Michelin scene: Dim sum at Imperial Treasure (2★) → dinner at 8½ Otto e Mezzo (2★) or Tai'An Table (3★). Book everything ahead!",items:["Imperial Treasure","8½ Otto e Mezzo","Tai'An Table"]},
+];
+
+const INFO=[
+  {title:"Getting Around",items:[
+    {t:"Taxi",d:"Use Didi app (China's Uber). Set language to English. Pay via Alipay or WeChat. Tip not expected.",e:"🚕"},
+    {t:"Metro",d:"Clean, cheap, extensive. Buy tickets from machines (English available) or use Alipay QR. Avoid rush hour.",e:"🚇"},
+    {t:"Walking",d:"The French Concession and Bund are very walkable. Wear comfy shoes for food crawls!",e:"🚶"},
+  ]},
+  {title:"Essential Apps",items:[
+    {t:"WeChat",d:"China's everything app: messaging, payments, booking. Get it before you arrive. Our WeChat: UnTour.",e:"💬"},
+    {t:"Alipay",d:"Link an international credit card for QR payments. Works at most restaurants and shops.",e:"💳"},
+    {t:"Didi",d:"Chinese Uber. Set up before arrival. International cards accepted.",e:"🚗"},
+    {t:"VPN",d:"You'll need one for Google, Instagram, WhatsApp etc. Download before entering China! NordVPN or ExpressVPN.",e:"🔒"},
+  ]},
+  {title:"Food Tips",items:[
+    {t:"Ordering",d:"Point at other tables' food! In Chinese-only spots, show the Chinese characters from our guide to staff.",e:"📋"},
+    {t:"Tipping",d:"Not expected in China. Service charge sometimes included at Western restaurants.",e:"💰"},
+    {t:"Chopstick etiquette",d:"Never stick chopsticks upright in rice (funeral ritual). Lay them across your bowl or on the rest.",e:"🥢"},
+    {t:"Spice levels",d:"Say 'búlà' (不辣) for no spice, 'wēilà' (微辣) for mild. Most Sichuan/Hunan spots go hard by default.",e:"🌶️"},
+    {t:"Water",d:"Don't drink tap water. Bottled water everywhere. Hot water (开水) is always free at restaurants.",e:"💧"},
+  ]},
+  {title:"Contacts",items:[
+    {t:"UnTour Food Tours",d:"info@untourfoodtours.com · untourfoodtours.com · WeChat: UnTour",e:"🥟"},
+    {t:"Emergency",d:"Police: 110 · Ambulance: 120 · Fire: 119",e:"🚨"},
+  ]},
+];
+
+/* ═══ GUEST PERSISTENCE ═══ */
+function saveGD(id,d){try{localStorage.setItem("untour_guest_"+id,JSON.stringify(d));}catch(e){}}
+function loadGD(id){try{const d=localStorage.getItem("untour_guest_"+id);return d?JSON.parse(d):null;}catch(e){return null;}}
+function getURLGuest(){const p=new URLSearchParams(window.location.search);return p.get("g");}
+function decodeGuestURL(){const p=new URLSearchParams(window.location.search);const d=p.get("d");if(!d)return null;try{return JSON.parse(atob(d));}catch(e){return null;}}
+function fmtDate(s){if(!s)return"";const d=new Date(s+"T12:00:00");return d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
+function addDays(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d;}
+
+/* ═══ HEADER ═══ */
+function Header({tab,setTab,isOwner,setIsOwner,guestMode,guestInfo}){
+  const[sp,setSp]=useState(false);const[pin,setPin]=useState("");
+  const gT=[{id:"week",l:"Your Week",i:"🥟"},{id:"trips",l:"Food Crawls",i:"🗺️"},{id:"info",l:"Essentials",i:"📱"},{id:"requests",l:"Bookings",i:"📋"},{id:"chat",l:"Concierge",i:"💬"}];
+  const tabs=isOwner?[...gT,{id:"owner",l:"Dashboard",i:"⚙️"}]:gT;
+  return<header style={{background:T.dw+"F2",backdropFilter:"blur(16px)",borderBottom:"1px solid "+T.bdr,position:"sticky",top:0,zIndex:100}}>
+    <div style={{maxWidth:820,margin:"0 auto",padding:"14px 20px 0"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:guestInfo?8:12}}>
+        <div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#C5A255,#C17246)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 12px #C5A25522"}}>🥟</div>
+        <div style={{flex:1}}><h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:600,color:T.cream,lineHeight:1,letterSpacing:.3}}>UnTour Food Tours</h1><p style={{fontSize:10,color:T.mut,letterSpacing:2.5,textTransform:"uppercase",marginTop:2,fontWeight:300}}>Shanghai Food Concierge</p></div>
+        {!guestMode&&!isOwner&&!sp&&<button onClick={()=>setSp(true)} style={{fontSize:11,color:T.mut,background:"none",border:"1px solid "+T.bdr,borderRadius:8,padding:"5px 12px",cursor:"pointer",fontFamily:"'Lato',sans-serif"}}>Host Login</button>}
+        {sp&&!isOwner&&<div style={{display:"flex",gap:5}}><input value={pin} onChange={e=>setPin(e.target.value)} placeholder="PIN" type="password" style={{width:80,padding:"5px 10px",background:T.card,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:12,outline:"none",fontFamily:"'Lato',sans-serif"}} onKeyDown={e=>{if(e.key==="Enter"&&pin===OWNER_PIN){setIsOwner(true);setSp(false);setPin("");}}}/><button onClick={()=>{if(pin===OWNER_PIN){setIsOwner(true);setSp(false);setPin("");}}} style={{fontSize:11,color:T.gold,background:"none",border:"1px solid "+T.gold+"33",borderRadius:8,padding:"5px 10px",cursor:"pointer"}}>→</button></div>}
+        {isOwner&&<button onClick={()=>setIsOwner(false)} style={{fontSize:11,color:T.ol,background:T.ol+"10",border:"1px solid "+T.ol+"28",borderRadius:8,padding:"5px 14px",cursor:"pointer",fontWeight:700}}>Owner Mode</button>}
+      </div>
+      {guestInfo&&<div style={{background:T.gold+"0D",borderRadius:10,padding:"8px 14px",marginBottom:10,border:"1px solid "+T.gold+"18",display:"flex",alignItems:"center",gap:10}}>
+        <span style={{fontSize:13}}>👋</span>
+        <div style={{flex:1}}><span style={{fontSize:13,fontWeight:700,color:T.gl}}>Welcome, {guestInfo.name}!</span><span style={{fontSize:11,color:T.mut,marginLeft:10}}>{fmtDate(guestInfo.checkin)} → {fmtDate(guestInfo.checkout)}</span></div>
+        <span style={{fontSize:10,color:T.mut,fontWeight:300}}>Edits auto-save</span>
+      </div>}
+      <nav style={{display:"flex",overflowX:"auto"}}>{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:"0 0 auto",padding:"9px 14px 11px",background:"none",border:"none",borderBottom:tab===t.id?"2px solid "+T.gold:"2px solid transparent",color:tab===t.id?T.gold:T.mut,fontFamily:"'Lato',sans-serif",fontSize:12,fontWeight:tab===t.id?700:400,cursor:"pointer",whiteSpace:"nowrap"}}><span style={{marginRight:3}}>{t.i}</span>{t.l}</button>)}</nav>
+    </div>
+  </header>;
+}
+
+/* ═══ BLOCK ═══ */
+function Block({item,idx,onSwap,onDel,alts,dayIdx}){
+  const s=STYLES[item.s%STYLES.length];
+  const parts=linkP(item.d);
+  const[showR,setShowR]=useState(false);
+  return<div style={{background:T.card,borderRadius:12,border:"1px solid "+T.bdr,overflow:"hidden",marginBottom:6}}>
+    <div style={{display:"flex",gap:10,padding:"10px 12px",alignItems:"flex-start"}}>
+      <div style={{width:32,height:32,borderRadius:8,background:s.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.c}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:14,fontWeight:700,color:s.a,letterSpacing:.2}}>{item.l}</div>
+        <div style={{fontSize:12,color:T.cream+"bb",lineHeight:1.5,fontWeight:300,marginTop:2}}>
+          {Array.isArray(parts)?parts.map((p,i)=>typeof p==="string"?<span key={i}>{p}</span>:<a key={i} href={MB+p.query} target="_blank" rel="noopener" style={{color:T.sl,textDecoration:"none",borderBottom:"1px dotted "+T.sl+"66"}}>{p.place}</a>):item.d}
+        </div>
+        {item.book&&<span style={{display:"inline-block",fontSize:9,padding:"2px 6px",background:T.wine+"25",color:"#D4788A",borderRadius:4,marginTop:3}}>Reservation needed</span>}
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:2,flexShrink:0}}>
+        <button onClick={()=>setShowR(!showR)} style={{fontSize:10,background:T.dw,border:"1px solid "+T.bdr,borderRadius:6,padding:"4px 8px",color:T.mut,cursor:"pointer"}}>↻</button>
+        {onDel&&<button onClick={()=>onDel(dayIdx,idx)} style={{fontSize:10,background:T.dw,border:"1px solid "+T.bdr,borderRadius:6,padding:"4px 8px",color:T.red,cursor:"pointer"}}>✕</button>}
+      </div>
+    </div>
+    {showR&&<div style={{padding:"6px 12px 10px",borderTop:"1px solid "+T.bdr,display:"flex",flexWrap:"wrap",gap:4}}>
+      {alts.filter(a=>a.l!==item.l).slice(0,6).map((a,i)=><button key={i} onClick={()=>{onSwap(dayIdx,idx,a);setShowR(false);}} style={{fontSize:10,padding:"4px 8px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:6,color:T.cream,cursor:"pointer"}}>{a.l}</button>)}
+    </div>}
+  </div>;
+}
+
+/* ═══ WEEK TAB ═══ */
+function WeekTab({week,setWeek,guestInfo}){
+  const onSwap=(di,ii,alt)=>{const w=[...week];w[di]={...w[di],items:[...w[di].items]};w[di].items[ii]={l:alt.l,d:alt.d,s:alt.s||Math.floor(Math.random()*5),book:alt.book};setWeek(w);};
+  const onDel=(di,ii)=>{const w=[...week];w[di]={...w[di],items:w[di].items.filter((_,i)=>i!==ii)};setWeek(w);};
+  return<div style={{padding:"20px 20px",maxWidth:820,margin:"0 auto"}}>
+    <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:T.cream,textAlign:"center",marginBottom:20}}>Your Shanghai Food Week</h2>
+    {week.map((day,di)=>{
+      const dateLabel=guestInfo?(() => {const d=addDays(guestInfo.checkin,di);return" · "+d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});})():"";
+      return<div key={di} style={{marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+          <span style={{fontSize:15,fontWeight:700,color:T.cream,letterSpacing:.2}}>Day {di+1}{dateLabel}</span>
+          <span style={{fontSize:12,color:T.mut,fontStyle:"italic"}}>{day.title}</span>
+        </div>
+        {day.items.map((item,ii)=><Block key={ii} item={item} idx={ii} dayIdx={di} onSwap={onSwap} onDel={onDel} alts={ALTS}/>)}
+      </div>;
+    })}
+  </div>;
+}
+
+/* ═══ FOOD CRAWLS TAB ═══ */
+function TripsTab(){return<div style={{padding:"20px 20px",maxWidth:820,margin:"0 auto"}}>
+  <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:T.cream,textAlign:"center",marginBottom:20}}>Themed Food Crawls</h2>
+  {TRIPS.map((t,i)=><div key={i} style={{background:T.card,borderRadius:12,border:"1px solid "+T.bdr,padding:16,marginBottom:10}}>
+    <div style={{fontSize:15,fontWeight:700,color:T.gl,marginBottom:4}}>{t.title}</div>
+    <div style={{fontSize:12,color:T.cream+"bb",lineHeight:1.5,fontWeight:300,marginBottom:8}}>{t.d}</div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{t.items.map((p,j)=>{
+      const q=PLACES[p];
+      return q?<a key={j} href={MB+q} target="_blank" rel="noopener" style={{fontSize:11,padding:"4px 10px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.sl,textDecoration:"none"}}>📍 {p}</a>:<span key={j} style={{fontSize:11,padding:"4px 10px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.mut}}>{p}</span>;
+    })}</div>
+  </div>)}
+</div>;}
+
+/* ═══ ESSENTIALS TAB ═══ */
+function InfoTab(){return<div style={{padding:"20px 20px",maxWidth:820,margin:"0 auto"}}>
+  <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:T.cream,textAlign:"center",marginBottom:20}}>Shanghai Essentials</h2>
+  {INFO.map((sec,i)=><div key={i} style={{marginBottom:16}}>
+    <h3 style={{fontSize:16,color:T.gl,marginBottom:8,fontWeight:600}}>{sec.title}</h3>
+    {sec.items.map((m,j)=><div key={j} style={{background:T.card,borderRadius:10,border:"1px solid "+T.bdr,padding:"10px 14px",marginBottom:4,display:"flex",gap:10,alignItems:"flex-start"}}>
+      <span style={{fontSize:18}}>{m.e}</span>
+      <div><div style={{fontSize:13,fontWeight:700,color:T.cream}}>{m.t}</div><div style={{fontSize:11,color:T.mut,lineHeight:1.5,marginTop:1}}>{m.d}</div></div>
+    </div>)}
+  </div>)}
+</div>;}
+
+/* ═══ BOOKINGS TAB ═══ */
+function BookingsTab({requests,setRequests,isOwner}){
+  const[form,setForm]=useState({venue:"",guests:"",date:"",notes:""});
+  const sub=()=>{if(!form.venue||!form.guests)return;setRequests([...requests,{...form,id:Date.now(),status:"pending"}]);setForm({venue:"",guests:"",date:"",notes:""});};
+  return<div style={{padding:"20px 20px",maxWidth:820,margin:"0 auto"}}>
+    <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:T.cream,textAlign:"center",marginBottom:6}}>
+      {isOwner?"Manage Tour & Restaurant Bookings":"Restaurant / Tour / Experience"}</h2>
+    <p style={{fontSize:12,color:T.mut,textAlign:"center",marginBottom:16}}>{isOwner?"Confirm or update booking requests":"Ask your host to book a restaurant, food tour, or experience for you"}</p>
+    {!isOwner&&<div style={{background:T.card,borderRadius:12,border:"1px solid "+T.bdr,padding:16,marginBottom:16}}>
+      <div style={{marginBottom:8}}><label style={{fontSize:11,color:T.mut,fontWeight:400}}>Restaurant / Tour / Experience *</label><input value={form.venue} onChange={e=>setForm({...form,venue:e.target.value})} placeholder="e.g. Old Jesse, UnTour Night Eats..." style={{width:"100%",padding:"10px 13px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",fontWeight:300,marginTop:3}}/></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+        <div><label style={{fontSize:11,color:T.mut,fontWeight:400}}>Party Size *</label><input value={form.guests} onChange={e=>setForm({...form,guests:e.target.value})} placeholder="2" style={{width:"100%",padding:"10px 13px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",marginTop:3}}/></div>
+        <div><label style={{fontSize:11,color:T.mut,fontWeight:400}}>Preferred Date</label><input type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})} style={{width:"100%",padding:"10px 13px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",marginTop:3}}/></div>
+      </div>
+      <div style={{marginBottom:8}}><label style={{fontSize:11,color:T.mut,fontWeight:400}}>Notes</label><textarea value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} placeholder="Dietary restrictions, time preference..." rows={2} style={{width:"100%",padding:"10px 13px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",resize:"none",marginTop:3}}/></div>
+      <button onClick={sub} style={{width:"100%",padding:"11px",background:form.venue&&form.guests?T.gold:T.card,color:form.venue&&form.guests?T.dark:T.mut,border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>Submit Request</button>
+    </div>}
+    {requests.map((r,i)=><div key={r.id} style={{background:T.card,borderRadius:10,border:"1px solid "+T.bdr,padding:"10px 14px",marginBottom:4,display:"flex",alignItems:"center",gap:10}}>
+      <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:T.cream}}>{r.venue}</div><div style={{fontSize:11,color:T.mut}}>{r.guests} guests{r.date?" · "+fmtDate(r.date):""}{r.notes?" · "+r.notes:""}</div></div>
+      {isOwner?<select value={r.status} onChange={e=>{const n=[...requests];n[i].status=e.target.value;setRequests(n);}} style={{padding:"4px 8px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:6,color:r.status==="confirmed"?T.ol:r.status==="declined"?T.red:T.mut,fontSize:11,outline:"none"}}>
+        <option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option>
+      </select>:<span style={{fontSize:11,padding:"3px 10px",borderRadius:20,background:r.status==="confirmed"?T.ol+"20":r.status==="declined"?T.red+"20":T.mut+"20",color:r.status==="confirmed"?T.ol:r.status==="declined"?T.red:T.mut}}>{r.status}</span>}
+    </div>)}
+  </div>;
+}
+
+/* ═══ CONCIERGE CHAT ═══ */
+function ChatTab(){
+  const[msgs,setMsgs]=useState([{role:"assistant",text:"Hi! I'm your Shanghai food concierge. Ask me anything about restaurants, dishes, getting around, or what to eat tonight!"}]);
+  const[input,setInput]=useState("");const[loading,setLoading]=useState(false);const endRef=useRef(null);
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs]);
+  const send=async()=>{if(!input.trim()||loading)return;const userMsg=input.trim();setInput("");setMsgs(p=>[...p,{role:"user",text:userMsg}]);setLoading(true);
+    try{const sysPrompt=`You are the UnTour Food Tours Shanghai concierge. You have deep knowledge of Shanghai's food scene. Give specific restaurant recommendations with addresses, dishes to order (with Chinese characters when possible), and insider tips. Keep responses concise and warm. You know about: soup dumplings (XLB) at Jia Jia Tangbao & Lin Long Fang, fried dumplings at Dong Tai Xiang, sesame noodles at Wei Xiang Zhai, Shanghainese at Old Jesse & FU 1088, Sichuan at Ben Zhen, Yunnan at Lotus Eatery, hotpot at Yanji & Sister Hong, dim sum at Imperial Treasure & Seventh Son, fine dining at Tai'An Table, bars like Flair & KEV, and much more. Also help with practical Shanghai tips: VPN needed, WeChat/Alipay for payments, Didi for taxis.`;
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,system:sysPrompt,messages:[...msgs.slice(-6).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text})),{role:"user",content:userMsg}]})});
+      const data=await res.json();const reply=data.content?.[0]?.text||"I couldn't process that. Try asking about restaurants, dishes, or Shanghai tips!";
+      setMsgs(p=>[...p,{role:"assistant",text:reply}]);
+    }catch(e){setMsgs(p=>[...p,{role:"assistant",text:"Connection issue. Try again!"}]);}
+    setLoading(false);
+  };
+  return<div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 95px)",maxWidth:820,margin:"0 auto"}}>
+    <div style={{flex:1,overflowY:"auto",padding:"16px 20px"}}>{msgs.map((m,i)=><div key={i} style={{marginBottom:10,display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start"}}>
+      <div style={{maxWidth:"80%",padding:"10px 14px",borderRadius:m.role==="user"?"14px 14px 4px 14px":"14px 14px 14px 4px",background:m.role==="user"?T.gold+"22":T.card,border:"1px solid "+(m.role==="user"?T.gold+"33":T.bdr),fontSize:13,lineHeight:1.55,color:T.cream,whiteSpace:"pre-wrap"}}>{m.text}</div>
+    </div>)}{loading&&<div style={{display:"flex",justifyContent:"flex-start",marginBottom:10}}><div style={{padding:"10px 14px",background:T.card,border:"1px solid "+T.bdr,borderRadius:"14px 14px 14px 4px",fontSize:12,color:T.mut}}>Thinking<span style={{animation:"pulse 1s infinite"}}>...</span></div></div>}<div ref={endRef}/></div>
+    <div style={{padding:"10px 20px 14px",borderTop:"1px solid "+T.bdr,display:"flex",gap:8}}>
+      <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Ask about restaurants, dishes, or Shanghai tips..." style={{flex:1,padding:"10px 14px",background:T.card,border:"1px solid "+T.bdr,borderRadius:10,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif"}}/>
+      <button onClick={send} disabled={loading} style={{padding:"10px 16px",background:T.gold,color:T.dark,border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>Send</button>
+    </div>
+  </div>;
+}
+
+/* ═══ OWNER DASHBOARD ═══ */
+function OwnerTab({guests,setGuests,week}){
+  const[newG,setNewG]=useState({name:"",checkin:"",checkout:"",notes:""});
+  const[copied,setCopied]=useState(null);
+  const addGuest=()=>{if(!newG.name||!newG.checkin)return;const g={...newG,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),week:JSON.parse(JSON.stringify(week))};setGuests([...guests,g]);setNewG({name:"",checkin:"",checkout:"",notes:""});};
+  const copyLink=(g)=>{const d=btoa(JSON.stringify({name:g.name,checkin:g.checkin,checkout:g.checkout,week:g.week}));const url=window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;navigator.clipboard.writeText(url);setCopied(g.id);setTimeout(()=>setCopied(null),2000);};
+  return<div style={{padding:"20px 20px",maxWidth:820,margin:"0 auto"}}>
+    <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:T.cream,textAlign:"center",marginBottom:20}}>Owner Dashboard</h2>
+    <div style={{background:T.card,borderRadius:12,border:"1px solid "+T.gold+"18",padding:20,marginBottom:20,boxShadow:"0 2px 16px rgba(0,0,0,.15)"}}>
+      <h3 style={{fontSize:18,color:T.gl,marginBottom:14,fontWeight:600}}>Guest Manager</h3>
+      <p style={{fontSize:13,color:T.mut,marginBottom:14,lineHeight:1.6,fontWeight:300}}>Create personalized guides for tour guests. They can edit their itinerary, add travel companions as editors, and request bookings.</p>
+      <div style={{background:T.dw,borderRadius:10,padding:14,marginBottom:12}}>
+        <div style={{fontSize:14,fontWeight:700,color:T.cream,marginBottom:10}}>+ New Guest</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          <div><label style={{fontSize:11,color:T.mut,fontWeight:400}}>Guest Name</label><input value={newG.name} onChange={e=>setNewG({...newG,name:e.target.value})} placeholder="Sarah Chen" style={{width:"100%",padding:"10px 13px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",fontWeight:300,marginTop:3}}/></div>
+          <div><label style={{fontSize:11,color:T.mut,fontWeight:400}}>Notes</label><input value={newG.notes} onChange={e=>setNewG({...newG,notes:e.target.value})} placeholder="Vegetarian, no spice..." style={{width:"100%",padding:"10px 13px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",fontWeight:300,marginTop:3}}/></div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+          <div><label style={{fontSize:11,color:T.mut,fontWeight:400}}>Check-in</label><input type="date" value={newG.checkin} onChange={e=>setNewG({...newG,checkin:e.target.value})} style={{width:"100%",padding:"10px 13px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",marginTop:3}}/></div>
+          <div><label style={{fontSize:11,color:T.mut,fontWeight:400}}>Check-out</label><input type="date" value={newG.checkout} onChange={e=>setNewG({...newG,checkout:e.target.value})} style={{width:"100%",padding:"10px 13px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",marginTop:3}}/></div>
+        </div>
+        <button onClick={addGuest} style={{width:"100%",padding:"10px",background:newG.name&&newG.checkin?T.gold:T.card,color:newG.name&&newG.checkin?T.dark:T.mut,border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>Create Guest Guide</button>
+      </div>
+      {guests.map(g=><div key={g.id} style={{background:T.dw,borderRadius:10,padding:12,marginBottom:6,display:"flex",alignItems:"center",gap:10}}>
+        <div style={{flex:1}}>
+          <div style={{fontSize:15,fontWeight:700,color:T.cream,letterSpacing:.2}}>{g.name}</div>
+          <div style={{fontSize:11,color:T.mut}}>{fmtDate(g.checkin)} → {fmtDate(g.checkout)}{g.notes?" · "+g.notes:""}</div>
+        </div>
+        <button onClick={()=>copyLink(g)} style={{fontSize:12,color:copied===g.id?T.ol:T.gold,background:"none",border:"1px solid "+(copied===g.id?T.ol:T.gold)+"33",borderRadius:8,padding:"5px 12px",cursor:"pointer",fontWeight:600}}>{copied===g.id?"✓ Copied":"Copy Link"}</button>
+        <button onClick={()=>setGuests(guests.filter(x=>x.id!==g.id))} style={{fontSize:11,color:T.red,background:"none",border:"1px solid "+T.red+"33",borderRadius:8,padding:"5px 8px",cursor:"pointer"}}>✕</button>
+      </div>)}
+    </div>
+  </div>;
+}
+
+/* ═══ APP ═══ */
+function App(){
+  const[tab,setTab]=useState("week");
+  const[isOwner,setIsOwner]=useState(false);
+  const[week,setWeek]=useState(JSON.parse(JSON.stringify(WEEK)));
+  const[requests,setRequests]=useState([]);
+  const[guests,setGuests]=useState([]);
+
+  const guestId=getURLGuest();
+  const guestMode=!!guestId;
+  const[guestInfo,setGuestInfo]=useState(null);
+
+  useEffect(()=>{
+    if(!guestId)return;
+    const saved=loadGD(guestId);
+    if(saved){setWeek(saved.week||week);setGuestInfo({name:saved.name,checkin:saved.checkin,checkout:saved.checkout});return;}
+    const decoded=decodeGuestURL();
+    if(decoded){setWeek(decoded.week||week);setGuestInfo({name:decoded.name,checkin:decoded.checkin,checkout:decoded.checkout});saveGD(guestId,decoded);}
+  },[]);
+
+  useEffect(()=>{
+    if(!guestId||!guestInfo)return;
+    saveGD(guestId,{name:guestInfo.name,checkin:guestInfo.checkin,checkout:guestInfo.checkout,week});
+  },[week]);
+
+  const trimmedWeek=guestInfo&&guestInfo.checkin&&guestInfo.checkout?
+    (()=>{const ci=new Date(guestInfo.checkin);const co=new Date(guestInfo.checkout);const nights=Math.round((co-ci)/(1000*60*60*24));return week.slice(0,Math.max(1,nights));})():week;
+
+  return<div style={{minHeight:"100vh",background:T.dark}}>
+    <Header tab={tab} setTab={setTab} isOwner={isOwner} setIsOwner={setIsOwner} guestMode={guestMode} guestInfo={guestInfo}/>
+    {tab==="week"&&<WeekTab week={trimmedWeek} setWeek={setWeek} guestInfo={guestInfo}/>}
+    {tab==="trips"&&<TripsTab/>}
+    {tab==="info"&&<InfoTab/>}
+    {tab==="requests"&&<BookingsTab requests={requests} setRequests={setRequests} isOwner={isOwner}/>}
+    {tab==="chat"&&<ChatTab/>}
+    {tab==="owner"&&isOwner&&<OwnerTab guests={guests} setGuests={setGuests} week={week}/>}
+    <div style={{textAlign:"center",padding:"20px",fontSize:10,color:T.mut}}>Powered by <span style={{color:T.gold}}>Arrivo</span> · Built for tour operators</div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
