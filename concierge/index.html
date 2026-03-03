@@ -24,9 +24,50 @@ input:focus,textarea:focus,select:focus{border-color:#C5A255!important}
 const {useState,useRef,useEffect,useCallback}=React;
 const T={dark:"#0C0B09",dw:"#141210",card:"#1C1A17",gold:"#C5A255",gl:"#E8D5A3",gd:"#9E8344",cream:"#F5F0E8",wine:"#8B3A42",olive:"#5C6B3C",ol:"#A3B876",terra:"#C17246",tl:"#E8A87A",sky:"#5B7FA6",sl:"#8BB4D9",mut:"#7A746A",bdr:"#282522",red:"#E85050"};
 const MB="https://www.google.com/maps/search/?api=1&query=";
+const MD="https://www.google.com/maps/dir/?api=1";
 const OWNER_PIN="untour2024";
 
 const PLACES={"Jia Jia Tangbao":"Jia+Jia+Tangbao+Shanghai","Lin Long Fang":"Lin+Long+Fang+Shanghai","Fu Chun":"Fu+Chun+Xiaolongbao+Shanghai","Dong Tai Xiang":"Dong+Tai+Xiang+Shanghai","Wei Xiang Zhai":"Wei+Xiang+Zhai+Shanghai","FU 1088":"FU+1088+Shanghai","Jianguo 328":"Jianguo+328+Shanghai","Old Jesse":"Lao+Ji+Shi+Old+Jesse+Shanghai","Kong Yi Ji":"Kong+Yi+Ji+Shanghai","Jianbing Stall":"Jianbing+1370+Xikang+Rd+Shanghai","Pengyuan Guotie":"Pengyuan+Guotie+Shanghai","Yili Baozi":"Yili+Baozi+Shanghai","Ben Zhen":"Ben+Zhen+Sichuan+Shanghai","Liu Tang Men":"Liu+Tang+Men+Shanghai","Huma":"Huma+Yunnan+Shanghai","Lotus Eatery":"Lotus+Eatery+Shanghai","Four Seasons Dumpling King":"Si+Ji+Minfu+Dumpling+Shanghai","Peking Chamber":"Siji+Minfu+Peking+Duck+Shanghai","Yanji Old Beijing Hotpot":"Yanji+Old+Beijing+Hotpot+Shanghai","Sister Hong Hotpot":"Sister+Hong+Hotpot+Shanghai","A Niang Mian":"A+Niang+Mian+Shanghai","Lazy Monkey Paomo":"Lazy+Monkey+Paomo+Shanghai","Maolago":"Maolago+Shanghai","Bastard":"Bastard+Shanghai+Restaurant","Oha":"Oha+Anfu+Rd+Shanghai","Canton Table":"Canton+Table+Three+on+the+Bund+Shanghai","Imperial Treasure":"Imperial+Treasure+Shanghai","Seventh Son":"Seventh+Son+Shanghai","Drunk Baker":"Drunk+Baker+Shanghai","Egg":"Egg+Cafe+Shanghai","Highline":"Highline+Shanghai+Ascott","Beef & Liberty":"Beef+and+Liberty+Shanghai","Homeslice":"Homeslice+Pizza+Shanghai","Tai'An Table":"Tai+An+Table+Shanghai","Bistro 321":"Bistro+321+Villa+Le+Bec+Shanghai","Mr & Mrs Bund":"Mr+Mrs+Bund+Shanghai","8½ Otto e Mezzo":"Otto+e+Mezzo+Bombana+Shanghai","Alimentari":"Alimentari+Anfu+Rd+Shanghai","High Yaki":"High+Yaki+Shanghai","Pirata":"Pirata+Shanghai","Cantina Agave":"Cantina+Agave+Shanghai","Avenue Joffre":"Avenue+Joffre+Shanghai","Union Trading Company":"Union+Trading+Company+Shanghai","The Captain":"The+Captain+Bar+Shanghai","Flair":"Flair+Ritz+Carlton+Pudong","KEV":"KEV+Bund+18+Shanghai","Cages":"Cages+Sports+Bar+Shanghai","233 Shop":"233+Craft+Beer+Shanghai","Guan Guan Ji":"Guan+Guan+Ji+Shanghai","Xibo":"Xibo+Shanghai","Nabi & Wuli":"Nabi+Wuli+Shanghai","Qin Xiang Ge":"Qin+Xiang+Ge+Shanghai"};
+
+/* ═══ COORDINATES for travel estimates ═══ */
+const COORDS={
+"Jia Jia Tangbao":[31.2340,121.4710],"Dong Tai Xiang":[31.2398,121.4690],"Wei Xiang Zhai":[31.2215,121.4680],
+"FU 1088":[31.2205,121.4320],"Jianguo 328":[31.2080,121.4480],"Old Jesse":[31.2050,121.4370],
+"Jianbing Stall":[31.2280,121.4310],"Pengyuan Guotie":[31.2100,121.4460],"Yili Baozi":[31.2100,121.4470],
+"Ben Zhen":[31.2290,121.4750],"Liu Tang Men":[31.2110,121.4230],"Lotus Eatery":[31.2080,121.4120],
+"Four Seasons Dumpling King":[31.2145,121.4580],"Peking Chamber":[31.2280,121.4480],
+"Yanji Old Beijing Hotpot":[31.2130,121.4380],"Sister Hong Hotpot":[31.2175,121.4620],
+"A Niang Mian":[31.2140,121.4540],"Lazy Monkey Paomo":[31.2070,121.4590],
+"Maolago":[31.2095,121.4320],"Bastard":[31.2270,121.4370],"Oha":[31.2130,121.4460],
+"Canton Table":[31.2400,121.4870],"Imperial Treasure":[31.2295,121.4610],"Seventh Son":[31.2315,121.4520],
+"Drunk Baker":[31.2060,121.4420],"Egg":[31.2190,121.4610],"Highline":[31.2250,121.4730],
+"Tai'An Table":[31.2205,121.4320],"Mr & Mrs Bund":[31.2400,121.4890],
+"8½ Otto e Mezzo":[31.2420,121.4840],"Alimentari":[31.2130,121.4460],
+"High Yaki":[31.2070,121.4440],"Pirata":[31.2150,121.4200],"Cantina Agave":[31.2190,121.4430],
+"Avenue Joffre":[31.2020,121.4480],"Union Trading Company":[31.2010,121.4440],
+"The Captain":[31.2380,121.4880],"Flair":[31.2360,121.5000],"KEV":[31.2400,121.4890],
+"233 Shop":[31.2255,121.4230],
+"French Concession Walk":[31.2130,121.4460],"Yu Garden":[31.2270,121.4920],
+"Tianzifang":[31.2100,121.4690],"Propaganda Poster Museum":[31.2040,121.4390],
+"The Bund Walk":[31.2400,121.4880],"Xintiandi":[31.2190,121.4730],
+"UnTour Street Eats Tour":[31.2130,121.4460],"Nanjing Road & Shopping":[31.2350,121.4750],
+"KEV or INS":[31.2400,121.4890],
+};
+const HOTEL_DEFAULT=[31.2200,121.4580];
+function getCoord(label){if(label==="Hotel")return HOTEL_DEFAULT;const name=label.replace(/^(Breakfast|Lunch|Dinner|Brunch|Morning|Afternoon|Late Night|Drinks|Hotpot|International|Coffee|Gelato)\s*—?\s*/i,"").trim();if(COORDS[name])return COORDS[name];for(const k of Object.keys(COORDS)){if(name.includes(k)||k.includes(name))return COORDS[k];}return null;}
+function haversine(a,b){const R=6371;const dLat=(b[0]-a[0])*Math.PI/180;const dLon=(b[1]-a[1])*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function travelInfo(fromLabel,toLabel,hotelQuery){
+  const a=getCoord(fromLabel),b=getCoord(toLabel);
+  if(!a||!b)return null;
+  const km=haversine(a,b);
+  const walkMin=Math.round(km/0.07);
+  const isWalk=walkMin<=20;
+  const taxiMin=Math.max(5,Math.round(km/0.35));
+  const fromQ=hotelQuery||PLACES[fromLabel.replace(/^.*?—\s*/,"").trim()]||fromLabel;
+  const toQ=PLACES[toLabel.replace(/^.*?—\s*/,"").trim()]||toLabel;
+  const dirUrl=MD+"&origin="+encodeURIComponent(fromQ)+"&destination="+encodeURIComponent(toQ)+"&travelmode="+(isWalk?"walking":"driving");
+  return{isWalk,min:isWalk?walkMin:taxiMin,km:km.toFixed(1),dirUrl};
+}
 
 function linkP(text){if(!text)return text;let parts=[];let rem=text;const sk=Object.keys(PLACES).sort((a,b)=>b.length-a.length);while(rem.length>0){let e={idx:Infinity,key:null};for(const k of sk){const i=rem.indexOf(k);if(i!==-1&&i<e.idx)e={idx:i,key:k};}if(!e.key){parts.push(rem);break;}if(e.idx>0)parts.push(rem.slice(0,e.idx));parts.push({place:e.key,query:PLACES[e.key]});rem=rem.slice(e.idx+e.key.length);}return parts;}
 
@@ -218,22 +259,76 @@ function Block({item,idx,onSwap,onDel,alts,dayIdx}){
   </div>;
 }
 
+/* ═══ TRAVEL CONNECTOR ═══ */
+function TravelConnector({fromLabel,toLabel,hotelQuery}){
+  const info=travelInfo(fromLabel,toLabel,hotelQuery);
+  if(!info)return null;
+  return<a href={info.dirUrl} target="_blank" rel="noopener" style={{display:"flex",alignItems:"center",gap:6,padding:"3px 0 3px 20px",textDecoration:"none",margin:"0 0 2px"}}>
+    <div style={{width:1,height:16,background:T.bdr,marginRight:4}}/>
+    <span style={{fontSize:10,color:info.isWalk?T.ol:T.sl}}>{info.isWalk?"🚶":"🚕"}</span>
+    <span style={{fontSize:10,color:T.mut,fontWeight:300}}>~{info.min} min {info.isWalk?"walk":"taxi"} · {info.km} km</span>
+    <span style={{fontSize:9,color:T.mut+"88"}}>↗</span>
+  </a>;
+}
+
+/* ═══ HOTEL BLOCK ═══ */
+function HotelBlock({label,dirLabel,hotelQuery}){
+  const dirUrl=dirLabel?MD+"&origin="+encodeURIComponent(hotelQuery)+"&destination="+encodeURIComponent(dirLabel)+"&travelmode=walking":null;
+  return<div style={{background:T.gold+"0D",borderRadius:10,border:"1px dashed "+T.gold+"33",padding:"8px 12px",marginBottom:2,display:"flex",alignItems:"center",gap:8}}>
+    <span style={{fontSize:14}}>🏨</span>
+    <span style={{fontSize:12,color:T.gl,fontWeight:500,flex:1}}>{label}</span>
+    {dirUrl&&<a href={dirUrl} target="_blank" rel="noopener" style={{fontSize:10,color:T.sl,textDecoration:"none",border:"1px solid "+T.bdr,borderRadius:6,padding:"2px 8px"}}>📍 Directions</a>}
+  </div>;
+}
+
+/* ═══ HOTEL INPUT ═══ */
+function HotelInput({hotel,setHotel}){
+  const[editing,setEditing]=useState(!hotel);const[val,setVal]=useState(hotel||"");
+  const save=()=>{const v=val.trim();if(v){setHotel(v);try{localStorage.setItem("untour_hotel",v);}catch(e){}}setEditing(false);};
+  if(!editing&&hotel)return<div style={{maxWidth:820,margin:"0 auto",padding:"0 20px"}}>
+    <div style={{background:T.gold+"0D",borderRadius:10,border:"1px solid "+T.gold+"18",padding:"8px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
+      <span style={{fontSize:14}}>🏨</span>
+      <span style={{fontSize:12,color:T.gl,fontWeight:500,flex:1}}>Your hotel: <strong>{hotel}</strong></span>
+      <button onClick={()=>{setEditing(true);setVal(hotel);}} style={{fontSize:10,color:T.mut,background:"none",border:"1px solid "+T.bdr,borderRadius:6,padding:"3px 8px",cursor:"pointer"}}>Change</button>
+      <button onClick={()=>{setHotel("");try{localStorage.removeItem("untour_hotel");}catch(e){}}} style={{fontSize:10,color:T.red,background:"none",border:"1px solid "+T.red+"33",borderRadius:6,padding:"3px 8px",cursor:"pointer"}}>✕</button>
+    </div>
+  </div>;
+  return<div style={{maxWidth:820,margin:"0 auto",padding:"0 20px"}}>
+    <div style={{background:T.card,borderRadius:10,border:"1px solid "+T.bdr,padding:"10px 14px",marginBottom:12}}>
+      <div style={{fontSize:11,color:T.mut,marginBottom:4}}>🏨 Where are you staying? <span style={{fontWeight:300}}>(adds travel times between stops)</span></div>
+      <div style={{display:"flex",gap:6}}><input value={val} onChange={e=>setVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&save()} placeholder="e.g. The Langham Shanghai, Xintiandi" style={{flex:1,padding:"8px 12px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:13,outline:"none",fontFamily:"'Lato',sans-serif",fontWeight:300}}/><button onClick={save} style={{padding:"8px 14px",background:val.trim()?T.gold:T.card,color:val.trim()?T.dark:T.mut,border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer"}}>Set</button></div>
+    </div>
+  </div>;
+}
+
 /* ═══ WEEK TAB ═══ */
-function WeekTab({week,setWeek,guestInfo}){
+function WeekTab({week,setWeek,guestInfo,hotel,setHotel}){
   const onSwap=(di,ii,alt)=>{const w=[...week];w[di]={...w[di],items:[...w[di].items]};w[di].items[ii]={l:alt.l,d:alt.d,s:alt.s||Math.floor(Math.random()*5),book:alt.book};setWeek(w);};
   const onDel=(di,ii)=>{const w=[...week];w[di]={...w[di],items:w[di].items.filter((_,i)=>i!==ii)};setWeek(w);};
-  return<div style={{padding:"20px 20px",maxWidth:820,margin:"0 auto"}}>
-    <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:T.cream,textAlign:"center",marginBottom:20}}>Your Shanghai Food Week</h2>
+  const hotelQ=hotel?hotel+"+Shanghai":"";
+  return<div style={{padding:"20px 20px 0",maxWidth:820,margin:"0 auto"}}>
+    <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:24,color:T.cream,textAlign:"center",marginBottom:12}}>Your Shanghai Food Week</h2>
+    <HotelInput hotel={hotel} setHotel={setHotel}/>
+    <div style={{maxWidth:820,margin:"0 auto",padding:"0 0 20px"}}>
     {week.map((day,di)=>{
       const dateLabel=guestInfo?(() => {const d=addDays(guestInfo.checkin,di);return" · "+d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});})():"";
+      const items=day.items;
       return<div key={di} style={{marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
           <span style={{fontSize:15,fontWeight:700,color:T.cream,letterSpacing:.2}}>Day {di+1}{dateLabel}</span>
           <span style={{fontSize:12,color:T.mut,fontStyle:"italic"}}>{day.title}</span>
         </div>
-        {day.items.map((item,ii)=><Block key={ii} item={item} idx={ii} dayIdx={di} onSwap={onSwap} onDel={onDel} alts={ALTS}/>)}
+        {hotel&&items.length>0&&<HotelBlock label={"Leave "+hotel} dirLabel={items[0].l} hotelQuery={hotelQ}/>}
+        {hotel&&items.length>0&&<TravelConnector fromLabel={"Hotel"} toLabel={items[0].l} hotelQuery={hotelQ}/>}
+        {items.map((item,ii)=><React.Fragment key={ii}>
+          <Block item={item} idx={ii} dayIdx={di} onSwap={onSwap} onDel={onDel} alts={ALTS}/>
+          {ii<items.length-1&&<TravelConnector fromLabel={item.l} toLabel={items[ii+1].l}/>}
+        </React.Fragment>)}
+        {hotel&&items.length>0&&<TravelConnector fromLabel={items[items.length-1].l} toLabel={"Hotel"} hotelQuery={hotelQ}/>}
+        {hotel&&items.length>0&&<HotelBlock label={"Back to "+hotel} dirLabel={items[items.length-1].l} hotelQuery={hotelQ}/>}
       </div>;
     })}
+    </div>
   </div>;
 }
 
@@ -354,6 +449,7 @@ function App(){
   const[week,setWeek]=useState(JSON.parse(JSON.stringify(WEEK)));
   const[requests,setRequests]=useState([]);
   const[guests,setGuests]=useState([]);
+  const[hotel,setHotel]=useState(()=>{try{return localStorage.getItem("untour_hotel")||"";}catch(e){return"";}});
 
   const guestId=getURLGuest();
   const guestMode=!!guestId;
@@ -377,7 +473,7 @@ function App(){
 
   return<div style={{minHeight:"100vh",background:T.dark}}>
     <Header tab={tab} setTab={setTab} isOwner={isOwner} setIsOwner={setIsOwner} guestMode={guestMode} guestInfo={guestInfo}/>
-    {tab==="week"&&<WeekTab week={trimmedWeek} setWeek={setWeek} guestInfo={guestInfo}/>}
+    {tab==="week"&&<WeekTab week={trimmedWeek} setWeek={setWeek} guestInfo={guestInfo} hotel={hotel} setHotel={setHotel}/>}
     {tab==="trips"&&<TripsTab/>}
     {tab==="info"&&<InfoTab/>}
     {tab==="requests"&&<BookingsTab requests={requests} setRequests={setRequests} isOwner={isOwner}/>}
