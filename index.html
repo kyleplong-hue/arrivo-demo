@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Arrivo — Pre-Trip Planning for Tour Companies</title>
+<title>Arrivo — Pre-Trip Planning for Tour Companies & Vacation Rentals</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -16,19 +16,8 @@ a{color:inherit;text-decoration:none}
 .container{max-width:1080px;margin:0 auto;padding:0 24px}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes countUp{from{opacity:0}to{opacity:1}}
 .fade-up{animation:fadeUp .8s ease both}
 .delay-1{animation-delay:.15s}.delay-2{animation-delay:.3s}.delay-3{animation-delay:.45s}.delay-4{animation-delay:.6s}
-
-/* ═══ PASSWORD GATE ═══ */
-#gate{position:fixed;inset:0;background:var(--dark);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px}
-#gate.hidden{display:none}
-#gate h2{font-family:'Newsreader',serif;color:var(--cream);font-size:28px;font-weight:500}
-#gate p{color:#7A746A;font-size:14px;max-width:340px;text-align:center}
-#gate input{width:280px;padding:14px 18px;background:#1C1A17;border:1px solid #332F2A;border-radius:10px;color:var(--cream);font-size:15px;font-family:'Outfit',sans-serif;outline:none;text-align:center;letter-spacing:2px}
-#gate input:focus{border-color:var(--gold)}
-#gate button{padding:12px 36px;background:var(--gold);color:var(--dark);border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
-#gate .err{color:#E85050;font-size:12px;height:16px}
 
 /* ═══ NAV ═══ */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg)ee;backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr)}
@@ -98,6 +87,14 @@ nav .cta-nav:hover{background:var(--goldD)}
 .feat h3{font-size:15px;font-weight:600;font-family:'Outfit',sans-serif;margin-bottom:4px}
 .feat p{font-size:13px;color:var(--mut);line-height:1.5}
 
+/* ═══ DASHBOARD ═══ */
+.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.dash-card{background:var(--dark);border-radius:14px;padding:28px 24px;color:var(--cream)}
+.dash-card .dash-icon{font-size:28px;margin-bottom:10px}
+.dash-card h3{font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;color:var(--goldL);margin-bottom:6px}
+.dash-card p{font-size:13px;color:#9A958C;line-height:1.55}
+.dash-card.highlight{border:1.5px solid var(--gold);background:linear-gradient(135deg,#1A1A18,#2A2520)}
+
 /* ═══ REVENUE ═══ */
 .revenue-card{background:linear-gradient(135deg,#1A1A18,#2A2520);border-radius:16px;padding:48px;color:var(--cream);text-align:center;margin-top:40px}
 .revenue-card h3{font-family:'Newsreader',serif;font-size:28px;color:var(--gold);margin-bottom:12px}
@@ -107,6 +104,14 @@ nav .cta-nav:hover{background:var(--goldD)}
 .rev-opt h4{font-size:14px;color:var(--goldL);margin-bottom:4px}
 .rev-opt p{font-size:12px;color:#7A746A}
 
+/* ═══ API HIGHLIGHT ═══ */
+.api-section{background:var(--dark);padding:60px 0;margin:40px 0 0}
+.api-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:28px}
+.api-card{background:#222018;border:1px solid #3A352E;border-radius:12px;padding:24px;text-align:center}
+.api-card h4{font-family:'Outfit',sans-serif;font-size:15px;color:var(--goldL);margin-bottom:6px}
+.api-card p{font-size:12px;color:#7A746A;line-height:1.5}
+.api-code{font-family:monospace;font-size:10px;color:var(--gold);background:#1A1A18;border:1px solid #3A352E;border-radius:8px;padding:10px;margin-top:10px;text-align:left;overflow-x:auto;white-space:pre}
+
 /* ═══ DEMO ═══ */
 .demo-section{background:var(--dark);padding:60px 0;text-align:center;margin:60px 0 0}
 .demo-section h2{font-family:'Newsreader',serif;font-size:32px;color:var(--cream);margin-bottom:10px}
@@ -114,6 +119,10 @@ nav .cta-nav:hover{background:var(--goldD)}
 .demo-btn{display:inline-block;padding:16px 40px;background:var(--gold);color:#fff;border-radius:10px;font-size:16px;font-weight:600;transition:all .2s;box-shadow:0 4px 24px #B8963E44}
 .demo-btn:hover{background:var(--goldD);transform:translateY(-2px)}
 .demo-note{font-size:11px;color:#5A5650;margin-top:12px}
+.demo-grid{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.demo-link{padding:14px 28px;background:#2A2520;border:1.5px solid #3A352E;color:var(--cream);border-radius:10px;font-size:14px;font-weight:500;transition:all .2s;text-decoration:none}
+.demo-link:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
+.demo-link span{font-size:18px;margin-right:6px}
 
 /* ═══ QUOTE ═══ */
 .quote-section{padding:60px 0;text-align:center}
@@ -125,14 +134,13 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
 
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:768px){
-  .ba-grid,.steps,.feat-grid,.stats-grid,.revenue-options{grid-template-columns:1fr}
+  .ba-grid,.steps,.feat-grid,.stats-grid,.revenue-options,.dash-grid,.api-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .hero{padding:110px 0 50px}
 }
 </style>
 </head>
 <body>
-
 
 <!-- ═══ NAV ═══ -->
 <nav>
@@ -141,6 +149,8 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
     <div style="display:flex;gap:24px;align-items:center;font-size:13px;color:var(--mut)">
       <a href="#how" style="transition:color .2s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--mut)'">How It Works</a>
       <a href="#features" style="transition:color .2s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--mut)'">Features</a>
+      <a href="#dashboard" style="transition:color .2s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--mut)'">Dashboard</a>
+      <a href="#api" style="transition:color .2s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--mut)'">Tour API</a>
       <a href="#demo" style="transition:color .2s" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--mut)'">Live Demo</a>
       <a href="#demo" class="cta-nav">Get Started</a>
     </div>
@@ -151,9 +161,9 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
 <section class="hero">
   <div class="container">
     <h1 class="fade-up">Turn your city expertise into a <em>pre-trip planning tool</em> for every guest.</h1>
-    <p class="sub fade-up delay-1">Give guests a personalized trip planner built from your insider knowledge. They arrive prepared, explore deeper, and stop asking the same questions in your DMs.</p>
+    <p class="sub fade-up delay-1">Give guests a personalized, drag-and-drop trip planner built from your insider knowledge. They arrive prepared, explore deeper, and stop flooding your inbox with the same questions.</p>
     <div class="ctas fade-up delay-2">
-      <a href="#demo" class="cta-primary">See the Live Demo →</a>
+      <a href="#demo" class="cta-primary">See the Live Demos →</a>
       <a href="#how" class="cta-secondary">How It Works</a>
     </div>
   </div>
@@ -179,7 +189,7 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
         <div class="ba-msg">🥢 Day 2: Spice Route — Ben Zhen → Liu Tang Men → Maolago</div>
         <div class="ba-msg">🍸 Day 3: Bund & Fine Dining — Canton Table → Tai'An Table → Flair rooftop</div>
         <div class="ba-msg">📱 Essentials: VPN setup, WeChat, Didi, spice levels cheat sheet</div>
-        <div class="ba-msg">💬 Live concierge for anything else</div>
+        <div class="ba-msg">💬 AI concierge answers questions 24/7</div>
         <div style="font-size:11px;color:#4A8;text-align:center;margin-top:10px;font-weight:600">Sent automatically when they book ✓</div>
       </div>
     </div>
@@ -208,19 +218,19 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
       <div class="step fade-up delay-1">
         <div class="step-num">1</div>
         <h3>Build Your Guide</h3>
-        <p>Drop in your favorite restaurants, bars, tips, and insider knowledge. Organize by day, theme, or neighborhood. We make it beautiful.</p>
+        <p>Drop in your favorite restaurants, bars, tips, and insider knowledge. Organize by day, theme, or neighborhood. Tag by category — food, wine, activity, relaxation. We make it beautiful.</p>
         <img class="step-img" src="https://aello-leads-copilot.com/arrivo/step1_v2.png" alt="Curated food guide with daily itinerary" loading="lazy">
       </div>
       <div class="step fade-up delay-2">
         <div class="step-num">2</div>
         <h3>Personalize Per Guest</h3>
-        <p>Add their name, dates, and dietary notes. Create a unique guide in seconds. Clone from past guests in one click.</p>
+        <p>Import reservations from your booking platform. Each guest gets a custom itinerary with their dates, name, and any notes. Create guides from templates in one click.</p>
         <img class="step-img" src="https://aello-leads-copilot.com/arrivo/step2_v2.png" alt="Owner dashboard with guest management" loading="lazy">
       </div>
       <div class="step fade-up delay-3">
         <div class="step-num">3</div>
-        <h3>Guests Plan Together</h3>
-        <p>Guests customize their itinerary, swap spots, request restaurant bookings, and arrive fully prepared.</p>
+        <h3>Guests Make It Theirs</h3>
+        <p>Guests drag-and-drop to reorder days, swap recommendations with smart alternatives, request bookings, and ask the AI concierge anything — all in one shareable link.</p>
         <img class="step-img" src="https://aello-leads-copilot.com/arrivo/step3_v2.png" alt="Guest view with maps and booking buttons" loading="lazy">
       </div>
     </div>
@@ -230,12 +240,14 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
       <div style="text-align:center">
         <div class="section-label" style="margin-bottom:4px">Integrations</div>
         <div style="font-family:'Newsreader',serif;font-size:22px;font-weight:500">Connects to the tools you already use.</div>
-        <p style="font-size:13px;color:var(--mut);margin-top:6px">Auto-send trip planners when guests book. No manual work.</p>
+        <p style="font-size:13px;color:var(--mut);margin-top:6px">Import reservations via iCal or API. Auto-send trip planners when guests book.</p>
       </div>
       <div class="int-grid">
-        <div class="int-pill">Rezdy<span class="api">API</span></div>
+        <div class="int-pill">Rezdy<span class="api">iCal + API</span></div>
         <div class="int-pill">FareHarbor<span class="api">API</span></div>
-        <div class="int-pill">TourHarbour<span class="api">API</span></div>
+        <div class="int-pill">Airbnb<span class="api">iCal Import</span></div>
+        <div class="int-pill">Vrbo<span class="api">iCal Import</span></div>
+        <div class="int-pill">Booking.com<span class="api">iCal Import</span></div>
         <div class="int-pill">Peek Pro<span class="api">API</span></div>
         <div class="int-pill">Bokun<span class="api">API</span></div>
         <div class="int-pill">Checkfront<span class="api">API</span></div>
@@ -246,46 +258,137 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
   </div>
 </section>
 
-<!-- ═══ FEATURES ═══ -->
+<!-- ═══ GUEST FEATURES ═══ -->
 <section class="section" id="features">
   <div class="container">
-    <div class="section-label">Features</div>
+    <div class="section-label">Guest Experience</div>
     <div class="section-title">Not a guidebook. Not a chatbot. <em>A pre-trip experience.</em></div>
     <div class="section-sub">Everything your guests need, delivered before they land.</div>
     <div class="feat-grid">
       <div class="feat fade-up delay-1">
         <div class="feat-icon">🗺️</div>
-        <h3>Custom Day-by-Day Itineraries</h3>
-        <p>Build themed food crawls, neighborhood guides, or full week plans from your expert knowledge. Guests swap recommendations to fit their taste.</p>
+        <h3>Drag-and-Drop Itineraries</h3>
+        <p>Day-by-day plans guests can rearrange. Drag entire days to reorder, or move individual blocks within a day. Color-coded tags — food, wine, activity, relaxation — so they see the shape of their trip at a glance.</p>
       </div>
       <div class="feat fade-up delay-2">
-        <div class="feat-icon">👥</div>
-        <h3>Collaborative Planning</h3>
-        <p>Guests add travel companions as editors or viewers. Everyone sees the same plan. No more screenshot chains in group chats.</p>
+        <div class="feat-icon">↻</div>
+        <h3>Smart "New Idea" Swaps</h3>
+        <p>Don't like a dinner pick? Hit swap. Arrivo suggests a category-matched alternative from your curated recommendations bank. Dinner swaps for dinner, winery for winery — never a random suggestion.</p>
       </div>
       <div class="feat fade-up delay-1">
-        <div class="feat-icon">📍</div>
-        <h3>One-Tap Maps & Directions</h3>
-        <p>Every restaurant, bar, and landmark links directly to Google Maps. Bilingual addresses for taxi drivers included.</p>
+        <div class="feat-icon">🗺️</div>
+        <h3>Themed Day Trip Routes</h3>
+        <p>Pre-built themed itineraries — Wine & Vineyards, Farm & Food, City Explorer. Each with stop-by-stop timing, drive times, and Google Maps links. Guests pick a theme and go.</p>
       </div>
       <div class="feat fade-up delay-2">
+        <div class="feat-icon">📍</div>
+        <h3>One-Tap Maps & Route Planning</h3>
+        <p>Every venue links to Google Maps. A "Route" button on each day opens turn-by-turn directions through all that day's stops. Bilingual addresses for taxi drivers included.</p>
+      </div>
+      <div class="feat fade-up delay-1">
         <div class="feat-icon">📋</div>
         <h3>Booking Requests</h3>
-        <p>Guests request restaurant reservations and experience bookings through the app. You confirm or delegate — all tracked in one place.</p>
+        <p>Guests request restaurant reservations and experience bookings through the app. You confirm or decline from your dashboard — all tracked in one place with status updates.</p>
+      </div>
+      <div class="feat fade-up delay-2">
+        <div class="feat-icon">💬</div>
+        <h3>AI Concierge Chat</h3>
+        <p>An AI concierge trained on your recommendations answers guest questions 24/7. Restaurants, directions, local tips — your expertise, always available. With quick-tap suggestions for common questions.</p>
       </div>
       <div class="feat fade-up delay-1">
-        <div class="feat-icon">💬</div>
-        <h3>Built-In Concierge</h3>
-        <p>A smart concierge trained on your recommendations answers guest questions 24/7. Your expertise, always available — even when you're asleep.</p>
+        <div class="feat-icon">🏠</div>
+        <h3>House Essentials Tab</h3>
+        <p>WiFi, check-in/out times, emergency contacts, nearby markets, private chef details — everything in a tappable, copy-friendly format. No more digging through old messages.</p>
       </div>
       <div class="feat fade-up delay-2">
         <div class="feat-icon">🏷️</div>
         <h3>Your Brand, Your Voice</h3>
-        <p>White-labeled with your logo, colors, and tone. Guests see your brand, not ours. Feels like a natural extension of your tour experience.</p>
+        <p>White-labeled with your logo, colors, and tone. Guests see your brand, not ours. Dark or light themes, custom fonts — feels like a natural extension of your business.</p>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- REVENUE CARD -->
+<!-- ═══ OWNER DASHBOARD ═══ -->
+<section class="section" id="dashboard" style="background:var(--card);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)">
+  <div class="container">
+    <div class="section-label">Owner Dashboard</div>
+    <div class="section-title">Manage everything from <em>one place.</em></div>
+    <div class="section-sub">Guest management, reservation imports, templates, and your full recommendations library — all behind a simple PIN login.</div>
+    <div class="dash-grid">
+      <div class="dash-card highlight fade-up delay-1">
+        <div class="dash-icon">👥</div>
+        <h3>Guest Manager</h3>
+        <p>Create personalized guides per guest with their name, dates, and notes. Generate a shareable link in one click. Track all active guests, their itinerary, and booking requests from a single view. Click any guest card to edit details inline.</p>
+      </div>
+      <div class="dash-card fade-up delay-2">
+        <div class="dash-icon">📥</div>
+        <h3>iCal Reservation Import</h3>
+        <p>Paste your iCal URL from Airbnb, Vrbo, Rezdy, or Booking.com. Arrivo pulls guest names, emails, phone numbers, party size, and reservation codes. Import individually or bulk-import all upcoming bookings. Auto-creates guest entries.</p>
+      </div>
+      <div class="dash-card fade-up delay-1">
+        <div class="dash-icon">📑</div>
+        <h3>Template System</h3>
+        <p>Build itinerary templates for different trip types — weekend getaway, full week, wine-focused, family-friendly. Set a default template. New guest guides clone from your chosen template in seconds.</p>
+      </div>
+      <div class="dash-card fade-up delay-2">
+        <div class="dash-icon">📋</div>
+        <h3>Recommendations Bank</h3>
+        <p>Your full library of curated restaurants, wineries, experiences, and local tips — tagged, categorized, and searchable. Filter by dinner, wine, nature, shopping. Add new spots anytime. The engine behind smart swaps.</p>
+      </div>
+      <div class="dash-card fade-up delay-1">
+        <div class="dash-icon">✏️</div>
+        <h3>Inline Editing</h3>
+        <p>Click any recommendation card to edit the name, description, category, maps link, and booking status directly. Edit itinerary templates in the same drag-and-drop Week View your guests use. No separate admin panel needed.</p>
+      </div>
+      <div class="dash-card fade-up delay-2">
+        <div class="dash-icon">🔄</div>
+        <h3>Global Find & Replace</h3>
+        <p>Changed the name of something? Rename across every itinerary and template with global term replacements. One change propagates everywhere — descriptions, day trips, and concierge responses.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TOUR API SECTION ═══ -->
+<section class="api-section" id="api">
+  <div class="container" style="text-align:center">
+    <div class="section-label">For Tour Companies</div>
+    <div style="font-family:'Newsreader',serif;font-size:clamp(26px,3.5vw,38px);color:var(--cream);font-weight:500;margin-bottom:8px">Plug into your existing <span style="color:var(--gold)">booking system.</span></div>
+    <p style="font-size:15px;color:#7A746A;max-width:520px;margin:0 auto 8px">Connect your Rezdy, FareHarbor, or Peek Pro account. When a guest books a tour, Arrivo automatically generates their personalized pre-trip guide and sends it via email or WhatsApp.</p>
+    <div class="api-grid">
+      <div class="api-card">
+        <h4>📥 Auto-Import Bookings</h4>
+        <p>iCal sync pulls new reservations every hour. Guest name, dates, party size, contact info — parsed and ready to go. Works with any platform that exports iCal.</p>
+      </div>
+      <div class="api-card">
+        <h4>📧 Auto-Send Guides</h4>
+        <p>When a guest imports, their guide link is ready to send. One-click email with a pre-filled body: "Here's your personalized trip planner." Or automate it via Zapier webhook.</p>
+      </div>
+      <div class="api-card">
+        <h4>📊 Track Engagement</h4>
+        <p>See which guests opened their guide, what they swapped, what bookings they requested. Know who's engaged before they arrive — and who might need a nudge.</p>
+      </div>
+    </div>
+    <div style="margin-top:28px">
+      <div class="api-code">POST /api/v1/guests
+{
+  "name": "Sarah Johnson",
+  "checkin": "2026-06-15",
+  "checkout": "2026-06-22",
+  "template": "wine-week",
+  "notify": "email"
+}
+
+→ 201 { "guide_url": "https://your-brand.arrivo.io/g/abc123" }</div>
+      <p style="font-size:11px;color:#5A5650;margin-top:8px">REST API available for custom integrations. Full docs at api.arrivo.io</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REVENUE ═══ -->
+<section class="section">
+  <div class="container">
     <div class="revenue-card">
       <h3>A new revenue stream from what you already know.</h3>
       <p>Monetize your city expertise beyond tour bookings. Offer the trip planner as a premium add-on or include it to boost your booking rate.</p>
@@ -311,14 +414,17 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
   </div>
 </section>
 
-<!-- ═══ LIVE DEMO ═══ -->
+<!-- ═══ LIVE DEMOS ═══ -->
 <section class="demo-section" id="demo">
   <div class="container">
-    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#B8963E;font-weight:600;margin-bottom:8px">Live Demo</div>
-    <h2>See it working for <span style="color:#B8963E">UnTour Food Tours, Shanghai</span></h2>
-    <p>A real trip planner built from real restaurant data. Click around, swap recommendations, try the concierge.</p>
-    <a href="concierge/" class="demo-btn">Open the UnTour Demo →</a>
-    <div class="demo-note">Password: untour2024 (host login) · Guests see their own personalized view</div>
+    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#B8963E;font-weight:600;margin-bottom:8px">Live Demos</div>
+    <h2>See it working in <span style="color:#B8963E">two real deployments</span></h2>
+    <p>Real trip planners, real data, full drag-and-drop. Click around, swap recommendations, try the AI concierge.</p>
+    <div class="demo-grid">
+      <a href="concierge/" class="demo-link"><span>🥢</span> UnTour Food Tours, Shanghai</a>
+      <a href="montepulciano/" class="demo-link"><span>🏡</span> Molino Nobile Villa, Tuscany</a>
+    </div>
+    <div class="demo-note">Shanghai PIN: untour2024 · Tuscany PIN: 1234 · Guests see their own personalized view</div>
   </div>
 </section>
 
@@ -333,7 +439,7 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
 
 <footer>
   <div class="container">
-    © 2025 Arrivo · Built for tour operators who know their city better than anyone.
+    © 2026 Arrivo · Built for tour operators and vacation rentals who know their city better than anyone.
   </div>
 </footer>
 
