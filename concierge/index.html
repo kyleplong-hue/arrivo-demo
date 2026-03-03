@@ -296,10 +296,11 @@ const ds=gi&&gi.ci?aD(gi.ci,di).toLocaleDateString("en-US",{weekday:"long",month
 return(<div key={di} style={{marginBottom:24}}>
 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
 <div style={{width:40,height:40,borderRadius:12,background:C.crS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{day.emoji}</div>
-<div>
+<div style={{flex:1}}>
 <div style={{fontSize:11,color:C.cr,fontWeight:600,letterSpacing:.5,textTransform:"uppercase"}}>Day {di+1}{ds?" \u00B7 "+ds:""}</div>
 <div style={{fontSize:17,fontWeight:600,marginTop:1}}>{day.title}</div>
 </div>
+{(()=>{const spots=day.items.filter(x=>x.m).map(x=>x.m.replace(/\+/g," "));if(spots.length<2)return null;const url="https://www.google.com/maps/dir/"+spots.join("/");return <a href={url} target="_blank" rel="noopener" style={{fontSize:11,padding:"6px 12px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none",display:"flex",alignItems:"center",gap:4,flexShrink:0}}>{"\uD83D\uDDFA\uFE0F"} Route</a>;})()}
 </div>
 {day.items.map((it,ii)=><Card key={ii} item={it} idx={ii} di={di} onSw={sw} onDl={dl} origin={origin}/>)}
 </div>);})}
