@@ -441,7 +441,7 @@ const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[
 const defTpl=tpls.find(t=>t.isDefault)||tpls[0];
 const selTpl=tpls.find(t=>t.id===(ng.tpl||defTpl?.id))||defTpl;
 const add=()=>{if(!ng.name||!ng.ci||!selTpl)return;setGs([...gs,{name:ng.name,ci:ng.ci,co:ng.co,n:ng.n,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(selTpl.wk)),tplName:selTpl.name}]);sNg({name:"",ci:"",co:"",n:"",tpl:""});};
-const mkLink=(g)=>{try{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,wk:g.wk}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;}catch(e){alert("Error: "+e.message);return null;}};
+const mkLink=(g)=>{try{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,tpl:g.tplName||"Default"}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;}catch(e){alert("Error: "+e.message);return null;}};
 const cpy=g=>{const link=mkLink(g);if(!link)return;copyText(link);sCp(g.id);setTimeout(()=>sCp(null),3000);};
 const addTpl=()=>{if(!newTpl.trim()||!defTpl)return;const t={id:Date.now()+"",name:newTpl.trim(),wk:JSON.parse(JSON.stringify(defTpl.wk)),isDefault:false};setTpls([...tpls,t]);setNewTpl("");};
 const setDef=(id)=>{setTpls(tpls.map(t=>({...t,isDefault:t.id===id})));};
@@ -541,8 +541,9 @@ useEffect(()=>{try{localStorage.setItem(RQ_KEY,JSON.stringify(rq))}catch(e){}},[
 
 useEffect(()=>{
 if(!gid)return;
-try{const s=localStorage.getItem("ut_"+gid);if(s){const d=JSON.parse(s);setWk(d.wk||wk);setGi({name:d.name,ci:d.ci,co:d.co});return;}}catch(e){}
-const d=pr.get("d");if(d){try{const dc=JSON.parse(fromB64(d));setWk(dc.wk||wk);setGi({name:dc.name,ci:dc.ci,co:dc.co});localStorage.setItem("ut_"+gid,JSON.stringify(dc));}catch(e){}}
+try{const s=localStorage.getItem("ut_"+gid);if(s){const d=JSON.parse(s);if(d.wk)setWk(d.wk);setGi({name:d.name,ci:d.ci,co:d.co});return;}}catch(e){}
+const d=pr.get("d");if(d){try{const dc=JSON.parse(fromB64(d));setGi({name:dc.name,ci:dc.ci,co:dc.co});
+localStorage.setItem("ut_"+gid,JSON.stringify({name:dc.name,ci:dc.ci,co:dc.co,wk}));}catch(e){}}
 },[]);
 
 useEffect(()=>{if(gid&&gi)try{localStorage.setItem("ut_"+gid,JSON.stringify({...gi,wk}))}catch(e){}},[wk]);
