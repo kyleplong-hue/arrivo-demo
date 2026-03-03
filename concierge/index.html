@@ -250,10 +250,27 @@ return(<>
 </>);
 }
 
-function Card({item,idx,di,onSw,onDl,origin}){
-const ct=CT[item.c]||CT.dinner;const ps=linkP(item.d);const[o,setO]=useState(false);
+function Card({item,idx,di,onSw,onDl,onEdit,origin,isOwner}){
+const ct=CT[item.c]||CT.dinner;const ps=linkP(item.d);const[o,setO]=useState(false);const[ed,setEd]=useState(false);const[ef,setEf]=useState({});
+const catOpts=["breakfast","lunch","dinner","brunch","drinks","sightseeing","tour"];
+const iS={width:"100%",padding:"7px 10px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:8,fontSize:12,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
 return(
-<div className="fade-up" style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,overflow:"hidden",marginBottom:8,boxShadow:"0 1px 3px rgba(0,0,0,.04)"}}>
+<div className="fade-up" style={{background:C.wh,borderRadius:16,border:ed?"2px solid "+C.cr:"1px solid "+C.bd,overflow:"hidden",marginBottom:8,boxShadow:"0 1px 3px rgba(0,0,0,.04)"}}>
+{ed?<div style={{padding:"12px 16px"}}>
+<div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,marginBottom:6}}>
+<div><label style={{fontSize:10,color:C.mt}}>Name</label><input value={ef.l||""} onChange={e=>setEf({...ef,l:e.target.value})} style={iS}/></div>
+<div><label style={{fontSize:10,color:C.mt}}>Category</label><select value={ef.c||""} onChange={e=>setEf({...ef,c:e.target.value})} style={{...iS,cursor:"pointer",width:110}}>{catOpts.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+</div>
+<div style={{marginBottom:6}}><label style={{fontSize:10,color:C.mt}}>Description</label><input value={ef.d||""} onChange={e=>setEf({...ef,d:e.target.value})} style={iS}/></div>
+<div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:6,alignItems:"end",marginBottom:6}}>
+<div><label style={{fontSize:10,color:C.mt}}>Maps query</label><input value={ef.m||""} onChange={e=>setEf({...ef,m:e.target.value})} placeholder="Place+Name+City" style={iS}/></div>
+<label style={{fontSize:10,color:C.mt,display:"flex",alignItems:"center",gap:3,padding:"7px 0"}}><input type="checkbox" checked={!!ef.b} onChange={e=>setEf({...ef,b:e.target.checked})}/> Book</label>
+</div>
+<div style={{display:"flex",gap:4}}>
+<button onClick={()=>{onEdit(di,idx,ef);setEd(false);}} style={{padding:"6px 14px",background:C.sg,color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:600,cursor:"pointer"}}>Save</button>
+<button onClick={()=>setEd(false)} style={{padding:"6px 10px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:10,fontSize:11,cursor:"pointer"}}>Cancel</button>
+</div>
+</div>:<>
 <div style={{display:"flex",gap:12,padding:"14px 16px",alignItems:"flex-start"}}>
 <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,paddingTop:2}}>
 <div style={{width:36,height:36,borderRadius:10,background:ct.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{ct.i}</div>
@@ -271,6 +288,7 @@ return(
 </div>
 </div>
 <div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0,paddingTop:2}}>
+{isOwner&&<button onClick={()=>{setEf({l:item.l,d:item.d,c:item.c,m:item.m||"",b:!!item.b});setEd(true);}} style={{width:28,height:28,borderRadius:8,background:C.wmS,border:"1px solid "+C.bd,color:C.wm,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}} title="Edit">✏️</button>}
 <button onClick={()=>setO(!o)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:C.mt,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u21BB"}</button>
 {onDl&&<button onClick={()=>onDl(di,idx)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
 </div>
@@ -279,6 +297,7 @@ return(
 <span style={{fontSize:10,color:C.mt,alignSelf:"center",marginRight:4}}>Swap:</span>
 {ALTS.filter(a=>a.c===item.c&&a.l!==item.l).concat(ALTS.filter(a=>a.c!==item.c&&a.l!==item.l)).slice(0,8).map((a,i)=><button key={i} onClick={()=>{onSw(di,idx,a);setO(false);}} style={{fontSize:11,padding:"5px 10px",background:a.c===item.c?ct.bg:C.wh,border:"1px solid "+(a.c===item.c?ct.a+"33":C.bd),borderRadius:20,cursor:"pointer",fontWeight:500,color:a.c===item.c?ct.a:C.fg}}>{a.l}</button>)}
 </div>}
+</>}
 </div>);
 }
 
@@ -296,7 +315,7 @@ return(<div style={{background:"#F0FAF0",borderRadius:16,border:"2px solid #5A9E
 </div>);
 }
 
-function WkTab({wk,setWk,gi,origin,confirmed,editingTpl,onSaveTpl,onCancelTpl}){
+function WkTab({wk,setWk,gi,origin,confirmed,editingTpl,onSaveTpl,onCancelTpl,isOwner}){
 const[open,setOpen]=useState(0);
 const[dragDay,setDragDay]=useState(null);const[dragItem,setDragItem]=useState(null);
 const onDDS=(e,i)=>{setDragDay(i);setDragItem(null);e.dataTransfer.effectAllowed="move";};
@@ -306,6 +325,7 @@ const onIDO=(e,di,ii)=>{e.preventDefault();e.stopPropagation();if(!dragItem||dra
 setWk(w=>w.map((d,i)=>{if(i!==di)return d;const ni=[...d.items];const it=ni.splice(dragItem.ii,1)[0];ni.splice(ii,0,it);setDragItem({di,ii});return{...d,items:ni};}));};
 const sw=(di,ii,a)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{l:a.l,d:a.d,c:a.c,m:a.m,b:a.b}:t)}:d));};
 const dl=(di,ii)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.filter((_,j)=>j!==ii)}:d));};
+const editCard=(di,ii,data)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{...t,...data}:t)}:d));};
 return(
 <div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
 {editingTpl&&<div style={{background:C.crS,border:"2px solid "+C.cr,borderRadius:14,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
@@ -336,7 +356,7 @@ return(<div key={di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO
 {isOpen&&<div style={{background:C.wh,borderRadius:"0 0 14px 14px",padding:"8px 8px 4px",border:"1px solid "+C.cr+"22",borderTop:"none"}}>
 {day.items.map((it,ii)=>{const isDI=dragItem&&dragItem.di===di&&dragItem.ii===ii;return(
 <div key={ii} draggable onDragStart={e=>onIDS(e,di,ii)} onDragOver={e=>onIDO(e,di,ii)} onDragEnd={()=>setDragItem(null)} style={{opacity:isDI?.4:1,cursor:"grab"}}>
-<Card item={it} idx={ii} di={di} onSw={sw} onDl={dl} origin={origin}/>
+<Card item={it} idx={ii} di={di} onSw={sw} onDl={dl} onEdit={editCard} origin={origin} isOwner={isOwner}/>
 </div>);})}
 {confirmed&&confirmed.filter(b=>{if(!b.d||!gi||!gi.ci)return false;const bd=new Date(b.d);const ci=new Date(gi.ci);const diff=Math.round((bd-ci)/864e5);return diff===di;}).map((b,i)=><ConfCard key={"bk"+i} bk={b}/>)}
 </div>}
@@ -745,7 +765,7 @@ const tw=gi&&gi.ci&&gi.co?(function(){const n=Math.round((new Date(gi.co)-new Da
 return(
 <div style={{minHeight:"100vh",background:C.bg}}>
 <Header tab={tab} setTab={setTab} isO={isO} setIsO={setIsO} gi={gi}/>
-{tab==="week"&&<WkTab wk={editingTpl?wk:tw} setWk={setWk} gi={editingTpl?null:gi} origin={origin} confirmed={rq.filter(r=>r.st==="confirmed")} editingTpl={editingTpl}
+{tab==="week"&&<WkTab wk={editingTpl?wk:tw} setWk={setWk} gi={editingTpl?null:gi} origin={origin} confirmed={rq.filter(r=>r.st==="confirmed")} editingTpl={editingTpl} isOwner={isO}
 onSaveTpl={()=>{if(editingTpl){setTpls(tpls.map(t=>t.id===editingTpl.id?{...t,wk:JSON.parse(JSON.stringify(wk))}:t));setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditWk(null);}}}}
 onCancelTpl={()=>{setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditWk(null);}}}/>}
 {tab==="crawls"&&<CrTab origin={origin}/>}

@@ -219,8 +219,10 @@ function Header({tab,setTab,isOwner,setIsOwner,guestMode,guestInfo}){
 }
 
 /* ═══ WEEK TAB ═══ */
-function WeekTab({week,setWeek,terms,guestInfo,alts}){
+function WeekTab({week,setWeek,terms,guestInfo,alts,isOwner}){
   const[open,setOpen]=useState(0);const[dragDay,setDragDay]=useState(null);const[dragBlock,setDragBlock]=useState(null);
+  const[editB,setEditB]=useState(null);const[ebf,setEbf]=useState({});
+  const editBlock=(di,bi,data)=>{setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.map((bl,j)=>j===bi?{...bl,...data}:bl)}:d));setEditB(null);};
   const onDDS=(e,i)=>{setDragDay(i);setDragBlock(null);e.dataTransfer.effectAllowed="move";};
   const onDDO=(e,i)=>{e.preventDefault();if(dragDay===null||dragDay===i)return;setWeek(w=>{const n=[...w];const it=n.splice(dragDay,1)[0];n.splice(i,0,it);setDragDay(i);return n;});};
   const onBDS=(e,di,bi)=>{e.stopPropagation();setDragBlock({di,bi});setDragDay(null);e.dataTransfer.effectAllowed="move";};
@@ -247,21 +249,35 @@ const repB=(di,bi)=>{const b=week[di].blocks[bi];const alt=getA(b.cat||b.tag,use
           <span style={{color:day.accent,transform:open===di?"rotate(180deg)":"none",fontSize:14,transition:"transform .15s"}}>▾</span>
         </button>
         {open===di&&<div style={{background:T.card,borderRadius:"0 0 11px 11px",padding:"8px 5px 5px",border:"1px solid "+day.accent+"22",borderTop:"none"}}>
-          {day.blocks.map((b,bi)=>{const s=TS[b.tag]||TS.activity;const iDB=dragBlock&&dragBlock.di===di&&dragBlock.bi===bi;return(
-            <div key={b.id||bi} draggable onDragStart={e=>onBDS(e,di,bi)} onDragOver={e=>onBDO(e,di,bi)} onDragEnd={()=>setDragBlock(null)}
-              style={{display:"flex",gap:6,marginBottom:5,opacity:iDB?.4:1,cursor:"grab"}}>
+          {day.blocks.map((b,bi)=>{const s=TS[b.tag]||TS.activity;const iDB=dragBlock&&dragBlock.di===di&&dragBlock.bi===bi;const isEditing=editB&&editB.di===di&&editB.bi===bi;
+          const eIS={width:"100%",padding:"6px 8px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:6,color:T.cream,fontSize:11,outline:"none",fontFamily:"'DM Sans',sans-serif"};
+          return(
+            <div key={b.id||bi} draggable={!isEditing} onDragStart={e=>!isEditing&&onBDS(e,di,bi)} onDragOver={e=>onBDO(e,di,bi)} onDragEnd={()=>setDragBlock(null)}
+              style={{display:"flex",gap:6,marginBottom:5,opacity:iDB?.4:1,cursor:isEditing?"default":"grab"}}>
               <div style={{width:52,textAlign:"right",paddingTop:8,flexShrink:0}}><span style={{fontSize:10,color:T.mut}}>{b.t}</span></div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:14}}><div style={{width:7,height:7,borderRadius:"50%",background:s.a,marginTop:10,flexShrink:0}}/><div style={{width:1,flex:1,background:T.mut+"18",marginTop:2}}/></div>
+              {isEditing?<div style={{flex:1,background:s.bg,borderRadius:9,padding:"10px 12px",border:"2px solid "+T.gold}}>
+                <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:6,marginBottom:6}}>
+                  <div><label style={{fontSize:9,color:T.mut}}>Name</label><input value={ebf.l||""} onChange={e=>setEbf({...ebf,l:e.target.value})} style={eIS}/></div>
+                  <div><label style={{fontSize:9,color:T.mut}}>Category</label><select value={ebf.cat||""} onChange={e=>setEbf({...ebf,cat:e.target.value,tag:["dinner","lunch","breakfast","cafe","gelato"].includes(e.target.value)?"food":["wine","town","nature","experience"].includes(e.target.value)?"activity":e.target.value==="spa"||e.target.value==="pool"?"relax":"errand"})} style={{...eIS,cursor:"pointer",width:90}}>{["dinner","lunch","breakfast","cafe","gelato","wine","town","nature","experience","spa","pool","shopping"].map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+                </div>
+                <div style={{marginBottom:6}}><label style={{fontSize:9,color:T.mut}}>Description</label><input value={ebf.d||""} onChange={e=>setEbf({...ebf,d:e.target.value})} style={eIS}/></div>
+                <div style={{display:"flex",gap:4}}>
+                  <button onClick={()=>editBlock(di,bi,ebf)} style={{padding:"5px 12px",background:T.gold,color:T.dark,border:"none",borderRadius:6,fontSize:10,fontWeight:600,cursor:"pointer"}}>Save</button>
+                  <button onClick={()=>setEditB(null)} style={{padding:"5px 10px",background:T.card,color:T.mut,border:"1px solid "+T.bdr,borderRadius:6,fontSize:10,cursor:"pointer"}}>Cancel</button>
+                </div>
+              </div>:
               <div style={{flex:1,background:s.bg,borderRadius:9,padding:"8px 10px",border:"1px solid "+s.a+"15"}}>
                 <div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}}>
                   <span style={{fontSize:12}}>{s.i}</span>
                   <span style={{fontFamily:"'Playfair Display',serif",fontSize:13,fontWeight:600,color:s.a,flex:1,minWidth:0}}>{aT(b.l,terms)}</span>
+                  {isOwner&&<button onClick={()=>{setEditB({di,bi});setEbf({l:b.l,d:b.d,cat:b.cat,tag:b.tag,map:b.map,book:b.book});}} title="Edit" style={{fontSize:11,color:T.gold,background:T.gold+"18",border:"1px solid "+T.gold+"35",borderRadius:7,padding:"4px 8px",cursor:"pointer"}}>✏️</button>}
                   <button onClick={()=>repB(di,bi)} title="Swap for similar idea" style={{fontSize:12,color:T.gold,background:T.gold+"18",border:"1px solid "+T.gold+"35",borderRadius:7,padding:"4px 12px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>↻ New Idea</button>
                   <button onClick={()=>delB(di,bi)} title="Remove" style={{fontSize:12,color:T.red,background:T.red+"12",border:"1px solid "+T.red+"30",borderRadius:7,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>✕</button>
                 </div>
                 <p style={{fontSize:11,color:T.cream+"bb",lineHeight:1.45,marginTop:3}}>{aT(b.d,terms)}</p>
                 <div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:4}}>{b.map&&<MapsBtn q={b.map}/>}{b.book&&<BookBadge url={b.bookUrl}/>}</div>
-              </div>
+              </div>}
             </div>);})}
         </div>}
       </div>);})}
@@ -483,7 +499,7 @@ function App(){
 
   return<div style={{minHeight:"100vh",background:T.dark,position:"relative",zIndex:1}}>
     <Header tab={tab} setTab={setTab} isOwner={isOwner} setIsOwner={setIsOwner} guestMode={guestMode} guestInfo={guestInfo}/>
-    {tab==="week"&&<WeekTab week={week} setWeek={setWeek} terms={terms} guestInfo={guestInfo} alts={alts}/>}
+    {tab==="week"&&<WeekTab week={week} setWeek={setWeek} terms={terms} guestInfo={guestInfo} alts={alts} isOwner={isOwner}/>}
     {tab==="trips"&&<TripsTab terms={terms}/>}
     {tab==="info"&&<InfoTab/>}
     {tab==="requests"&&<RequestsTab requests={requests} setRequests={setRequests} isOwner={isOwner}/>}
