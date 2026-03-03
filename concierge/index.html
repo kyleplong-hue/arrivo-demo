@@ -178,19 +178,32 @@ const INF=[
 function fD(s){if(!s)return"";return new Date(s+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
 function aD(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d;}
 
-// UTF-8 safe base64
-function toB64(s){return btoa(unescape(encodeURIComponent(s)));}
-function fromB64(s){return decodeURIComponent(escape(atob(s)));}
-
-// Clipboard helper with fallback
-function copyText(text){
-if(navigator.clipboard&&navigator.clipboard.writeText){
-navigator.clipboard.writeText(text).catch(()=>copyFallback(text));
-}else{copyFallback(text);}
+// UTF-8 safe base64 using TextEncoder
+function toB64(s){
+const bytes=new TextEncoder().encode(s);
+let bin="";for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+return btoa(bin);
 }
-function copyFallback(text){
-const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="position:fixed;left:-9999px";
-document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(ta);
+function fromB64(s){
+const bin=atob(s);
+const bytes=new Uint8Array(bin.length);
+for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+return new TextDecoder().decode(bytes);
+}
+
+// Clipboard with fallback + prompt as last resort
+function copyText(text){
+try{
+const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="position:fixed;top:0;left:0;opacity:0";
+document.body.appendChild(ta);ta.focus();ta.select();
+const ok=document.execCommand("copy");
+document.body.removeChild(ta);
+if(!ok)throw new Error("execCommand failed");
+}catch(e){
+try{navigator.clipboard.writeText(text)}catch(e2){
+window.prompt("Copy this link:",text);
+}
+}
 }
 
 function Header({tab,setTab,isO,setIsO,gi}){
@@ -386,8 +399,8 @@ return(
 function OwTab({gs,setGs,wk}){
 const[ng,sNg]=useState({name:"",ci:"",co:"",n:""});const[cp,sCp]=useState(null);
 const add=()=>{if(!ng.name||!ng.ci)return;setGs([...gs,{...ng,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(wk))}]);sNg({name:"",ci:"",co:"",n:""});};
-const mkLink=(g)=>{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,wk:g.wk}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;};
-const cpy=g=>{copyText(mkLink(g));sCp(g.id);setTimeout(()=>sCp(null),2000);};
+const mkLink=(g)=>{try{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,wk:g.wk}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;}catch(e){alert("Error generating link: "+e.message);return null;}};
+const cpy=g=>{const link=mkLink(g);if(!link)return;copyText(link);sCp(g.id);setTimeout(()=>sCp(null),3000);};
 const iS={width:"100%",padding:"11px 14px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:12,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
 return(
 <div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
