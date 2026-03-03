@@ -250,6 +250,7 @@ return<div style={{padding:"16px 14px",maxWidth:700,margin:"0 auto"}}>
 <div style={{fontSize:11,color:T.mt}}>{day.sub}</div>
 </div>
 {du&&<a href={du} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:10,color:T.terra,textDecoration:"none",padding:"5px 10px",background:T.terraS,borderRadius:8,border:"1px solid "+T.terra+"20",whiteSpace:"nowrap"}}>🗺️ Route</a>}
+<button onClick={e=>{e.stopPropagation();if(week.length>1)setWeek(w=>w.filter((_,i)=>i!==di));}} title="Delete day" style={{fontSize:12,color:T.red,background:T.red+"08",border:"1px solid "+T.red+"20",borderRadius:7,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>✕</button>
 <span style={{color:day.accent,transform:open===di?"rotate(180deg)":"none",fontSize:14,transition:"transform .15s"}}>▾</span>
 </button>
 {open===di&&<div style={{background:T.wh,borderRadius:"0 0 12px 12px",padding:"8px 6px 6px",border:"1px solid "+day.accent+"22",borderTop:"none"}}>
@@ -276,6 +277,7 @@ style={{display:"flex",gap:7,marginBottom:5,opacity:iDB?.4:1,cursor:"grab"}}>
 </div></React.Fragment>);})}
 </div>}
 </div>);})}
+<button onClick={()=>{const nd={id:"new"+Date.now(),title:"New Day",sub:"Add your own activities",emoji:"📌",accent:T.terra,blocks:[]};setWeek(w=>[...w,nd]);setOpen(week.length);}} style={{width:"100%",padding:"14px",background:T.wh,border:"2px dashed "+T.bd,borderRadius:12,fontSize:13,fontWeight:600,color:T.terra,cursor:"pointer",marginTop:4}}>+ Add Day</button>
 {storyOpen&&<StoryModal name={storyOpen} onClose={()=>setStoryOpen(null)}/>}
 </div>;}
 

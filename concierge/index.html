@@ -351,6 +351,7 @@ return(<div key={di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO
 <div style={{fontSize:16,fontWeight:600,marginTop:1}}>{day.title}</div>
 </div>
 {(()=>{const spots=day.items.filter(x=>x.m).map(x=>x.m.replace(/\+/g," "));if(spots.length<2)return null;const url="https://www.google.com/maps/dir/"+spots.join("/");return <a href={url} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:10,padding:"5px 10px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none",flexShrink:0}}>{"\uD83D\uDDFA\uFE0F"} Route</a>;})()}
+<button onClick={e=>{e.stopPropagation();if(wk.length>1)setWk(w=>w.filter((_,i)=>i!==di));}} title="Delete day" style={{fontSize:12,color:"#C4766A",background:"#C4766A10",border:"1px solid #C4766A25",borderRadius:8,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>{"\u2715"}</button>
 <span style={{color:C.cr,transform:isOpen?"rotate(180deg)":"none",fontSize:14,transition:"transform .15s"}}>{"\u25BE"}</span>
 </button>
 {isOpen&&<div style={{background:C.wh,borderRadius:"0 0 14px 14px",padding:"8px 8px 4px",border:"1px solid "+C.cr+"22",borderTop:"none"}}>
@@ -361,6 +362,7 @@ return(<div key={di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO
 {confirmed&&confirmed.filter(b=>{if(!b.d||!gi||!gi.ci)return false;const bd=new Date(b.d);const ci=new Date(gi.ci);const diff=Math.round((bd-ci)/864e5);return diff===di;}).map((b,i)=><ConfCard key={"bk"+i} bk={b}/>)}
 </div>}
 </div>);})}
+<button onClick={()=>{const nd={title:"New Day",emoji:"\uD83D\uDCCC",items:[]};setWk(w=>[...w,nd]);setOpenDay(wk.length);}} style={{width:"100%",padding:"14px",background:C.wh,border:"2px dashed "+C.bd,borderRadius:14,fontSize:13,fontWeight:600,color:C.cr,cursor:"pointer",marginTop:4}}>+ Add Day</button>
 </div>);
 }
 

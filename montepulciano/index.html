@@ -246,6 +246,7 @@ const repB=(di,bi)=>{const b=week[di].blocks[bi];const alt=getA(b.cat||b.tag,use
             <div style={{fontSize:10,color:T.mut}}>{day.sub}</div>
           </div>
           {du&&<a href={du} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:9,color:T.gold,textDecoration:"none",padding:"4px 8px",background:T.gold+"12",borderRadius:6,border:"1px solid "+T.gold+"20",whiteSpace:"nowrap"}}>🗺️ Route</a>}
+          <button onClick={e=>{e.stopPropagation();if(week.length>1)setWeek(w=>w.filter((_,i)=>i!==di));}} title="Delete day" style={{fontSize:12,color:T.red,background:T.red+"10",border:"1px solid "+T.red+"25",borderRadius:7,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>✕</button>
           <span style={{color:day.accent,transform:open===di?"rotate(180deg)":"none",fontSize:14,transition:"transform .15s"}}>▾</span>
         </button>
         {open===di&&<div style={{background:T.card,borderRadius:"0 0 11px 11px",padding:"8px 5px 5px",border:"1px solid "+day.accent+"22",borderTop:"none"}}>
@@ -281,6 +282,7 @@ const repB=(di,bi)=>{const b=week[di].blocks[bi];const alt=getA(b.cat||b.tag,use
             </div>);})}
         </div>}
       </div>);})}
+  <button onClick={()=>{const nd={id:"new"+Date.now(),title:"New Day",sub:"Add your own activities",emoji:"📌",accent:T.gold,blocks:[]};setWeek(w=>[...w,nd]);setOpen(week.length);}} style={{width:"100%",padding:"14px",background:T.card,border:"2px dashed "+T.bdr,borderRadius:11,fontSize:12,fontWeight:600,color:T.gold,cursor:"pointer",marginTop:4}}>+ Add Day</button>
   </div>;
 }
 
