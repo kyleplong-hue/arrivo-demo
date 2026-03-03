@@ -463,6 +463,7 @@ return evts;
 function OwTab({gs,setGs,tpls,setTpls}){
 const[ng,sNg]=useState({name:"",ci:"",co:"",n:"",tpl:""});const[cp,sCp]=useState(null);
 const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[renName,setRenName]=useState("");
+const[editId,setEditId]=useState(null);const[editData,setEditData]=useState({});
 const ICAL_STORE="ut_ical_url";
 const[icalUrl,setIcalUrl]=useState(()=>{try{return localStorage.getItem(ICAL_STORE)||"";}catch(e){return "";}});
 const[icalLoading,setIcalLoading]=useState(false);const[icalRes,setIcalRes]=useState(null);const[icalErr,setIcalErr]=useState("");
@@ -581,20 +582,41 @@ return(
 {/* Guest List */}
 {gs.length===0&&<div style={{textAlign:"center",padding:30,color:C.mtL}}>No guests yet</div>}
 {gs.map(g=>{const link=mkLink(g);const mailBody=link?"Hi "+g.name.split(" ")[0]+",\n\nHere's your personalized guide:\n"+link+"\n\nLooking forward to your visit!":"";const mailto=g.email?"mailto:"+g.email+"?subject=Your+Guide&body="+encodeURIComponent(mailBody):"";
-return(<div key={g.id} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"14px 16px",marginBottom:8}}>
-<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
+const isEd=editId===g.id;
+return(<div key={g.id} style={{background:C.wh,borderRadius:14,border:isEd?"2px solid "+C.cr:"1px solid "+C.bd,padding:"14px 16px",marginBottom:8}}>
+{isEd?<div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Name</label><input value={editData.name||""} onChange={e=>setEditData({...editData,name:e.target.value})} style={iS}/></div>
+<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Email</label><input value={editData.email||""} onChange={e=>setEditData({...editData,email:e.target.value})} placeholder="guest@email.com" style={iS}/></div>
+</div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Start</label><input type="date" value={editData.ci||""} onChange={e=>setEditData({...editData,ci:e.target.value})} style={iS}/></div>
+<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>End</label><input type="date" value={editData.co||""} onChange={e=>setEditData({...editData,co:e.target.value})} style={iS}/></div>
+</div>
+<div style={{marginBottom:8}}><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Notes</label><input value={editData.n||""} onChange={e=>setEditData({...editData,n:e.target.value})} placeholder="Dietary needs, preferences..." style={iS}/></div>
+<div style={{marginBottom:10}}><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Template</label>
+<select value={editData.tplId||""} onChange={e=>{const t=tpls.find(x=>x.id===e.target.value);if(t)setEditData({...editData,tplId:t.id,tplName:t.name,wk:JSON.parse(JSON.stringify(t.wk))});}} style={{...iS,cursor:"pointer"}}>
+{tpls.map(t=><option key={t.id} value={t.id}>{t.name}{t.isDefault?" (default)":""}</option>)}
+</select></div>
+<div style={{display:"flex",gap:6}}>
+<button onClick={()=>{setGs(gs.map(x=>x.id===g.id?{...x,name:editData.name,ci:editData.ci,co:editData.co,n:editData.n,email:editData.email,tplName:editData.tplName,wk:editData.wk||x.wk}:x));setEditId(null);}} style={{flex:1,fontSize:13,color:"#fff",background:C.sg,border:"none",borderRadius:20,padding:"10px",cursor:"pointer",fontWeight:600}}>Save</button>
+<button onClick={()=>setEditId(null)} style={{fontSize:13,color:C.mt,background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,padding:"10px 16px",cursor:"pointer"}}>Cancel</button>
+</div>
+</div>:<>
+<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8,cursor:"pointer"}} onClick={()=>{setEditId(g.id);setEditData({name:g.name,ci:g.ci,co:g.co,n:g.n||"",email:g.email||"",tplId:(tpls.find(t=>t.name===g.tplName)||tpls[0]).id,tplName:g.tplName,wk:g.wk});}}>
 <div style={{width:36,height:36,borderRadius:10,background:C.wmS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:C.wm}}>{g.name.charAt(0)}</div>
 <div style={{flex:1}}>
-<div style={{fontSize:14,fontWeight:600}}>{g.name}</div>
+<div style={{fontSize:14,fontWeight:600}}>{g.name} <span style={{fontSize:10,color:C.mtL}}>✏️</span></div>
 <div style={{fontSize:12,color:C.mt}}>{fD(g.ci)} {"\u2192"} {fD(g.co)}{g.tplName?" \u00B7 "+g.tplName:""}</div>
 {g.n&&<div style={{fontSize:11,color:C.mt}}>{g.n}</div>}
 </div>
-<button onClick={()=>setGs(gs.filter(x=>x.id!==g.id))} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>
+<button onClick={e=>{e.stopPropagation();setGs(gs.filter(x=>x.id!==g.id));}} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>
 </div>
 <div style={{display:"flex",gap:6}}>
 <button onClick={()=>cpy(g)} style={{flex:1,fontSize:13,color:cp===g.id?C.sg:C.cr,background:cp===g.id?C.sgS:C.crS,border:"none",borderRadius:20,padding:"10px 14px",cursor:"pointer",fontWeight:600}}>{cp===g.id?"\u2713 Link Copied!":"\uD83D\uDD17 Copy Link"}</button>
 {g.email&&<a href={mailto} style={{flex:1,fontSize:13,color:"#fff",background:C.sg,border:"none",borderRadius:20,padding:"10px 14px",cursor:"pointer",fontWeight:600,textDecoration:"none",textAlign:"center",display:"block"}}>{"\u2709\uFE0F"} Email Guide</a>}
 </div>
+</>}
 </div>)})}
 </div>);}
 
