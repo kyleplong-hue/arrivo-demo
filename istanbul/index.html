@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Culinary Backstreets Istanbul — Your Personal Food Guide</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body,#root{min-height:100vh;background:#FAF8F5;color:#1A1A1A;font-family:'Source Sans 3',sans-serif;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#D4CFC5;border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.fade-up{animation:fadeUp .5s ease both}
+.slide-in{animation:slideIn .4s ease both}
+a{color:inherit}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#8B4513!important;box-shadow:0 0 0 3px rgba(139,69,19,.08)}
+button{font-family:'Source Sans 3',sans-serif}
+.serif{font-family:'Playfair Display',serif}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useRef,useEffect}=React;
+
+const C={bg:"#FAF8F5",bgS:"#F3F0EB",wh:"#FFF",fg:"#1C1917",fgS:"#44403C",mt:"#9C9589",mtL:"#C4BFB5",bd:"#E7E3DC",bdL:"#F0EDE6",
+terra:"#A0522D",terraS:"#FDF5EF",terraD:"#7A3E22",
+olive:"#5C6B3C",oliveS:"#F2F5EC",
+wine:"#7B2D3B",wineS:"#FBF0F2",
+gold:"#B8963E",goldS:"#FBF6EC",
+sky:"#4A7C9B",skyS:"#EDF4F9",
+ink:"#2C2520",inkS:"#F8F5F2"};
+
+const MB="https://www.google.com/maps/search/?api=1&query=";
+
+const PL={"Çiya Sofrası":"Çiya+Sofrası+Kadıköy+Istanbul","Karaköy Lokantası":"Karaköy+Lokantası+Istanbul","Karaköy Güllüoğlu":"Karaköy+Güllüoğlu+Istanbul","Aynen Dürüm":"Aynen+Dürüm+Grand+Bazaar+Istanbul","Mahir Lokantası":"Mahir+Lokantası+Osmanbey+Istanbul","Mezme":"Mezme+Kurtuluş+Istanbul","Kaya Döner":"Kaya+Döner+Bomonti+Istanbul","Kavurmacı Goze":"Kavurmacı+Goze+Sirkeci+Istanbul","Bayramoğlu":"Bayramoğlu+Döner+Istanbul","Cuma":"Cuma+Restaurant+Istanbul","Ozzie's Kokoreç":"Ozzie's+Kokoreç+Asmalımescit+Istanbul","Boris'in Yeri":"Boris'in+Yeri+Ayaspaşa+Istanbul","Lezzet-i Şark":"Lezzet-i+Şark+Istanbul","Spice Bazaar":"Mısır+Çarşısı+Istanbul","Grand Bazaar":"Kapalıçarşı+Istanbul","Galata Tower":"Galata+Kulesi+Istanbul","Kadıköy Market":"Kadıköy+Çarşı+Istanbul","Piazza del Campo":"Piazza+del+Campo+Siena","Karaköy":"Karaköy+Istanbul","Kadıköy":"Kadıköy+Istanbul","Beyoğlu":"Beyoğlu+Istanbul","Balat":"Balat+Istanbul","Sultanahmet":"Sultanahmet+Istanbul","Eminönü":"Eminönü+Istanbul","Beşiktaş":"Beşiktaş+Istanbul","Ortaköy":"Ortaköy+Istanbul","Kanaat Lokantası":"Kanaat+Lokantası+Üsküdar+Istanbul","Dürümzade":"Dürümzade+Beyoğlu+Istanbul","Tarihi Mimoza":"Tarihi+Mimoza+Samatya+Istanbul","Namlı Gurme":"Namlı+Gurme+Karaköy+Istanbul","Sofyalı 9":"Sofyalı+9+Beyoğlu+Istanbul","Lades Menemen":"Lades+Menemen+Taksim+Istanbul","Hagia Sophia":"Ayasofya+Istanbul","Topkapı Palace":"Topkapı+Sarayı+Istanbul","Suleymaniye Mosque":"Süleymaniye+Camii+Istanbul"};
+
+function linkP(t){if(!t)return[t];let p=[],r=t;const sk=Object.keys(PL).sort((a,b)=>b.length-a.length);while(r.length>0){let b={i:Infinity,k:null};for(const k of sk){const i=r.indexOf(k);if(i!==-1&&i<b.i)b={i:i,k:k};}if(!b.k){p.push(r);break;}if(b.i>0)p.push(r.slice(0,b.i));p.push({n:b.k,q:PL[b.k]});r=r.slice(b.i+b.k.length);}return p;}
+
+const CT={
+breakfast:{bg:"#FBF6EC",a:"#B8963E",i:"\u2600\uFE0F",l:"Kahvalt\u0131"},
+lunch:{bg:"#F2F5EC",a:"#5C6B3C",i:"\uD83E\uDD62",l:"\u00D6\u011Fle"},
+dinner:{bg:"#FDF5EF",a:"#A0522D",i:"\uD83C\uDF77",l:"Ak\u015Fam"},
+drinks:{bg:"#FBF0F2",a:"#7B2D3B",i:"\uD83C\uDF78",l:"Rak\u0131"},
+street:{bg:"#FDF5EF",a:"#A0522D",i:"\uD83C\uDF2F",l:"Sokak"},
+bazaar:{bg:"#FBF6EC",a:"#B8963E",i:"\uD83C\uDFEA",l:"Çarşı"},
+sweet:{bg:"#FBF0F2",a:"#7B2D3B",i:"\uD83C\uDF6E",l:"Tatl\u0131"},
+walk:{bg:"#EDF4F9",a:"#4A7C9B",i:"\uD83D\uDEB6",l:"Walk"},
+ferry:{bg:"#EDF4F9",a:"#4A7C9B",i:"\u26F4\uFE0F",l:"Ferry"},
+sight:{bg:"#F3F0EB",a:"#9C9589",i:"\uD83C\uDFDB\uFE0F",l:"G\u00F6r"},
+tour:{bg:"#FDF5EF",a:"#A0522D",i:"\uD83D\uDCCD",l:"CB Walk"},
+meyhane:{bg:"#FBF0F2",a:"#7B2D3B",i:"\uD83E\uDD43",l:"Meyhane"},
+coffee:{bg:"#F3F0EB",a:"#6B5C4D",i:"\u2615",l:"Kahve"},
+market:{bg:"#F2F5EC",a:"#5C6B3C",i:"\uD83E\uDED2",l:"Pazar"},
+};
+
+const ALTS=[
+{l:"Çiya Sofrası",d:"Very likely the best restaurant in Istanbul. Rotating Anatolian menu. Kadıköy.",c:"dinner",m:"Çiya+Sofrası+Kadıköy+Istanbul"},
+{l:"Karaköy Lokantası",d:"Lokanta by day, meyhane by night. Reliably excellent Turkish cooking.",c:"lunch",m:"Karaköy+Lokantası+Istanbul"},
+{l:"Aynen Dürüm",d:"Microscopic kebab shack at Grand Bazaar's edge. Exceptional lamb dürüm.",c:"street",m:"Aynen+Dürüm+Grand+Bazaar+Istanbul"},
+{l:"Karaköy Güllüoğlu",d:"The baklava institution since the 1800s. Pistachio baklava is perfection.",c:"sweet",m:"Karaköy+Güllüoğlu+Istanbul"},
+{l:"Mahir Lokantası",d:"Osmanbey diner. Diyarbakır home recipes, wood-fired oven specials.",c:"lunch",m:"Mahir+Lokantası+Osmanbey+Istanbul"},
+{l:"Mezme",d:"Meze deli & meyhane in Kurtuluş. Armenian-Hatay recipes by chef Sasun.",c:"meyhane",m:"Mezme+Kurtuluş+Istanbul"},
+{l:"Kaya Döner",d:"Bomonti's excellent new döner spot. Young couple, great attention to detail.",c:"street",m:"Kaya+Döner+Bomonti+Istanbul"},
+{l:"Kavurmacı Goze",d:"Hidden beneath a copper-domed bank in Sirkeci. Only kavurma (braised beef).",c:"lunch",m:"Kavurmacı+Goze+Sirkeci+Istanbul"},
+{l:"Bayramoğlu",d:"Considered by many the best döner in Turkey. Oak charcoal, tandır bread.",c:"lunch",m:"Bayramoğlu+Döner+Istanbul"},
+{l:"Boris'in Yeri",d:"Kaymak & egg breakfast at this White Russian heritage restaurant in Ayaspaşa.",c:"breakfast",m:"Boris'in+Yeri+Ayaspaşa+Istanbul"},
+{l:"Ozzie's Kokoreç",d:"Usta Oğuzhan's legendary kokoreç in Asmalımescit. The real deal.",c:"street",m:"Ozzie's+Kokoreç+Asmalımescit+Istanbul"},
+{l:"Cuma",d:"Contemporary Turkish on a charming street. Smart updates on classics.",c:"dinner",m:"Cuma+Restaurant+Istanbul"},
+{l:"Lezzet-i Şark",d:"Mind-blowing künefe. Crispy cheese pastry soaked in syrup.",c:"sweet",m:"Lezzet-i+Şark+Istanbul"},
+{l:"Dürümzade",d:"Beyoğlu's legendary late-night dürüm spot. Always packed.",c:"street",m:"Dürümzade+Beyoğlu+Istanbul"},
+{l:"Kanaat Lokantası",d:"Üsküdar institution. Ottoman-era recipes, old-school elegance.",c:"lunch",m:"Kanaat+Lokantası+Üsküdar+Istanbul"},
+{l:"Sofyalı 9",d:"Classic Beyoğlu meyhane. Excellent meze spread, rakı flowing.",c:"meyhane",m:"Sofyalı+9+Beyoğlu+Istanbul"},
+{l:"Namlı Gurme",d:"Karaköy deli paradise. Cheeses, charcuterie, olives, breakfast.",c:"breakfast",m:"Namlı+Gurme+Karaköy+Istanbul"},
+{l:"Lades Menemen",d:"Taksim neighborhood staple for 60+ years. Simple, perfect menemen.",c:"breakfast",m:"Lades+Menemen+Taksim+Istanbul"},
+{l:"Tarihi Mimoza",d:"Samatya's fiery kelle paça soup deep into the night. Post-meyhane cure.",c:"dinner",m:"Tarihi+Mimoza+Samatya+Istanbul"},
+];
+
+const IW=[
+{title:"Old City & Grand Bazaar",emoji:"\uD83C\uDFDB\uFE0F",items:[
+{l:"Boris'in Yeri",d:"Start with kaymak & egg breakfast at this legendary Ayaspaşa spot. White Russian heritage since early Republic era.",c:"breakfast",m:"Boris'in+Yeri+Ayaspaşa+Istanbul",t:"9:00 AM"},
+{l:"Sultanahmet Sights",d:"Hagia Sophia, Blue Mosque, Hippodrome. Hit these early before the crowds.",c:"sight",m:"Sultanahmet+Istanbul",t:"10:30 AM"},
+{l:"Aynen Dürüm",d:"Microscopic kebab shack at Grand Bazaar's edge. Best lamb dürüm in the old city.",c:"street",m:"Aynen+Dürüm+Grand+Bazaar+Istanbul",t:"1:00 PM"},
+{l:"Tea near Süleymaniye",d:"Find a tea garden with a view near the mosque. This is how Istanbullus pause.",c:"coffee",m:"Süleymaniye+Camii+Istanbul",t:"2:30 PM"},
+{l:"Lezzet-i Şark",d:"Mind-blowing künefe. Crispy shredded pastry, melting cheese, sugar syrup, pistachios.",c:"sweet",m:"Lezzet-i+Şark+Istanbul",t:"4:00 PM"},
+{l:"Karaköy Lokantası",d:"Lokanta by day, meyhane by night. Order the meze spread and let them guide you.",c:"dinner",m:"Karaköy+Lokantası+Istanbul",t:"7:30 PM"},
+]},
+{title:"Two Continents",emoji:"\u26F4\uFE0F",items:[
+{l:"Namlı Gurme",d:"Karaköy deli breakfast. Cheeses, olives, sausages, pastries. Load up.",c:"breakfast",m:"Namlı+Gurme+Karaköy+Istanbul",t:"9:00 AM"},
+{l:"Karaköy Market Walk",d:"Wander the backstreets. Pickle shops, spice stalls, börek windows.",c:"market",m:"Karaköy+Istanbul",t:"10:30 AM"},
+{l:"Karaköy Güllüoğlu",d:"The baklava institution. Pistachio, walnut, or chocolate \u2014 every bite is perfect.",c:"sweet",m:"Karaköy+Güllüoğlu+Istanbul",t:"11:30 AM"},
+{l:"Ferry to Kadıköy",d:"Hop the ferry from Karaköy. Tea on the deck, Bosphorus breeze, skyline views.",c:"ferry",m:"Kadıköy+Istanbul",t:"12:30 PM"},
+{l:"Kadıköy Market",d:"The Asian side's food heart. Pickles, nuts, produce, fish. Follow your nose.",c:"market",m:"Kadıköy+Çarşı+Istanbul",t:"1:30 PM"},
+{l:"Çiya Sofrası",d:"Very likely the best restaurant in Istanbul. Rotating Anatolian menu. A profound taste experience every time.",c:"dinner",m:"Çiya+Sofrası+Kadıköy+Istanbul",t:"7:00 PM"},
+]},
+{title:"Bazaar Quarter Deep Dive",emoji:"\uD83C\uDFEA",items:[
+{l:"Esnaf Lokantası Breakfast",d:"Start like locals do: lentil soup, bread, tea. Find any steaming window near Eminönü.",c:"breakfast",m:"Eminönü+Istanbul",t:"8:30 AM"},
+{l:"CB: Bazaar Quarter Walk",d:"6-hour CB food tour. Meet craftsmen-masters, eat at the area's most classic spots.",c:"tour",b:true,t:"10:00 AM"},
+{l:"Spice Bazaar",d:"Mısır Çarşısı. Saffron, dried fruits, lokum. Smell your way through centuries.",c:"bazaar",m:"Mısır+Çarşısı+Istanbul",t:"4:30 PM"},
+{l:"Galata Bridge",d:"Walk across at sunset. Fishermen on top, fish restaurants below. Grab a balık ekmek.",c:"street",m:"Galata+Bridge+Istanbul",t:"6:00 PM"},
+{l:"Sofyalı 9",d:"Classic Beyoğlu meyhane. Meze, rakı, and conversation. This is the Turkish way.",c:"meyhane",m:"Sofyalı+9+Beyoğlu+Istanbul",t:"8:30 PM"},
+]},
+{title:"Kebab Trail & Backstreets",emoji:"\uD83D\uDD25",items:[
+{l:"Simit & Tea",d:"Sesame-crusted simit from a red street cart. Eat it with cheese and olives at any çay bahçesi.",c:"breakfast",t:"9:00 AM"},
+{l:"Kaya Döner",d:"Bomonti's excellent new spot (2024). Young couple, stellar döner, great attention to detail.",c:"street",m:"Kaya+Döner+Bomonti+Istanbul",t:"11:00 AM"},
+{l:"Mahir Lokantası",d:"Osmanbey. Wood-fired oven, Diyarbakır recipes. The esnaf lokantası at its finest.",c:"lunch",m:"Mahir+Lokantası+Osmanbey+Istanbul",t:"1:00 PM"},
+{l:"Mezme",d:"Kurtuluş gem. Meze deli by chef Sasun \u2014 Armenian & Hatay traditions. Recently reopened.",c:"meyhane",m:"Mezme+Kurtuluş+Istanbul",t:"3:30 PM"},
+{l:"Ozzie's Kokoreç",d:"Usta Oğuzhan's legendary kokoreç in Asmalımescit. Grilled lamb intestines \u2014 trust us.",c:"street",m:"Ozzie's+Kokoreç+Asmalımescit+Istanbul",t:"6:00 PM"},
+{l:"Kavurmacı Goze",d:"Hidden beneath a copper-domed bank in Sirkeci. One menu item: braised beef (kavurma).",c:"dinner",m:"Kavurmacı+Goze+Sirkeci+Istanbul",t:"8:00 PM"},
+]},
+{title:"Bosphorus & Asian Side",emoji:"\uD83C\uDF0A",items:[
+{l:"CB: Born on the Bosphorus",d:"Full-day CB tour. Workingman's breakfast to fish lunch in waterside neighborhoods.",c:"tour",b:true,t:"9:00 AM"},
+{l:"Bosphorus Ferry",d:"If not on a CB walk: take the public ferry. Tea on deck, Ottoman palaces gliding by.",c:"ferry",m:"Bosphorus+Ferry+Istanbul",t:"2:00 PM"},
+{l:"Kadıköy Backstreets",d:"Vintage record shops, craft coffee, street art. The hipster-meets-grandma side of Istanbul.",c:"walk",m:"Moda+Kadıköy+Istanbul",t:"4:00 PM"},
+{l:"Çiya Sofrası",d:"Return visit \u2014 the menu changes daily. Spring: meat stew with unripe green plums. Always a revelation.",c:"dinner",m:"Çiya+Sofrası+Kadıköy+Istanbul",t:"7:00 PM"},
+{l:"Moda Nightcap",d:"Walk the Moda seafront. Pick a rooftop bar, watch the lights of the European shore.",c:"drinks",m:"Moda+Kadıköy+Istanbul",t:"9:30 PM"},
+]},
+];
+
+const TRIPS=[
+{title:"The Kebab Trail",emoji:"\uD83D\uDD25",d:"In Istanbul, kebab goes far beyond döner. From Aynen Dürüm's lamb wraps to Bayramoğlu's oak-charcoal giants to Kaya Döner's new-school precision.",spots:["Aynen Dürüm","Bayramoğlu","Kaya Döner","Dürümzade","Ozzie's Kokoreç"]},
+{title:"Meyhane Crawl",emoji:"\uD83E\uDD43",d:"The ritual: meze, rakı, conversation. Start civilized, end singing. Beyoğlu's backstreets are your stage.",spots:["Sofyalı 9","Mezme","Karaköy Lokantası"]},
+{title:"Sweet Istanbul",emoji:"\uD83C\uDF6E",d:"Baklava, künefe, lokum, kaymak. A sugar-fueled tour across neighborhoods.",spots:["Karaköy Güllüoğlu","Lezzet-i Şark","Boris'in Yeri"]},
+{title:"Esnaf Lokantası Circuit",emoji:"\uD83C\uDF72",d:"The tradesman's restaurant \u2014 Turkey's bread & butter. Big pots, honest food, loyal crowds. This is real Istanbul.",spots:["Mahir Lokantası","Kanaat Lokantası","Karaköy Lokantası","Kavurmacı Goze"]},
+{title:"Two Continents Market Run",emoji:"\u26F4\uFE0F",d:"Karaköy market \u2192 ferry across the Bosphorus \u2192 Kadıköy market. Pickles, nuts, fish, cheese on two continents.",spots:["Namlı Gurme","Karaköy Güllüoğlu","Kadıköy"]},
+{title:"The CB One-Day Best",emoji:"\u2B50",d:"Our team's go-to: Boris'in Yeri breakfast \u2192 Sultanahmet \u2192 Grand Bazaar \u2192 Aynen dürüm \u2192 Süleymaniye tea \u2192 ferry \u2192 Çiya dinner.",spots:["Boris'in Yeri","Aynen Dürüm","Lezzet-i Şark","Çiya Sofrası"]},
+];
+
+const TOURS=[
+{title:"Culinary Secrets of the Old City",d:"Beyond the monuments to where the serious eating is done. Soup for breakfast, kebab masters, hidden gems in tourist country.",dur:"5 hours",price:"$125",img:"\uD83C\uDFDB\uFE0F"},
+{title:"Born on the Bosphorus",d:"Workingman's breakfast in a frenetic market to a leisurely fish lunch in a waterside neighborhood. The full range of Istanbul's waterside culture.",dur:"Full day",price:"$185",img:"\uD83C\uDF0A"},
+{title:"Bazaar Quarter",d:"Meet the masters of the Grand Bazaar. Sit down and eat with craftsmen in the area's most classic spots. 6 hours of pure immersion.",dur:"6 hours",price:"$145",img:"\uD83C\uDFEA"},
+{title:"Two Continents Market Tour",d:"Karaköy to Kadıköy, tied together by a Bosphorus ferry. Two markets on two continents, one unforgettable day.",dur:"Full day",price:"$185",img:"\u26F4\uFE0F"},
+{title:"Backstreets of Kurtuluş",d:"Far from the tourist trail. Classic Istanbul flavors: bread from the tandır, mind-boggling meze, sizzling kebab, old school ice cream.",dur:"Full day",price:"$185",img:"\uD83D\uDEB6"},
+];
+
+const INF=[
+{title:"Neighborhoods",icon:"\uD83D\uDDFA\uFE0F",items:[
+{t:"Sultanahmet / Old City",d:"Monuments + tourist traps. We know the gems hidden in plain sight."},
+{t:"Karaköy",d:"Dockside renaissance. Baklava, delis, trendy cafés, creative scene."},
+{t:"Beyoğlu / Taksim",d:"Nightlife hub. İstiklal Ave, meyhanes, late-night dürüm, rooftop bars."},
+{t:"Kadıköy (Asian Side)",d:"Market paradise. Çiya, fish stalls, vinyl shops, Moda waterfront."},
+{t:"Fatih / Balat",d:"Deep Istanbul. Colorful houses, Syrian eateries, heritage shops."},
+{t:"Beşiktaş",d:"Breakfast street, fish market, student energy, football passion."},
+]},
+{title:"Dining Culture",icon:"\uD83E\uDD62",items:[
+{t:"Esnaf Lokantası",d:"Tradesman's restaurant. Big pots, daily specials, honest prices. The backbone of Turkish dining."},
+{t:"Meyhane",d:"Tavern ritual: order meze, pour rakı, talk for hours. Not a meal \u2014 a lifestyle."},
+{t:"Street Food",d:"Simit, döner, kokoreç, balık ekmek, midye dolma. Eat standing. Eat walking. Eat."},
+{t:"Turkish Breakfast",d:"A showstopper: cheeses, olives, eggs, honey, kaymak, simit, endless çay."},
+{t:"Spice Level",d:"Turkish food is flavorful but rarely fiery. Southeastern dishes (Antep, Urfa) bring heat."},
+]},
+{title:"Getting Around",icon:"\uD83D\uDE95",items:[
+{t:"Istanbulkart",d:"Tap card for metro, tram, ferry, bus. Get one at any kiosk. Essential."},
+{t:"Ferries",d:"The best public transit on earth. Karaköy \u2194 Kadıköy is life-changing."},
+{t:"Walking",d:"Old City, Karaköy, Beyoğlu \u2014 very walkable. Comfy shoes on cobblestones."},
+{t:"Taxi / Uber",d:"Use BiTaksi app for fair meters. Uber exists but can be unreliable."},
+]},
+{title:"Practical",icon:"\uD83D\uDCF1",items:[
+{t:"Prices",d:"Full breakfast from \u20AC5-10. Three-course lunch \u20AC8-12. Coffee \u20AC1.50. Beer \u20AC2.50."},
+{t:"Tipping",d:"10% at sit-down restaurants. Round up at lokantası. Not expected at street stalls."},
+{t:"Safety",d:"Very safe for a city this size. Pickpockets near tourist areas. Use common sense."},
+{t:"Language",d:"'Teşekkürler' (thanks) and 'Hesap lütfen' (check please) go a long way."},
+]},
+];
+
+function fD(s){if(!s)return"";return new Date(s+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
+function aD(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d;}
+
+function Header({tab,setTab,gi}){
+const gt=[{id:"week",l:"Your Week",i:"\uD83D\uDCC5"},{id:"crawls",l:"Food Crawls",i:"\uD83D\uDD25"},{id:"tours",l:"Our Walks",i:"\uD83D\uDEB6"},{id:"essentials",l:"Know Before",i:"\uD83D\uDCF1"},{id:"chat",l:"Ask CB",i:"\uD83D\uDCAC"}];
+return(
+<header style={{background:"rgba(250,248,245,.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid "+C.bd,position:"sticky",top:0,zIndex:100}}>
+<div style={{maxWidth:700,margin:"0 auto",padding:"16px 20px 0"}}>
+<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:gi?10:14}}>
+<div style={{width:42,height:42,borderRadius:14,background:C.terra,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",letterSpacing:1,lineHeight:1,textAlign:"center",fontFamily:"'Playfair Display',serif"}}>CB</div>
+<div style={{flex:1}}>
+<h1 className="serif" style={{fontSize:20,fontWeight:600,lineHeight:1.1,color:C.fg}}>Culinary Backstreets</h1>
+<p style={{fontSize:11,color:C.mt,letterSpacing:.8,textTransform:"uppercase",marginTop:2}}>Istanbul \u00B7 Personal Food Guide</p>
+</div>
+<a href="https://culinarybackstreets.com" target="_blank" rel="noopener" style={{fontSize:11,color:C.terra,background:C.terraS,border:"1px solid rgba(160,82,45,.15)",borderRadius:20,padding:"6px 14px",textDecoration:"none",fontWeight:600}}>culinarybackstreets.com</a>
+</div>
+{gi&&<div style={{background:C.goldS,borderRadius:14,padding:"10px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:10,border:"1px solid "+C.bd}}>
+<span style={{fontSize:20}}>{"\uD83D\uDC4B"}</span>
+<div style={{flex:1}}>
+<span style={{fontSize:14,fontWeight:600}}>Ho\u015F geldiniz, {gi.name}!</span>
+<span style={{fontSize:12,color:C.mt,marginLeft:8}}>{fD(gi.ci)} {"\u2192"} {fD(gi.co)}</span>
+</div>
+</div>}
+<nav style={{display:"flex",gap:2,overflowX:"auto"}}>
+{gt.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:"0 0 auto",padding:"10px 14px 12px",background:"none",border:"none",borderBottom:tab===t.id?"2px solid "+C.terra:"2px solid transparent",color:tab===t.id?C.fg:C.mt,fontSize:12,fontWeight:tab===t.id?600:400,cursor:"pointer",whiteSpace:"nowrap",fontFamily:"'Source Sans 3',sans-serif"}}>{t.i} {t.l}</button>)}
+</nav>
+</div>
+</header>);
+}
+
+function Card({item,idx,di,onSw,onDl}){
+const ct=CT[item.c]||CT.lunch;const ps=linkP(item.d);const[o,setO]=useState(false);
+return(
+<div className="fade-up" style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,overflow:"hidden",marginBottom:8,boxShadow:"0 1px 3px rgba(0,0,0,.04)"}}>
+<div style={{display:"flex",gap:12,padding:"14px 16px",alignItems:"flex-start"}}>
+<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,paddingTop:2}}>
+<div style={{width:36,height:36,borderRadius:10,background:ct.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{ct.i}</div>
+<span style={{fontSize:8,color:ct.a,fontWeight:700,letterSpacing:.5,textTransform:"uppercase"}}>{ct.l}</span>
+</div>
+<div style={{flex:1,minWidth:0}}>
+<div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:3}}>
+<span style={{fontSize:15,fontWeight:600,lineHeight:1.3}}>{item.l}</span>
+{item.t&&<span style={{fontSize:11,color:C.mt,fontWeight:500,flexShrink:0}}>{item.t}</span>}
+</div>
+<div style={{fontSize:13,color:C.fgS,lineHeight:1.6}}>
+{ps.map((p,i)=>typeof p==="string"?<span key={i}>{p}</span>:<a key={i} href={MB+p.q} target="_blank" rel="noopener" style={{color:C.sky,textDecoration:"none",borderBottom:"1px solid rgba(74,124,155,.3)",fontWeight:500}}>{p.n}</a>)}
+</div>
+<div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}>
+{item.b&&<span style={{fontSize:10,padding:"3px 8px",background:C.wineS,color:C.wine,borderRadius:20,fontWeight:600}}>Book via CB</span>}
+{item.m&&<a href={MB+item.m} target="_blank" rel="noopener" style={{fontSize:10,padding:"3px 8px",background:C.skyS,color:C.sky,borderRadius:20,fontWeight:600,textDecoration:"none"}}>{"\uD83D\uDCCD"} Map</a>}
+</div>
+</div>
+<div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0,paddingTop:2}}>
+<button onClick={()=>setO(!o)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:C.mt,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u21BB"}</button>
+{onDl&&<button onClick={()=>onDl(di,idx)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#C4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
+</div>
+</div>
+{o&&<div style={{padding:"8px 16px 12px",borderTop:"1px solid "+C.bdL,background:C.bgS,display:"flex",flexWrap:"wrap",gap:5}}>
+<span style={{fontSize:10,color:C.mt,alignSelf:"center",marginRight:4}}>Swap:</span>
+{ALTS.filter(a=>a.l!==item.l).slice(0,8).map((a,i)=><button key={i} onClick={()=>{onSw(di,idx,a);setO(false);}} style={{fontSize:11,padding:"5px 10px",background:C.wh,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer",fontWeight:500}}>{a.l}</button>)}
+</div>}
+</div>);
+}
+
+function WkTab({wk,setWk,gi}){
+const sw=(di,ii,a)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{l:a.l,d:a.d,c:a.c,m:a.m,b:a.b,t:t.t}:t)}:d));};
+const dl=(di,ii)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.filter((_,j)=>j!==ii)}:d));};
+return(
+<div style={{padding:"24px 20px",maxWidth:700,margin:"0 auto"}}>
+<div style={{textAlign:"center",marginBottom:28}}>
+<h2 className="serif" style={{fontSize:30,fontWeight:400,fontStyle:"italic",color:C.fg}}>Your Week in Istanbul</h2>
+<p style={{fontSize:14,color:C.mt,marginTop:8,lineHeight:1.6,maxWidth:480,margin:"8px auto 0"}}>Curated by Culinary Backstreets. Swap any spot. Every link opens Google Maps. Every recommendation is ours.</p>
+</div>
+{wk.map((day,di)=>{
+const ds=gi&&gi.ci?aD(gi.ci,di).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"}):null;
+return(<div key={di} style={{marginBottom:28}}>
+<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+<div style={{width:42,height:42,borderRadius:12,background:C.terraS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{day.emoji}</div>
+<div>
+<div style={{fontSize:11,color:C.terra,fontWeight:700,letterSpacing:.5,textTransform:"uppercase"}}>Day {di+1}{ds?" \u00B7 "+ds:""}</div>
+<div style={{fontSize:18,fontWeight:600,marginTop:1}}>{day.title}</div>
+</div>
+</div>
+{day.items.map((it,ii)=><Card key={ii} item={it} idx={ii} di={di} onSw={sw} onDl={dl}/>)}
+</div>);})}
+</div>);
+}
+
+function CrTab(){return(
+<div style={{padding:"24px 20px",maxWidth:700,margin:"0 auto"}}>
+<div style={{textAlign:"center",marginBottom:24}}>
+<h2 className="serif" style={{fontSize:30,fontWeight:400,fontStyle:"italic"}}>Themed Food Crawls</h2>
+<p style={{fontSize:14,color:C.mt,marginTop:6}}>Follow your stomach. Each crawl is a half-day adventure.</p>
+</div>
+{TRIPS.map((t,i)=>(<div key={i} className="fade-up" style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:12}}>
+<div style={{display:"flex",gap:10,marginBottom:10}}>
+<span style={{fontSize:24}}>{t.emoji}</span>
+<div><div className="serif" style={{fontSize:18,fontWeight:600}}>{t.title}</div><div style={{fontSize:13,color:C.fgS,lineHeight:1.6,marginTop:4}}>{t.d}</div></div>
+</div>
+<div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+{t.spots.map((p,j)=>{const q=PL[p];return q?<a key={j} href={MB+q} target="_blank" rel="noopener" style={{fontSize:12,padding:"6px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,textDecoration:"none",fontWeight:500}}>{"\uD83D\uDCCD"} {p}</a>:<span key={j} style={{fontSize:12,padding:"6px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,color:C.mt}}>{p}</span>;})}
+</div>
+</div>))}
+</div>);}
+
+function ToTab(){return(
+<div style={{padding:"24px 20px",maxWidth:700,margin:"0 auto"}}>
+<div style={{textAlign:"center",marginBottom:24}}>
+<h2 className="serif" style={{fontSize:30,fontWeight:400,fontStyle:"italic"}}>Our Istanbul Walks</h2>
+<p style={{fontSize:14,color:C.mt,marginTop:6,lineHeight:1.6,maxWidth:440,margin:"6px auto 0"}}>Small-group food tours led by local experts. No tourist traps. Only the spots we've been writing about for over a decade.</p>
+</div>
+{TOURS.map((t,i)=>(<div key={i} className="fade-up" style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,overflow:"hidden",marginBottom:12}}>
+<div style={{padding:20}}>
+<div style={{display:"flex",gap:12,marginBottom:10}}>
+<div style={{width:48,height:48,borderRadius:12,background:C.terraS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{t.img}</div>
+<div style={{flex:1}}>
+<div className="serif" style={{fontSize:17,fontWeight:600,lineHeight:1.3}}>{t.title}</div>
+<div style={{display:"flex",gap:8,marginTop:4}}>
+<span style={{fontSize:11,color:C.terra,fontWeight:600,background:C.terraS,padding:"2px 8px",borderRadius:10}}>{t.dur}</span>
+<span style={{fontSize:11,color:C.olive,fontWeight:600,background:C.oliveS,padding:"2px 8px",borderRadius:10}}>from {t.price}/person</span>
+</div>
+</div>
+</div>
+<p style={{fontSize:13,color:C.fgS,lineHeight:1.6}}>{t.d}</p>
+<a href="https://culinarybackstreets.com/food-tours" target="_blank" rel="noopener" style={{display:"inline-block",marginTop:12,fontSize:13,color:"#fff",background:C.terra,padding:"10px 20px",borderRadius:24,textDecoration:"none",fontWeight:600}}>Book This Walk {"\u2192"}</a>
+</div>
+</div>))}
+<div style={{background:C.goldS,borderRadius:16,border:"1px solid "+C.bd,padding:20,textAlign:"center",marginTop:8}}>
+<div style={{fontSize:18}}>{"\u2728"}</div>
+<p className="serif" style={{fontSize:16,fontWeight:600,marginTop:6}}>Multi-Day Culinary Experiences</p>
+<p style={{fontSize:13,color:C.fgS,lineHeight:1.6,marginTop:6}}>8-day deep dives into Istanbul's myriad kitchens. Private homes, market tours, cooking classes, Bosphorus boat cruises, and meals that change how you understand Turkish food.</p>
+<a href="https://culinarybackstreets.com/trips/istanbul" target="_blank" rel="noopener" style={{display:"inline-block",marginTop:12,fontSize:13,color:C.terra,background:C.wh,border:"1px solid "+C.bd,padding:"10px 20px",borderRadius:24,textDecoration:"none",fontWeight:600}}>Explore Trips {"\u2192"}</a>
+</div>
+</div>);}
+
+function EsTab(){return(
+<div style={{padding:"24px 20px",maxWidth:700,margin:"0 auto"}}>
+<div style={{textAlign:"center",marginBottom:24}}>
+<h2 className="serif" style={{fontSize:30,fontWeight:400,fontStyle:"italic"}}>Know Before You Go</h2>
+</div>
+{INF.map((s,i)=>(<div key={i} style={{marginBottom:22}}>
+<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:18}}>{s.icon}</span><h3 style={{fontSize:16,fontWeight:600}}>{s.title}</h3></div>
+{s.items.map((m,j)=>(<div key={j} className="slide-in" style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"12px 16px",marginBottom:6}}>
+<div style={{fontSize:14,fontWeight:600,marginBottom:2}}>{m.t}</div>
+<div style={{fontSize:13,color:C.fgS,lineHeight:1.6}}>{m.d}</div>
+</div>))}
+</div>))}
+</div>);}
+
+function ChTab(){
+const[ms,setMs]=useState([{r:"a",t:"Merhaba! \uD83C\uDF1F I'm your Culinary Backstreets Istanbul concierge. I know every backstreet, every usta, every lokanta. Ask me anything \u2014 where to eat tonight, how to avoid tourist traps, which ferry to take, or what to order when you can't read the menu."}]);
+const[inp,setInp]=useState("");const[ld,setLd]=useState(false);const er=useRef(null);
+useEffect(()=>{er.current&&er.current.scrollIntoView({behavior:"smooth"});},[ms]);
+const send=async()=>{
+if(!inp.trim()||ld)return;const u=inp.trim();setInp("");
+setMs(p=>[...p,{r:"u",t:u}]);setLd(true);
+try{
+const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,system:`You are the Culinary Backstreets Istanbul concierge \u2014 the voice of a decade of deep food journalism in this city. You speak like a warm, knowledgeable local friend who has eaten at every backstreet joint and knows every usta by name. Give specific restaurants with neighborhoods. Use Turkish food terms naturally (explain briefly). Your tone: literary but accessible, passionate but never pretentious.
+
+KEY RESTAURANTS YOU LOVE:
+- Çiya Sofrası (Kadıköy) \u2014 "very likely the best restaurant in Istanbul." Rotating Anatolian menu.
+- Karaköy Lokantası \u2014 lokanta by day, meyhane by night. Reliably excellent.
+- Aynen Dürüm \u2014 microscopic kebab shack at Grand Bazaar edge. Best lamb dürüm.
+- Karaköy Güllüoğlu \u2014 baklava institution since 1800s.
+- Mahir Lokantası (Osmanbey) \u2014 wood-fired oven, Diyarbakır roots.
+- Mezme (Kurtuluş) \u2014 Armenian-Hatay meze by chef Sasun. Reopened 2024.
+- Kaya Döner (Bomonti) \u2014 excellent new döner, opened 2024.
+- Kavurmacı Goze (Sirkeci) \u2014 one item: kavurma (braised beef). Hidden gem.
+- Bayramoğlu \u2014 possibly best döner in Turkey. Oak charcoal, tandır bread.
+- Boris'in Yeri (Ayaspaşa) \u2014 kaymak & egg breakfast. White Russian heritage.
+- Ozzie's Kokoreç (Asmalımescit) \u2014 legendary grilled lamb intestines.
+- Cuma \u2014 contemporary Turkish on a charming street.
+- Sofyalı 9 (Beyoğlu) \u2014 classic meyhane. Meze + rakı.
+- Namlı Gurme (Karaköy) \u2014 deli paradise. Cheeses, breakfast.
+- Lezzet-i Şark \u2014 künefe perfection.
+- Kanaat Lokantası (Üsküdar) \u2014 Ottoman recipes.
+
+CB FOOD TOURS: Old City Secrets (5hr), Born on the Bosphorus (full day), Bazaar Quarter (6hr), Two Continents Market (full day).
+
+NEIGHBORHOODS: Sultanahmet (monuments+traps), Karaköy (renaissance), Beyoğlu (nightlife), Kadıköy (Asian side markets), Fatih/Balat (deep), Beşiktaş (breakfast street).
+
+Keep responses concise \u2014 like a knowledgeable friend texting. Include specific dish recommendations when possible.`,messages:[...ms.slice(-6).map(m=>({role:m.r==="a"?"assistant":"user",content:m.t})),{role:"user",content:u}]})});
+const data=await res.json();
+setMs(p=>[...p,{r:"a",t:(data.content&&data.content[0]&&data.content[0].text)||"Hmm, try again!"}]);
+}catch(e){setMs(p=>[...p,{r:"a",t:"Connection issue \u2014 try again!"}]);}
+setLd(false);};
+return(
+<div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 110px)",maxWidth:700,margin:"0 auto"}}>
+<div style={{flex:1,overflowY:"auto",padding:"20px 20px 10px"}}>
+{ms.map((m,i)=>(<div key={i} style={{marginBottom:12,display:"flex",justifyContent:m.r==="u"?"flex-end":"flex-start"}}>
+{m.r==="a"&&<div style={{width:30,height:30,borderRadius:8,background:C.terra,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",marginRight:8,flexShrink:0,marginTop:2,fontFamily:"'Playfair Display',serif",letterSpacing:1}}>CB</div>}
+<div style={{maxWidth:"75%",padding:"12px 16px",borderRadius:m.r==="u"?"18px 18px 4px 18px":"18px 18px 18px 4px",background:m.r==="u"?C.fg:C.wh,border:m.r==="u"?"none":"1px solid "+C.bd,color:m.r==="u"?"#fff":C.fg,fontSize:14,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{m.t}</div>
+</div>))}
+{ld&&<div style={{display:"flex",gap:8,marginBottom:12}}>
+<div style={{width:30,height:30,borderRadius:8,background:C.terra,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",fontFamily:"'Playfair Display',serif",letterSpacing:1}}>CB</div>
+<div style={{padding:"12px 16px",background:C.wh,border:"1px solid "+C.bd,borderRadius:"18px 18px 18px 4px",color:C.mt}}>Thinking...</div>
+</div>}
+<div ref={er}/>
+</div>
+<div style={{padding:"12px 20px 16px",borderTop:"1px solid "+C.bd,background:C.bg,display:"flex",gap:8}}>
+<input value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Where should I eat tonight?" style={{flex:1,padding:"12px 16px",background:C.wh,border:"1px solid "+C.bd,borderRadius:24,fontSize:14,outline:"none",fontFamily:"'Source Sans 3',sans-serif"}}/>
+<button onClick={send} disabled={ld} style={{padding:"12px 20px",background:C.terra,color:"#fff",border:"none",borderRadius:24,fontSize:14,fontWeight:600,cursor:"pointer"}}>Send</button>
+</div>
+</div>);}
+
+function App(){
+const[tab,setTab]=useState("week");
+const[wk,setWk]=useState(JSON.parse(JSON.stringify(IW)));
+const pr=new URLSearchParams(window.location.search);
+const gn=pr.get("name");const gci=pr.get("checkin");const gco=pr.get("checkout");
+const gi=gn?{name:gn,ci:gci,co:gco}:null;
+
+const tw=gi&&gi.ci&&gi.co?(function(){const n=Math.round((new Date(gi.co)-new Date(gi.ci))/864e5);return wk.slice(0,Math.max(1,n));}()):wk;
+
+return(
+<div style={{minHeight:"100vh",background:C.bg}}>
+<Header tab={tab} setTab={setTab} gi={gi}/>
+{tab==="week"&&<WkTab wk={tw} setWk={setWk} gi={gi}/>}
+{tab==="crawls"&&<CrTab/>}
+{tab==="tours"&&<ToTab/>}
+{tab==="essentials"&&<EsTab/>}
+{tab==="chat"&&<ChTab/>}
+<div style={{textAlign:"center",padding:"32px 20px 24px"}}>
+<div style={{fontSize:11,color:C.mtL,lineHeight:1.8}}>
+<span style={{color:C.terra,fontWeight:700}}>DEMO</span> \u00B7 Built for Culinary Backstreets by <span style={{fontWeight:600,color:C.mt}}>Arrivo</span>
+<br/>
+<span style={{fontSize:10}}>This is a preview of what your personalized guest concierge could look like.</span>
+</div>
+</div>
+</div>);
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
