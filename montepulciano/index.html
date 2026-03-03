@@ -3,748 +3,443 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Molino Nobile — Your Tuscan Villa Guide</title>
+<title>Molino Nobile — Your Tuscan Villa Concierge</title>
+<meta name="description" content="AI-powered personal concierge for Molino Nobile, a 17th-century flour mill vacation rental in Montepulciano, Tuscany.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body,#root{min-height:100vh;background:#FAFAF8;color:#1A1A1A;font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#D4D0C8;border-radius:3px}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{animation:fadeUp .5s ease both}
-a{color:inherit}
-input:focus,textarea:focus,select:focus{outline:none;border-color:#222!important;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
-button{font-family:'Plus Jakarta Sans',sans-serif}
+html,body,#root{height:100%;background:#13110E;color:#F5F0E8;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#1E1B17}::-webkit-scrollbar-thumb{background:#6E6860;border-radius:2px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+a:hover{opacity:.85}
+input:focus,textarea:focus,select:focus{border-color:#C5A255!important}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useRef,useEffect}=React;
-const C={bg:"#FAFAF8",bgS:"#F5F4F0",wh:"#FFF",fg:"#1A1A1A",fgS:"#484540",mt:"#9B958A",mtL:"#C4BFB5",bd:"#E8E5DE",bdL:"#F0EDE6",cr:"#B8763C",crS:"#FFF5ED",crD:"#96602E",sg:"#6B8F6B",sgS:"#F0F5ED",sk:"#5B7FA6",skS:"#EDF4FA",wm:"#8B7355",wmS:"#F8F4EE",wn:"#8B3A52",wnS:"#FDF0F3",ol:"#5C6B3C",olS:"#F3F5ED"};
+const {useState,useRef,useEffect,useCallback}=React;
+const T={dark:"#13110E",dw:"#1E1B17",card:"#272320",gold:"#C5A255",gl:"#E8D5A3",gd:"#9E8344",cream:"#F5F0E8",wine:"#8B3A42",olive:"#5C6B3C",ol:"#A3B876",terra:"#C17246",tl:"#E8A87A",sky:"#5B7FA6",sl:"#8BB4D9",mut:"#6E6860",bdr:"#332F2A",red:"#E85050"};
 const MB="https://www.google.com/maps/search/?api=1&query=";
-const PIN="1234";
-const DEF_ORIGIN=[43.0891,11.7868]; // Molino Nobile
-const DRIVE_SPD=40; // km/h avg Tuscany roads
+const API_PROXY_URL="https://api.anthropic.com/v1/messages";
+const OWNER_PIN="1234";
+const DEFAULT_TERMS={"honesty bar":"included wine & cocktail bar"};
+function aT(t,terms){if(!t||typeof t!=="string")return t;let r=t;Object.entries(terms).forEach(([k,v])=>{r=r.replace(new RegExp(k,"gi"),v);});return r;}
 
-const PL={"De Ricci":"De+Ricci+Montepulciano","Bindella":"Bindella+Winery+Montepulciano","Salcheto":"Salcheto+Winery+Montepulciano","Dei Winery":"Dei+Winery+Montepulciano","Podere il Casale":"Podere+il+Casale+Pienza","Acquachetta":"Acquachetta+Montepulciano","Rosso Vivo":"Rosso+Vivo+Pizzeria+Chianciano","La Grotta":"La+Grotta+Montepulciano","Porto di Bacco":"Porto+di+Bacco+Montepulciano","L'Altro Cantuccio":"L'Altro+Cantuccio+Montepulciano","Dopolavoro":"Dopolavoro+La+Foce","Buongusto":"Buongusto+Gelato+Montepulciano","Maledetti Toscani":"Maledetti+Toscani+Montepulciano","Cugusi":"Cugusi+Pienza","Olmaia":"Birrificio+Olmaia","Theia":"Theia+Thermal+Spa+Chianciano","La Foce":"La+Foce+Gardens","Caff\u00E8 Poliziano":"Caffe+Poliziano+Montepulciano","Montepulciano":"Montepulciano+centro+storico","Pienza":"Pienza+centro+storico","Siena":"Piazza+del+Campo+Siena","Bagno Vignoni":"Bagno+Vignoni","San Quirico":"San+Quirico+d'Orcia","Montalcino":"Fortezza+Montalcino","Sant'Antimo":"Abbazia+di+Sant'Antimo","Contucci":"Contucci+Montepulciano","Avignonesi":"Avignonesi+Winery","Boscarelli":"Boscarelli+Winery+Montepulciano","Talosa":"Cantina+Talosa+Montepulciano","Le Logge del Vignola":"Le+Logge+del+Vignola+Montepulciano","La Chiusa":"La+Chiusa+Montefollonico","Villa Cozzano":"Villa+Cozzano+Pienza","Terme San Filippo":"Terme+San+Filippo","Monticchiello":"Monticchiello","Bar Romantico":"Bar+Romantico+Montepulciano","La Cantina":"La+Cantina+Monticchiello","Pasticceria Regina":"Pasticceria+Regina+Sant'Albino","Podere il Casale":"Podere+il+Casale+Pienza"};
+const PLACES={"De Ricci":"De+Ricci+Montepulciano","Bindella":"Bindella+Winery+Montepulciano","Salcheto":"Salcheto+Winery+Montepulciano","Dei Winery":"Dei+Winery+Montepulciano","Tenimenti Andreucci":"Tenimenti+Andreucci","Podere il Casale":"Podere+il+Casale+Pienza","Acquachetta":"Acquachetta+Montepulciano","Rosso Vivo":"Rosso+Vivo+Pizzeria+Chianciano","La Grotta":"La+Grotta+Montepulciano","Porto di Bacco":"Porto+di+Bacco+Montepulciano","L'Altro Cantuccio":"L'Altro+Cantuccio+Montepulciano","Dopolavoro":"Dopolavoro+La+Foce","Buongusto":"Buongusto+Gelato+Montepulciano","Maledetti Toscani":"Maledetti+Toscani+Montepulciano","Cugusi":"Cugusi+Pienza","Olmaia":"Birrificio+Olmaia","Theia":"Theia+Thermal+Spa+Chianciano","La Foce":"La+Foce+Gardens","Valdichiana Village":"Valdichiana+Village+Outlet","Caffè Poliziano":"Caffe+Poliziano+Montepulciano","Montepulciano":"Montepulciano+centro+storico","Pienza":"Pienza+centro+storico","Siena":"Piazza+del+Campo+Siena","Cortona":"Cortona+centro+storico","Arezzo":"Arezzo+centro+storico","Bagno Vignoni":"Bagno+Vignoni","San Quirico":"San+Quirico+d'Orcia","Montalcino":"Fortezza+Montalcino","Sant'Antimo":"Abbazia+di+Sant'Antimo","Coop":"Coop+Chianciano+Terme","Piazza del Campo":"Piazza+del+Campo+Siena","Duomo di Siena":"Duomo+di+Siena","Torre del Mangia":"Torre+del+Mangia+Siena","Contucci":"Contucci+Montepulciano","Avignonesi":"Avignonesi+Winery","Boscarelli":"Boscarelli+Winery+Montepulciano","Talosa":"Cantina+Talosa+Montepulciano","Le Logge del Vignola":"Le+Logge+del+Vignola+Montepulciano","La Chiusa":"La+Chiusa+Montefollonico","Villa Cozzano":"Villa+Cozzano+Pienza","Terme San Filippo":"Terme+San+Filippo","Monticchiello":"Monticchiello","Bar Romantico":"Bar+Romantico+Montepulciano","La Cantina":"La+Cantina+Monticchiello","Trattoria Latte di Luna":"Trattoria+Latte+di+Luna+Pienza","Osteria Fra Paolino":"Osteria+Fra+Paolino+Montepulciano","La Taverna di Fucile":"La+Taverna+di+Fucile+Montepulciano","BBQ Pienza":"BBQ+Pienza+Chianina+Station","Pasticceria Regina":"Pasticceria+Regina+Sant'Albino","Antico Frantoio":"Antico+Frantoio+Toscano+La+Macina"};
+function linkP(text){if(!text)return text;let parts=[];let rem=text;const sk=Object.keys(PLACES).sort((a,b)=>b.length-a.length);while(rem.length>0){let e={idx:Infinity,key:null};for(const k of sk){const i=rem.indexOf(k);if(i!==-1&&i<e.idx)e={idx:i,key:k};}if(!e.key){parts.push(rem);break;}if(e.idx>0)parts.push(rem.slice(0,e.idx));parts.push({place:e.key,query:PLACES[e.key]});rem=rem.slice(e.idx+e.key.length);}return parts;}
 
-// Venue coordinates [lat, lng]
-const COORDS={
-"Coop+Chianciano+Terme":[43.0530,11.8280],
-"De+Ricci+Montepulciano":[43.0937,11.7866],
-"Bindella+Winery+Montepulciano":[43.0810,11.7750],
-"Salcheto+Winery+Montepulciano":[43.0750,11.7920],
-"Podere+il+Casale+Pienza":[43.0780,11.6860],
-"Acquachetta+Montepulciano":[43.0930,11.7870],
-"Rosso+Vivo+Pizzeria+Chianciano":[43.0580,11.8310],
-"La+Grotta+Montepulciano":[43.0935,11.7860],
-"Porto+di+Bacco+Montepulciano":[43.0937,11.7866],
-"L'Altro+Cantuccio+Montepulciano":[43.0937,11.7866],
-"Dopolavoro+La+Foce":[43.0270,11.7170],
-"Buongusto+Gelato+Montepulciano":[43.0937,11.7866],
-"Maledetti+Toscani+Montepulciano":[43.0937,11.7866],
-"Cugusi+Pienza":[43.0763,11.6790],
-"Birrificio+Olmaia":[43.0800,11.8100],
-"Theia+Thermal+Spa+Chianciano":[43.0580,11.8310],
-"La+Foce+Gardens":[43.0270,11.7170],
-"Caffe+Poliziano+Montepulciano":[43.0937,11.7866],
-"Montepulciano+centro+storico":[43.0937,11.7866],
-"Pienza+centro+storico":[43.0763,11.6790],
-"Piazza+del+Campo+Siena":[43.3188,11.3308],
-"Bagno+Vignoni":[43.0520,11.6210],
-"San+Quirico+d'Orcia":[43.0570,11.6060],
-"Fortezza+Montalcino":[43.0580,11.4900],
-"Abbazia+di+Sant'Antimo":[43.0370,11.5200],
-"Contucci+Montepulciano":[43.0937,11.7866],
-"Avignonesi+Winery":[43.0850,11.7700],
-"Boscarelli+Winery+Montepulciano":[43.0880,11.7800],
-"Cantina+Talosa+Montepulciano":[43.0937,11.7866],
-"Le+Logge+del+Vignola+Montepulciano":[43.0937,11.7866],
-"La+Chiusa+Montefollonico":[43.1050,11.7350],
-"Villa+Cozzano+Pienza":[43.0763,11.6790],
-"Terme+San+Filippo":[42.9310,11.6050],
-"Monticchiello":[43.0640,11.7280],
-"Bar+Romantico+Montepulciano":[43.0937,11.7866],
-"La+Cantina+Monticchiello":[43.0640,11.7280],
-"Pasticceria+Regina+Sant'Albino":[43.0870,11.7900],
-"Duomo+di+Siena":[43.3175,11.3296],
-"Torre+del+Mangia+Siena":[43.3185,11.3315],
-"Osteria+Fra+Paolino+Montepulciano":[43.0937,11.7866],
-"La+Taverna+di+Fucile+Montepulciano":[43.0937,11.7866],
-"Trattoria+Latte+di+Luna+Pienza":[43.0763,11.6790],
-};
-
-// Haversine distance in km
-function hav(a,b){
-const R=6371,toR=Math.PI/180;
-const dLat=(b[0]-a[0])*toR,dLon=(b[1]-a[1])*toR;
-const x=Math.sin(dLat/2)**2+Math.cos(a[0]*toR)*Math.cos(b[0]*toR)*Math.sin(dLon/2)**2;
-return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
-}
-function travelTime(origin,mapQ){
-if(!mapQ)return null;
-const dest=COORDS[mapQ];if(!dest)return null;
-const km=hav(origin,dest);if(km<0.15)return null; // at the villa
-const walkMin=Math.round(km/5*60/5)*5;
-const driveMin=Math.max(5,Math.round(km/DRIVE_SPD*60/5)*5);
-return{km,walkMin,driveMin};
-}
-
-function linkP(t){if(!t)return[t];let p=[],r=t;const sk=Object.keys(PL).sort((a,b)=>b.length-a.length);while(r.length>0){let b={i:Infinity,k:null};for(const k of sk){const i=r.indexOf(k);if(i!==-1&&i<b.i)b={i:i,k:k};}if(!b.k){p.push(r);break;}if(b.i>0)p.push(r.slice(0,b.i));p.push({n:b.k,q:PL[b.k]});r=r.slice(b.i+b.k.length);}return p;}
-
-const CT={
-home:{bg:"#FBF6EC",a:"#B8963E",i:"\uD83C\uDFE1",l:"Villa"},
-relax:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83C\uDFCA",l:"Relax"},
-food:{bg:"#FFF5ED",a:"#B8763C",i:"\uD83C\uDF7D\uFE0F",l:"Eat"},
-activity:{bg:"#EDF4FA",a:"#5B7FA6",i:"\uD83D\uDDFA\uFE0F",l:"Explore"},
-wine:{bg:"#FDF0F3",a:"#8B3A52",i:"\uD83C\uDF77",l:"Wine"},
-nature:{bg:"#F3F5ED",a:"#5C6B3C",i:"\uD83C\uDF3F",l:"Nature"},
-town:{bg:"#EDF4FA",a:"#5B7FA6",i:"\uD83C\uDFDB\uFE0F",l:"Town"},
-spa:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83E\uDDD6",l:"Spa"},
-pool:{bg:"#EDF4FA",a:"#5B8DB8",i:"\uD83D\uDCA7",l:"Pool"},
-experience:{bg:"#FBF6EC",a:"#B8963E",i:"\u2728",l:"Experience"},
-errand:{bg:"#F5F4F0",a:"#9B958A",i:"\uD83D\uDED2",l:"Errand"},
-transit:{bg:"#F5F4F0",a:"#9B958A",i:"\uD83D\uDE97",l:"Drive"},
-breakfast:{bg:"#FBF6EC",a:"#B8963E",i:"\u2600\uFE0F",l:"Morning"},
-dinner:{bg:"#FFF5ED",a:"#B8763C",i:"\uD83C\uDF77",l:"Dinner"},
-lunch:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83E\uDD62",l:"Lunch"},
-cafe:{bg:"#FBF6EC",a:"#B8963E",i:"\u2615",l:"Caf\u00E9"},
-gelato:{bg:"#FFF0ED",a:"#E8634A",i:"\uD83C\uDF66",l:"Gelato"},
-shopping:{bg:"#F5F4F0",a:"#9B958A",i:"\uD83D\uDECD\uFE0F",l:"Shop"},
-};
-
+/* ═══ TAGGED IDEA BANK ═══ */
 const ALTS=[
-{l:"Le Logge del Vignola",d:"Romantic upscale dining in Montepulciano. Book ahead.",c:"dinner",m:"Le+Logge+del+Vignola+Montepulciano",b:true},
-{l:"La Chiusa",d:"Elegant Tuscan near Montefollonico. Beautiful countryside.",c:"dinner",m:"La+Chiusa+Montefollonico",b:true},
-{l:"Villa Cozzano Dinner",d:"Multi-course sunset dinner. Special occasion.",c:"dinner",m:"Villa+Cozzano+Pienza",b:true},
-{l:"La Cantina Monticchiello",d:"Tiny medieval village. Intimate, must book.",c:"dinner",m:"La+Cantina+Monticchiello",b:true},
-{l:"Osteria Fra Paolino",d:"Cozy Montepulciano centro. Great local fare.",c:"dinner",m:"Osteria+Fra+Paolino+Montepulciano"},
-{l:"La Taverna di Fucile",d:"Top-rated (9.6). Excellent traditional. Book ahead.",c:"dinner",m:"La+Taverna+di+Fucile+Montepulciano",b:true},
-{l:"Podere il Casale Dinner",d:"Farm-to-table sunset. Kids love the animals.",c:"dinner",m:"Podere+il+Casale+Pienza",b:true},
-{l:"La Grotta",d:"Refined traditional. Sit outside!",c:"dinner",m:"La+Grotta+Montepulciano",b:true},
-{l:"Acquachetta",d:"Famous Florentine steak. Reservations essential!",c:"dinner",m:"Acquachetta+Montepulciano",b:true},
-{l:"Porto di Bacco",d:"Great for groups. Also a wine shop!",c:"dinner",m:"Porto+di+Bacco+Montepulciano"},
-{l:"L'Altro Cantuccio",d:"Innovative tasting menus. Aspiring Michelin.",c:"dinner",m:"L'Altro+Cantuccio+Montepulciano",b:true},
-{l:"Rosso Vivo Pizza",d:"Best Neapolitan pizza in the area. No booking.",c:"dinner",m:"Rosso+Vivo+Pizzeria+Chianciano"},
-{l:"Latte di Luna",d:"Excellent casual lunch in Pienza. Great value.",c:"lunch",m:"Trattoria+Latte+di+Luna+Pienza"},
-{l:"Cugusi Picnic",d:"Pre-order basket with hams, pecorino, wine.",c:"lunch",m:"Cugusi+Pienza",b:true},
-{l:"Caff\u00E8 Poliziano",d:"Art nouveau caf\u00E9 since 1868. Valley views.",c:"breakfast",m:"Caffe+Poliziano+Montepulciano"},
-{l:"Pasticceria Regina",d:"Closest bakery. Fresh cornetti & coffee. 3 min.",c:"breakfast",m:"Pasticceria+Regina+Sant'Albino"},
-{l:"Bar Romantico Sunset",d:"Best sunset in Montepulciano. Drinks & views.",c:"cafe",m:"Bar+Romantico+Montepulciano"},
-{l:"Gelato \u2014 Buongusto",d:"Artisanal all-natural. Pistachio & nocciola.",c:"gelato",m:"Buongusto+Gelato+Montepulciano"},
-{l:"Contucci \u2014 Free Tasting",d:"Historic cellars in Montepulciano centro. Free!",c:"wine",m:"Contucci+Montepulciano"},
-{l:"Avignonesi",d:"Premium estate. Gorgeous grounds. Book ahead.",c:"wine",m:"Avignonesi+Winery",b:true},
-{l:"Boscarelli",d:"Small family winery. Personal, intimate. Book ahead.",c:"wine",m:"Boscarelli+Winery+Montepulciano",b:true},
-{l:"Talosa Caves",d:"Impressive underground caves. Tastings.",c:"wine",m:"Cantina+Talosa+Montepulciano"},
-{l:"De Ricci Tasting",d:"Right across the street! Caves in centro. Book ahead.",c:"wine",m:"De+Ricci+Montepulciano",b:true},
-{l:"Bindella Lunch & Tour",d:"4-course lunch + wine + estate tour. 5 min. Book!",c:"wine",m:"Bindella+Winery+Montepulciano",b:true},
-{l:"Salcheto Sunset",d:"Best panoramic views. Eco/biodynamic. Book!",c:"wine",m:"Salcheto+Winery+Montepulciano",b:true},
-{l:"Terme San Filippo",d:"Free hot springs with white waterfall. 45 min.",c:"nature",m:"Terme+San+Filippo"},
-{l:"Monticchiello Walk",d:"Medieval hamlet. Views to Pienza.",c:"town",m:"Monticchiello"},
-{l:"Cooking at Villa Cozzano",d:"Hands-on Tuscan cooking class. Book!",c:"experience",m:"Villa+Cozzano+Pienza",b:true},
-{l:"Hot Air Balloon",d:"Sunrise over Val d'Orcia cypress lanes. Book well ahead!",c:"experience",b:true},
-{l:"Podere il Casale Truffles",d:"Truffle hunt with dogs, cook your find! Book!",c:"experience",m:"Podere+il+Casale+Pienza",b:true},
-{l:"Theia Thermal Spa",d:"Indoor/outdoor/kids pools, restaurant.",c:"spa",m:"Theia+Thermal+Spa+Chianciano"},
-{l:"La Foce Gardens",d:"Stunning gardens. Wed/Sun tours only. Book!",c:"nature",m:"La+Foce+Gardens",b:true},
-{l:"Pool & Jacuzzi Morning",d:"Lazy morning. Espresso on terrace, then swim.",c:"pool"},
-{l:"Villa Cooking Night",d:"Cook with market finds. Kitchen fully equipped.",c:"dinner"},
+  {l:"Dinner — Le Logge del Vignola",d:"Romantic upscale dining in Montepulciano centro. Book ahead. 15 min drive.",tag:"food",cat:"dinner",map:"Le+Logge+del+Vignola+Montepulciano",book:true},
+  {l:"Dinner — La Chiusa",d:"Elegant Tuscan near Montefollonico. Beautiful countryside setting. Book ahead. 20 min drive.",tag:"food",cat:"dinner",map:"La+Chiusa+Montefollonico",book:true},
+  {l:"Dinner — Ristorante L'Oliveto",d:"Agriturismo Nobile — highly rated, dog-friendly, lovely views. 15 min drive. Book ahead.",tag:"food",cat:"dinner",map:"Ristorante+L'Oliveto+Agriturismo+Nobile+Montepulciano",book:true},
+  {l:"Dinner — Villa Cozzano Experience",d:"Spectacular sunset multi-course dinner. Special occasion. 30 min drive. Reservations essential.",tag:"food",cat:"dinner",map:"Villa+Cozzano+Pienza",book:true},
+  {l:"Dinner — La Cantina di Monticchiello",d:"Tiny medieval village, intimate setting, must book. Great wines. 15 min drive.",tag:"food",cat:"dinner",map:"La+Cantina+Monticchiello",book:true},
+  {l:"Dinner — Osteria Fra Paolino",d:"Cozy spot in Montepulciano centro. Great local fare, reasonable prices. 15 min drive.",tag:"food",cat:"dinner",map:"Osteria+Fra+Paolino+Montepulciano"},
+  {l:"Dinner — La Taverna di Fucile",d:"Near Montepulciano station. Top-rated (9.6), excellent traditional cooking. 12 min drive. Book ahead.",tag:"food",cat:"dinner",map:"La+Taverna+di+Fucile+Montepulciano",book:true},
+  {l:"Dinner — BBQ Pienza Chianina Station",d:"Chianina steak specialist with outdoor seating. Great for meat lovers. 25 min drive.",tag:"food",cat:"dinner",map:"BBQ+Pienza+Chianina+Station"},
+  {l:"Dinner — Podere il Casale",d:"Farm-to-table sunset dinner. Kids love the animals. Book ahead! 8 min drive.",tag:"food",cat:"dinner",map:"Podere+il+Casale+Pienza",book:true},
+  {l:"Dinner — La Grotta",d:"Refined traditional Tuscan. Sit outside! Book ahead. 12 min drive.",tag:"food",cat:"dinner",map:"La+Grotta+Montepulciano",book:true},
+  {l:"Dinner — Acquachetta",d:"Famous Florentine steak & Tuscan classics. Reservations essential! 10 min drive.",tag:"food",cat:"dinner",map:"Acquachetta+Montepulciano",book:true},
+  {l:"Dinner — Porto di Bacco",d:"Great for groups in Montepulciano centro. Also a wine shop! 15 min drive.",tag:"food",cat:"dinner",map:"Porto+di+Bacco+Montepulciano"},
+  {l:"Dinner — L'Altro Cantuccio",d:"Innovative tasting menus. Aspiring Michelin star. Reservations essential! 15 min drive.",tag:"food",cat:"dinner",map:"L'Altro+Cantuccio+Montepulciano",book:true},
+  {l:"Dinner — Rosso Vivo Pizzeria",d:"Best Neapolitan pizza in the area. No booking needed. 18 min drive.",tag:"food",cat:"dinner",map:"Rosso+Vivo+Pizzeria+Chianciano"},
+  {l:"Dinner — Dopolavoro",d:"Lovely restaurant near La Foce. Great for aperitivo or dinner. 20 min drive.",tag:"food",cat:"dinner",map:"Dopolavoro+La+Foce"},
+  {l:"Lunch — Trattoria Latte di Luna",d:"Excellent casual lunch in Pienza. Traditional Tuscan, great value. 25 min drive.",tag:"food",cat:"lunch",map:"Trattoria+Latte+di+Luna+Pienza"},
+  {l:"Lunch — Trattoria da Fiorella",d:"Authentic Tuscan trattoria. Simple, delicious, no-frills. Great pici.",tag:"food",cat:"lunch"},
+  {l:"Lunch — Cugusi Picnic",d:"Pre-order a basket with hams, pecorino, wine. Find a cypress-lined spot! 15 min drive. Reservations essential.",tag:"food",cat:"lunch",map:"Cugusi+Pienza",book:true},
+  {l:"Lunch at Podere il Casale",d:"Farm-to-table on the terrace. Everything grown on-site. 8 min drive.",tag:"food",cat:"lunch",map:"Podere+il+Casale+Pienza"},
+  {l:"Breakfast at Caffè Poliziano",d:"Historic art nouveau café since 1868. Balcony terrace with valley views. 15 min drive.",tag:"food",cat:"breakfast",map:"Caffe+Poliziano+Montepulciano"},
+  {l:"Cornetti from Pasticceria Regina",d:"Closest bakery in Sant'Albino. Fresh cornetti, pastries, coffee. 3 min drive.",tag:"food",cat:"breakfast",map:"Pasticceria+Regina+Sant'Albino"},
+  {l:"Breakfast at Bar dell'Erbe",d:"Locals' spot in Montepulciano. Espresso & pastries where the real Italians go. 15 min drive.",tag:"food",cat:"breakfast",map:"Bar+dell'Erbe+Montepulciano"},
+  {l:"Sunset Drinks — Bar Romantico",d:"Best sunset viewpoint in Montepulciano. Drinks, snacks, unbelievable sky. 15 min drive.",tag:"food",cat:"cafe",map:"Bar+Romantico+Montepulciano"},
+  {l:"Gelato — Buongusto",d:"Artisanal all-natural gelato. Pistachio and nocciola are unreal.",tag:"food",cat:"gelato",map:"Buongusto+Gelato+Montepulciano"},
+  {l:"Contucci — Free Tasting",d:"Historic cellars right in Montepulciano centro. Free tastings, stunning underground barrels. 15 min drive.",tag:"activity",cat:"wine",map:"Contucci+Montepulciano"},
+  {l:"Avignonesi — Premium Tasting",d:"Beautiful premium estate. Excellent wines and gorgeous grounds. Reservations essential. 15 min drive.",tag:"activity",cat:"wine",map:"Avignonesi+Winery",book:true},
+  {l:"Boscarelli — Family Producer",d:"Small family winery, excellent quality vino nobile. Personal, intimate. Reservations essential.",tag:"activity",cat:"wine",map:"Boscarelli+Winery+Montepulciano",book:true},
+  {l:"Talosa — Underground Caves",d:"Impressive underground caves in Montepulciano centro. Tastings available. 15 min drive.",tag:"activity",cat:"wine",map:"Cantina+Talosa+Montepulciano"},
+  {l:"De Ricci Tasting Room",d:"Right across the street! Tastings and lunch. Caves in Montepulciano centro. Reservations essential.",tag:"activity",cat:"wine",map:"De+Ricci+Montepulciano",book:true},
+  {l:"Bindella — Lunch & Tour",d:"4-course lunch + wine pairings + estate tour. Try 'Gemella' white. Reservations essential! 5 min drive.",tag:"activity",cat:"wine",map:"Bindella+Winery+Montepulciano",book:true},
+  {l:"Salcheto — Sunset Tasting",d:"Best panoramic views over Montepulciano. Eco/biodynamic. Reservations essential. 10 min drive.",tag:"activity",cat:"wine",map:"Salcheto+Winery+Montepulciano",book:true},
+  {l:"Dei Winery Tour",d:"Modern setting, excellent tour & tasting. Reservations essential. 15 min drive.",tag:"activity",cat:"wine",map:"Dei+Winery+Montepulciano",book:true},
+  {l:"Tenimenti Andreucci Tasting",d:"DOC crossroads — Brunellos, super Tuscans, vino nobile. Reservations essential. 20 min drive.",tag:"activity",cat:"wine",map:"Tenimenti+Andreucci",book:true},
+  {l:"Terme San Filippo Hot Springs",d:"Free natural hot springs with stunning white waterfall. Bring swimsuits & towels. 45 min drive.",tag:"activity",cat:"nature",map:"Terme+San+Filippo"},
+  {l:"Monticchiello Village Walk",d:"Tiny medieval hamlet with outdoor theater tradition. Gorgeous views to Pienza. 15 min drive.",tag:"activity",cat:"town",map:"Monticchiello"},
+  {l:"Cooking Class at Villa Cozzano",d:"Hands-on Tuscan cooking in a stunning estate. Reservations essential. 30 min drive.",tag:"activity",cat:"experience",map:"Villa+Cozzano+Pienza",book:true},
+  {l:"Hot Air Balloon over Val d'Orcia",d:"Sunrise balloon flight over cypress lanes and rolling hills. Seasonal, book well ahead!",tag:"activity",cat:"experience",book:true},
+  {l:"Olive Oil Tasting — Antico Frantoio",d:"Local olive press Antico Frantoio Toscano La Macina. See how Tuscan oil is made, tastings included.",tag:"activity",cat:"experience",map:"Antico+Frantoio+Toscano+La+Macina"},
+  {l:"E-Bike through Val d'Orcia",d:"Rent e-bikes from Urban Bikery or Pastri Motors in Chianciano. Ride the iconic cypress roads.",tag:"activity",cat:"experience",map:"Urban+Bikery+Chianciano"},
+  {l:"Sunset at Bar Romantico",d:"Best sunset viewpoint in Montepulciano. Grab a Spritz and watch the sky. 15 min drive.",tag:"activity",cat:"town",map:"Bar+Romantico+Montepulciano"},
+  {l:"Podere il Casale — Truffle Hunt",d:"Truffle hunt with dogs, then cook your find! Kids love the animals. Reservations essential. 8 min drive.",tag:"activity",cat:"experience",map:"Podere+il+Casale+Pienza",book:true,bookUrl:"https://www.podereilcasale.com"},
+  {l:"Pecorino Cheese Factory Tour",d:"See how local pecorino is made. Tastings included. Reservations essential.",tag:"activity",cat:"experience",book:true},
+  {l:"La Foce Gardens",d:"Stunning villa & gardens. Tours Wed 3/4:30/6pm, Sun 11:30/3/4:30pm. Reservations essential. 20 min drive.",tag:"activity",cat:"nature",map:"La+Foce+Gardens",book:true},
+  {l:"Theia Thermal Spa",d:"Indoor/outdoor/kids pools, restaurant & bar. Full day of relaxation. 10 min drive.",tag:"relax",cat:"spa",map:"Theia+Thermal+Spa+Chianciano"},
+  {l:"Valdichiana Village Outlets",d:"Mid-range outlet mall near the A1. Great for a rainy day. 35 min drive.",tag:"errand",cat:"shopping",map:"Valdichiana+Village+Outlet"},
+  {l:"Ceramics Shopping — Montepulciano",d:"Handmade Tuscan pottery and ceramics along the main corso. 15 min drive.",tag:"errand",cat:"shopping",map:"Montepulciano+centro+storico"},
+  {l:"Leather Shopping — Montepulciano",d:"Maledetti Toscani and other leather artisans on the main street. 15 min drive.",tag:"errand",cat:"shopping",map:"Maledetti+Toscani+Montepulciano"},
+  {l:"Pool & Jacuzzi Morning",d:"Lazy morning at the villa. Espresso on the terrace, then swim. Mimosas from the included bar.",tag:"relax",cat:"pool"},
+  {l:"Villa Cooking Night",d:"Cook with your market finds. The villa kitchen is fully equipped. Raid Cugusi's deli counter.",tag:"food",cat:"dinner"},
+  {l:"Cortona Day Trip",d:"MAEC Etruscan museum, panoramic views, great restaurants. Under the Tuscan Sun territory. 55 min drive.",tag:"activity",cat:"town",map:"Cortona+centro+storico"},
+  {l:"Arezzo Day Trip",d:"Piero della Francesca frescoes, monthly antiques fair (1st Sun), Piazza Grande. 75 min drive.",tag:"activity",cat:"town",map:"Arezzo+centro+storico"},
+  {l:"Assisi Day Trip",d:"Basilica of Saint Francis, Rocca Maggiore, medieval alleys. Full day — 95 min drive each way.",tag:"activity",cat:"town",map:"Assisi+centro+storico"},
 ];
 
-const IW=[
-{title:"Arrival Day",emoji:"\uD83C\uDFE1",items:[
-{l:"Stop at Coop",d:"Best nearby grocery (9 min). Stock up on espresso, wine, fruit, bread, prosciutto.",c:"errand",m:"Coop+Chianciano+Terme",t:"2:30 PM"},
-{l:"Check-in at Molino Nobile",d:"Daniela greets you. Tour the property \u2014 pool, jacuzzi, wine bar, vineyard views.",c:"home",t:"4:00 PM"},
-{l:"First Swim & Aperitivo",d:"Pool time with a Spritz from the bar. Golden hour light is unreal.",c:"pool",t:"5:30 PM"},
-{l:"Rosso Vivo Pizza",d:"Best Neapolitan pizza in the area. No booking needed. 18 min drive.",c:"dinner",m:"Rosso+Vivo+Pizzeria+Chianciano",t:"7:30 PM"},
-{l:"Stargazing",d:"Zero light pollution. Bottle from the bar, sky from the pool deck.",c:"pool",t:"9:30 PM"},
-]},
-{title:"Wine & Vineyards",emoji:"\uD83C\uDF77",items:[
-{l:"Breakfast on the Terrace",d:"Espresso, fresh fruit, cornetti. Vineyard views.",c:"breakfast",t:"8:30 AM"},
-{l:"De Ricci Tasting Room",d:"Right across the street! Caves in Montepulciano centro. Book ahead.",c:"wine",m:"De+Ricci+Montepulciano",b:true,t:"10:00 AM"},
-{l:"Bindella \u2014 Lunch & Tour",d:"4-course lunch + wine pairings + estate tour. 5 min. Book!",c:"wine",m:"Bindella+Winery+Montepulciano",b:true,t:"12:00 PM"},
-{l:"Pool Break",d:"Digest, float, nap.",c:"pool",t:"3:00 PM"},
-{l:"Salcheto \u2014 Sunset Tasting",d:"Best panoramic views over Montepulciano. Eco/biodynamic. 10 min. Book!",c:"wine",m:"Salcheto+Winery+Montepulciano",b:true,t:"5:00 PM"},
-{l:"La Grotta",d:"Refined traditional Tuscan. Sit outside! 12 min. Book!",c:"dinner",m:"La+Grotta+Montepulciano",b:true,t:"7:30 PM"},
-]},
-{title:"Montepulciano & Pienza",emoji:"\uD83C\uDFDB\uFE0F",items:[
-{l:"Caff\u00E8 Poliziano",d:"Art nouveau caf\u00E9 since 1868. Balcony terrace. 15 min.",c:"breakfast",m:"Caffe+Poliziano+Montepulciano",t:"9:00 AM"},
-{l:"Montepulciano \u2014 Stroll & Shop",d:"Leather at Maledetti Toscani, wines at Porto di Bacco. De Ricci caves!",c:"town",m:"Montepulciano+centro+storico",t:"10:30 AM"},
-{l:"L'Altro Cantuccio",d:"Innovative tasting menus. Aspiring Michelin. Book!",c:"lunch",m:"L'Altro+Cantuccio+Montepulciano",b:true,t:"12:30 PM"},
-{l:"Buongusto Gelato",d:"Artisanal all-natural. Pistachio and nocciola.",c:"gelato",m:"Buongusto+Gelato+Montepulciano",t:"2:30 PM"},
-{l:"Pienza Afternoon",d:"Palazzo Piccolomini, UNESCO views, pecorino everywhere. 25 min.",c:"town",m:"Pienza+centro+storico",t:"3:30 PM"},
-{l:"Pool & Golden Hour",d:"Return for a golden hour swim.",c:"pool",t:"5:30 PM"},
-{l:"Private Chef \u2014 Francesco",d:"Traditional Italian at the villa (~75\u20AC/pp). Book: +39 340 742 4654.",c:"dinner",b:true,t:"8:00 PM"},
-]},
-{title:"Val d'Orcia Explorer",emoji:"\uD83C\uDF3E",items:[
-{l:"Breakfast at Home",d:"Fuel up \u2014 big day. Pack swimsuits for Bagno Vignoni!",c:"breakfast",t:"8:30 AM"},
-{l:"San Quirico d'Orcia",d:"Horti Leonini gardens, medieval gates. 35 min.",c:"town",m:"San+Quirico+d'Orcia",t:"10:00 AM"},
-{l:"Bagno Vignoni",d:"Thermal piazza-pool. Walk to Parco dei Mulini for free hot springs.",c:"nature",m:"Bagno+Vignoni",t:"11:30 AM"},
-{l:"Cugusi Picnic",d:"Pre-order a basket! Hams, pecorino, wine. Book ahead!",c:"lunch",m:"Cugusi+Pienza",b:true,t:"1:00 PM"},
-{l:"Montalcino",d:"Brunello tastings, Fortress ramparts. 50 min from villa.",c:"wine",m:"Fortezza+Montalcino",t:"2:30 PM"},
-{l:"Sant'Antimo Abbey",d:"Romanesque abbey in olive groves. 10 min from Montalcino.",c:"nature",m:"Abbazia+di+Sant'Antimo",t:"4:30 PM"},
-{l:"Acquachetta",d:"Famous Florentine steak. Reservations essential! 10 min.",c:"dinner",m:"Acquachetta+Montepulciano",b:true,t:"8:00 PM"},
-]},
-{title:"Farm & Food Day",emoji:"\uD83E\uDDD1\u200D\uD83C\uDF73",items:[
-{l:"Light Breakfast",d:"Go easy \u2014 you'll eat all day.",c:"breakfast",t:"9:00 AM"},
-{l:"Podere il Casale",d:"Truffle hunt, pasta class, or pizza workshop. Kids love it! 8 min. Book!",c:"experience",m:"Podere+il+Casale+Pienza",b:true,t:"10:00 AM"},
-{l:"Farm Lunch",d:"Everything grown on-site. Terrace views.",c:"lunch",t:"1:00 PM"},
-{l:"Cugusi \u2014 Stock Up",d:"Hams, cheeses, wine. Picnic baskets. 15 min.",c:"lunch",m:"Cugusi+Pienza",t:"4:30 PM"},
-{l:"Olmaia Brewery",d:"Neighborhood craft brewery. Check hours! 5 min.",c:"cafe",m:"Birrificio+Olmaia",t:"5:30 PM"},
-{l:"Villa Pool & Charcuterie",d:"Cugusi haul poolside. Best aperitivo ever.",c:"pool",t:"6:30 PM"},
-{l:"Private Chef \u2014 Nicolo",d:"Ex-Masterchef (~150\u20AC/pp). Book: +39 320 1827 215.",c:"dinner",b:true,t:"8:30 PM"},
-]},
-{title:"Siena Day Trip",emoji:"\uD83C\uDFF0",items:[
-{l:"Early Breakfast & Depart",d:"Siena deserves a full day. 65 min drive.",c:"breakfast",t:"8:00 AM"},
-{l:"Piazza del Campo",d:"Shell-shaped piazza where the Palio runs.",c:"town",m:"Piazza+del+Campo+Siena",t:"9:30 AM"},
-{l:"Duomo di Siena",d:"Don't skip Piccolomini Library or mosaic floor.",c:"town",m:"Duomo+di+Siena",t:"10:30 AM"},
-{l:"Torre del Mangia",d:"400 steps for the best Siena panorama.",c:"town",m:"Torre+del+Mangia+Siena",t:"12:00 PM"},
-{l:"Trattoria Lunch",d:"Pici cacio e pepe, wild boar rag\u00F9. Skip piazza traps.",c:"lunch",t:"1:00 PM"},
-{l:"Wander, Shop & Get Lost",d:"Medieval streets, contrada flags, leather, ceramics.",c:"town",t:"2:30 PM"},
-{l:"Villa Pool & Sunset",d:"Decompress. Float. 65 min drive home.",c:"pool",t:"6:30 PM"},
-{l:"Porto di Bacco",d:"Great for groups. Also a wine shop! 15 min.",c:"dinner",m:"Porto+di+Bacco+Montepulciano",t:"8:30 PM"},
-]},
-{title:"Relax & Farewell",emoji:"\u2728",items:[
-{l:"Last Breakfast on Terrace",d:"Savor it. This view deserves to be remembered.",c:"breakfast",t:"8:30 AM"},
-{l:"Theia Thermal Spa",d:"Indoor/outdoor/kids pools, restaurant & bar. 10 min.",c:"spa",m:"Theia+Thermal+Spa+Chianciano",t:"10:00 AM"},
-{l:"Lunch at Theia",d:"Eat at the spa. No rushing.",c:"lunch",t:"12:30 PM"},
-{l:"La Foce Gardens",d:"Tours Wed 3/4:30/6pm, Sun 11:30/3/4:30pm. 20 min. Book!",c:"nature",m:"La+Foce+Gardens",b:true,t:"2:30 PM"},
-{l:"Dopolavoro",d:"Across from La Foce. Aperitivo or early dinner.",c:"cafe",m:"Dopolavoro+La+Foce",t:"4:30 PM"},
-{l:"Final Pool Session",d:"One last swim. Close the cover for next guests.",c:"pool",t:"6:00 PM"},
-{l:"Podere il Casale",d:"Sunset farm dinner. Book ahead! 8 min.",c:"dinner",m:"Podere+il+Casale+Pienza",b:true,t:"8:00 PM"},
-]},
+const CAT_MAP={dinner:["dinner"],lunch:["lunch","dinner"],breakfast:["breakfast","cafe"],cafe:["cafe","breakfast","gelato"],gelato:["gelato","cafe"],wine:["wine"],town:["town","nature"],nature:["nature","town","spa"],spa:["spa","nature","pool"],pool:["pool","spa"],experience:["experience","wine","nature"],shopping:["shopping"],home:["breakfast","pool"],transit:["town"],errand:["shopping"]};
+function getAlt(cat,usedLabels){const fb=CAT_MAP[cat]||[cat];for(const c of fb){const opts=ALTS.filter(a=>a.cat===c&&!usedLabels.has(a.l));if(opts.length>0)return opts[Math.floor(Math.random()*opts.length)];}const any=ALTS.filter(a=>!usedLabels.has(a.l));return any.length>0?any[Math.floor(Math.random()*any.length)]:ALTS[0];}
+
+const TS={home:{bg:"#2D2A22",a:T.gl,i:"🏡"},relax:{bg:"#1E2B1E",a:"#A8D5BA",i:"🏊"},food:{bg:"#2D2020",a:"#E8A88A",i:"🍽️"},activity:{bg:"#1E2230",a:T.sl,i:"🗺️"},transit:{bg:"#252525",a:T.mut,i:"🚗"},errand:{bg:"#2A2522",a:T.gd,i:"🛒"}};
+
+/* ═══ GUEST DATA PERSISTENCE ═══ */
+const STORAGE_PREFIX="mn_guest_";
+function saveGuestData(guestId,data){try{localStorage.setItem(STORAGE_PREFIX+guestId,JSON.stringify(data));}catch(e){console.warn("Storage full");}}
+function loadGuestData(guestId){try{const d=localStorage.getItem(STORAGE_PREFIX+guestId);return d?JSON.parse(d):null;}catch{return null;}}
+function getURLGuest(){const p=new URLSearchParams(window.location.search);return p.get("g");}
+function decodeGuestURL(){const p=new URLSearchParams(window.location.search);const d=p.get("d");if(!d)return null;try{return JSON.parse(decodeURIComponent(atob(d)));}catch{return null;}}
+
+/* ═══ DEFAULT WEEK ═══ */
+const initWeek=()=>[
+  {id:"d1",title:"Arrival Day",sub:"Settle in & first Tuscan evening",emoji:"🏡",accent:T.gl,blocks:[
+    {id:"d1b1",t:"2:30 PM",l:"Stop at Coop Supermarket",d:"Best nearby grocery (9 min drive). Stock up on espresso, wine, fruit, bread, prosciutto.",tag:"errand",cat:"errand",map:"Coop+Chianciano+Terme"},
+    {id:"d1b2",t:"4:00 PM",l:"Check-in at Molino Nobile",d:"Daniela greets you. Tour the property — pool, jacuzzi, included wine & cocktail bar, vineyard views.",tag:"home",cat:"home"},
+    {id:"d1b3",t:"5:30 PM",l:"First Swim & Aperitivo",d:"Pool time with a Spritz from the bar. Golden hour light is unreal.",tag:"relax",cat:"pool"},
+    {id:"d1b4",t:"7:30 PM",l:"Dinner — Rosso Vivo Pizzeria",d:"Best Neapolitan pizza in the area. No booking needed. 18 min drive.",tag:"food",cat:"dinner",map:"Rosso+Vivo+Pizzeria+Chianciano"},
+    {id:"d1b5",t:"9:30 PM",l:"Stargazing at the Villa",d:"Zero light pollution. Bottle from the bar, sky from the pool deck.",tag:"relax",cat:"pool"},
+  ]},
+  {id:"d2",title:"Wine & Vineyards",sub:"A full day devoted to vino nobile",emoji:"🍷",accent:"#D4839A",blocks:[
+    {id:"d2b1",t:"8:30 AM",l:"Breakfast on the Terrace",d:"Espresso, fresh fruit, cornetti. Vineyard views.",tag:"home",cat:"breakfast"},
+    {id:"d2b2",t:"10:00 AM",l:"De Ricci Tasting Room",d:"Right across the street! Tastings and lunch. Caves in Montepulciano centro. Reservations essential.",tag:"activity",cat:"wine",map:"De+Ricci+Montepulciano",book:true},
+    {id:"d2b3",t:"12:00 PM",l:"Bindella — Lunch & Tour",d:"4-course lunch + wine pairings + estate tour. Reservations essential! 5 min drive.",tag:"food",cat:"wine",map:"Bindella+Winery+Montepulciano",book:true},
+    {id:"d2b4",t:"3:00 PM",l:"Pool Break at the Villa",d:"Digest, float, nap.",tag:"relax",cat:"pool"},
+    {id:"d2b5",t:"5:00 PM",l:"Salcheto — Sunset Tasting",d:"Best panoramic views over Montepulciano. Eco/biodynamic. Reservations essential. 10 min drive.",tag:"activity",cat:"wine",map:"Salcheto+Winery+Montepulciano",book:true},
+    {id:"d2b6",t:"7:30 PM",l:"Dinner — La Grotta",d:"Refined traditional Tuscan. Sit outside! Book ahead. 12 min drive.",tag:"food",cat:"dinner",map:"La+Grotta+Montepulciano",book:true},
+  ]},
+  {id:"d3",title:"Montepulciano & Pienza",sub:"Two Renaissance jewels",emoji:"🏛️",accent:T.tl,blocks:[
+    {id:"d3b1",t:"9:00 AM",l:"Breakfast at Caffè Poliziano",d:"Art nouveau café since 1868. Balcony terrace. 15 min drive.",tag:"food",cat:"breakfast",map:"Caffe+Poliziano+Montepulciano"},
+    {id:"d3b2",t:"10:30 AM",l:"Montepulciano — Stroll & Shop",d:"Leather at Maledetti Toscani, wines at Porto di Baccho. De Ricci wine caves in the centro!",tag:"activity",cat:"town",map:"Montepulciano+centro+storico"},
+    {id:"d3b3",t:"12:30 PM",l:"Lunch — L'Altro Cantuccio",d:"Innovative tasting menus. Aspiring Michelin star. Reservations essential!",tag:"food",cat:"lunch",map:"L'Altro+Cantuccio+Montepulciano",book:true},
+    {id:"d3b4",t:"2:30 PM",l:"Gelato — Buongusto",d:"Artisanal all-natural. Pistachio and nocciola.",tag:"food",cat:"gelato",map:"Buongusto+Gelato+Montepulciano"},
+    {id:"d3b5",t:"3:30 PM",l:"Pienza Afternoon",d:"Palazzo Piccolomini, UNESCO views, pecorino everywhere. 25 min from villa.",tag:"activity",cat:"town",map:"Pienza+centro+storico"},
+    {id:"d3b6",t:"5:30 PM",l:"Return & Pool Time",d:"Golden hour swim.",tag:"relax",cat:"pool"},
+    {id:"d3b7",t:"8:00 PM",l:"Private Chef — Chef Francesco",d:"Traditional Italian at the villa (~75€/pp). Book: +39 340 742 4654.",tag:"food",cat:"dinner",book:true},
+  ]},
+  {id:"d4",title:"Val d'Orcia Explorer",sub:"Thermal springs, Brunello & cypress roads",emoji:"🌾",accent:T.ol,blocks:[
+    {id:"d4b1",t:"8:30 AM",l:"Breakfast at Home",d:"Fuel up — big day. Pack swimsuits for Bagno Vignoni!",tag:"home",cat:"breakfast"},
+    {id:"d4b2",t:"10:00 AM",l:"San Quirico d'Orcia",d:"Horti Leonini gardens, medieval gates. 35 min drive.",tag:"activity",cat:"town",map:"San+Quirico+d'Orcia"},
+    {id:"d4b3",t:"11:30 AM",l:"Bagno Vignoni",d:"Thermal piazza-pool. Walk to Parco dei Mulini for free hot springs.",tag:"activity",cat:"nature",map:"Bagno+Vignoni"},
+    {id:"d4b4",t:"1:00 PM",l:"Cugusi Picnic",d:"Pre-order a basket! Hams, pecorino, wine. Reservations essential.",tag:"food",cat:"lunch",map:"Cugusi+Pienza",book:true},
+    {id:"d4b5",t:"2:30 PM",l:"Montalcino",d:"Brunello tastings, Fortress ramparts. 50 min drive from villa.",tag:"activity",cat:"wine",map:"Fortezza+Montalcino"},
+    {id:"d4b6",t:"4:30 PM",l:"Sant'Antimo Abbey",d:"Romanesque abbey in olive groves. 10 min from Montalcino.",tag:"activity",cat:"nature",map:"Abbazia+di+Sant'Antimo"},
+    {id:"d4b7",t:"6:00 PM",l:"Drive Home & Pool",d:"~50 min drive back. Golden hour swim.",tag:"relax",cat:"pool"},
+    {id:"d4b8",t:"8:00 PM",l:"Dinner — Acquachetta",d:"Famous Florentine steak. Reservations essential! 10 min drive.",tag:"food",cat:"dinner",map:"Acquachetta+Montepulciano",book:true},
+  ]},
+  {id:"d5",title:"Farm & Food Day",sub:"Truffles, cooking & artisan flavors",emoji:"🧑‍🍳",accent:T.tl,blocks:[
+    {id:"d5b1",t:"9:00 AM",l:"Light Breakfast at Home",d:"Go easy — you'll eat all day.",tag:"home",cat:"breakfast"},
+    {id:"d5b2",t:"10:00 AM",l:"Podere il Casale — Activity",d:"Truffle hunt, pasta class, or pizza workshop. Kids love it! Reservations essential. 8 min drive.",tag:"activity",cat:"experience",map:"Podere+il+Casale+Pienza",book:true,bookUrl:"https://www.podereilcasale.com"},
+    {id:"d5b3",t:"1:00 PM",l:"Farm Lunch at Podere il Casale",d:"Everything grown on-site. Terrace views.",tag:"food",cat:"lunch"},
+    {id:"d5b4",t:"3:00 PM",l:"Pecorino Cheese Factory Tour",d:"See how it's made. Tastings included. Reservations essential.",tag:"activity",cat:"experience",book:true},
+    {id:"d5b5",t:"4:30 PM",l:"Cugusi — Stock Up",d:"Hams, cheeses, wine. Picnic baskets available. 15 min drive.",tag:"food",cat:"lunch",map:"Cugusi+Pienza"},
+    {id:"d5b6",t:"5:30 PM",l:"Olmaia Microbrewery",d:"Neighborhood craft brewery. Check hours! 5 min drive.",tag:"food",cat:"cafe",map:"Birrificio+Olmaia"},
+    {id:"d5b7",t:"6:30 PM",l:"Villa Pool & Charcuterie",d:"Cugusi haul poolside. Best aperitivo ever.",tag:"relax",cat:"pool"},
+    {id:"d5b8",t:"8:30 PM",l:"Private Chef — Nicolo Duchini",d:"Ex-Masterchef (~150€/pp). Book: +39 320 1827 215.",tag:"food",cat:"dinner",book:true},
+  ]},
+  {id:"d6",title:"Siena Day Trip",sub:"Medieval grandeur & the Palio piazza",emoji:"🏰",accent:T.sl,blocks:[
+    {id:"d6b1",t:"8:00 AM",l:"Early Breakfast & Depart",d:"Siena deserves a full day. 65 min drive.",tag:"home",cat:"breakfast"},
+    {id:"d6b2",t:"9:30 AM",l:"Piazza del Campo",d:"Shell-shaped piazza where the Palio runs.",tag:"activity",cat:"town",map:"Piazza+del+Campo+Siena"},
+    {id:"d6b3",t:"10:30 AM",l:"Duomo di Siena",d:"Don't skip the Piccolomini Library or mosaic floor.",tag:"activity",cat:"town",map:"Duomo+di+Siena"},
+    {id:"d6b4",t:"12:00 PM",l:"Torre del Mangia",d:"400 steps for the best Siena panorama.",tag:"activity",cat:"town",map:"Torre+del+Mangia+Siena"},
+    {id:"d6b5",t:"1:00 PM",l:"Lunch — Side Street Trattoria",d:"Pici cacio e pepe, wild boar ragù. Skip piazza traps.",tag:"food",cat:"lunch"},
+    {id:"d6b6",t:"2:30 PM",l:"Wander, Shop & Get Lost",d:"Medieval streets, contrada flags, leather, ceramics.",tag:"activity",cat:"town"},
+    {id:"d6b7",t:"4:30 PM",l:"Gelato & Drive Home",d:"Scenic drive through Crete Senesi. 65 min drive.",tag:"transit",cat:"transit"},
+    {id:"d6b8",t:"6:30 PM",l:"Villa Pool & Sunset",d:"Decompress. Float.",tag:"relax",cat:"pool"},
+    {id:"d6b9",t:"8:30 PM",l:"Dinner — Porto di Bacco",d:"Great for groups. Also a wine shop! 15 min drive.",tag:"food",cat:"dinner",map:"Porto+di+Bacco+Montepulciano"},
+  ]},
+  {id:"d7",title:"Relax & Farewell",sub:"Spa, gardens & savoring every moment",emoji:"✨",accent:T.gl,blocks:[
+    {id:"d7b1",t:"8:30 AM",l:"Last Breakfast on the Terrace",d:"Savor it. This view deserves to be remembered.",tag:"home",cat:"breakfast"},
+    {id:"d7b2",t:"10:00 AM",l:"Theia Thermal Spa",d:"Indoor/outdoor/kids pools, restaurant & bar. 10 min drive.",tag:"relax",cat:"spa",map:"Theia+Thermal+Spa+Chianciano"},
+    {id:"d7b3",t:"12:30 PM",l:"Lunch at Theia",d:"Eat at the spa. No rushing.",tag:"food",cat:"lunch"},
+    {id:"d7b4",t:"2:30 PM",l:"La Foce Gardens (Wed or Sun)",d:"Tours Wed 3/4:30/6pm, Sun 11:30/3/4:30pm. Reservations essential. 20 min drive.",tag:"activity",cat:"nature",map:"La+Foce+Gardens",book:true},
+    {id:"d7b5",t:"4:30 PM",l:"Dopolavoro",d:"Across from La Foce. Aperitivo or early dinner.",tag:"food",cat:"cafe",map:"Dopolavoro+La+Foce"},
+    {id:"d7b6",t:"6:00 PM",l:"Final Pool Session",d:"One last swim. Close the cover for next guests.",tag:"relax",cat:"pool"},
+    {id:"d7b7",t:"8:00 PM",l:"Farewell Dinner — Podere il Casale",d:"Sunset farm dinner. Book ahead! 8 min drive.",tag:"food",cat:"dinner",map:"Podere+il+Casale+Pienza",book:true},
+  ]},
 ];
 
 const TRIPS=[
-{title:"Wine & Vineyards",emoji:"\uD83C\uDF77",d:"De Ricci \u2192 Bindella lunch \u2192 Dei \u2192 Salcheto sunset \u2192 La Grotta dinner.",spots:["De Ricci","Bindella","Dei Winery","Salcheto","La Grotta"]},
-{title:"Montepulciano & Pienza",emoji:"\uD83C\uDFDB\uFE0F",d:"Caff\u00E8 Poliziano \u2192 Montepulciano stroll \u2192 L'Altro Cantuccio \u2192 Pienza \u2192 Cugusi.",spots:["Caff\u00E8 Poliziano","Montepulciano","L'Altro Cantuccio","Pienza","Cugusi"]},
-{title:"Val d'Orcia Explorer",emoji:"\uD83C\uDF3E",d:"San Quirico \u2192 Bagno Vignoni hot springs \u2192 Montalcino Brunello \u2192 Sant'Antimo abbey.",spots:["San Quirico","Bagno Vignoni","Montalcino","Sant'Antimo"]},
-{title:"Farm & Food",emoji:"\uD83E\uDDD1\u200D\uD83C\uDF73",d:"Podere il Casale truffles \u2192 farm lunch \u2192 Cugusi deli \u2192 Olmaia brewery.",spots:["Podere il Casale","Cugusi","Olmaia"]},
-{title:"Siena Day Trip",emoji:"\uD83C\uDFF0",d:"Piazza del Campo \u2192 Duomo \u2192 Torre del Mangia \u2192 trattoria lunch \u2192 wander.",spots:["Siena"]},
-{title:"Relax & Wellness",emoji:"\uD83E\uDDD6",d:"Theia Thermal Spa \u2192 La Foce Gardens \u2192 Dopolavoro aperitivo.",spots:["Theia","La Foce","Dopolavoro"]},
+  {id:"wine",title:"Wine & Vineyards",sub:"Caves, tastings & vineyard lunches",emoji:"🍷",accent:"#D4839A",stops:[{t:"10:00",n:"De Ricci Tasting Room",d:"Across the street! Reservations essential.",dr:"0 min",map:"De+Ricci+Montepulciano",book:true},{t:"12:00",n:"Bindella — Lunch & Tour",d:"4-course lunch + wine. Reservations essential!",dr:"5 min",map:"Bindella+Winery+Montepulciano",book:true},{t:"3:00",n:"Dei Winery",d:"Modern setting. Reservations essential.",dr:"15 min",map:"Dei+Winery+Montepulciano",book:true},{t:"5:00",n:"Salcheto — Sunset",d:"Best views. Reservations essential.",dr:"10 min",map:"Salcheto+Winery+Montepulciano",book:true},{t:"7:30",n:"La Grotta — Dinner",d:"Refined Tuscan. Book ahead!",dr:"12 min",map:"La+Grotta+Montepulciano",book:true}]},
+  {id:"towns",title:"Montepulciano & Pienza",sub:"Leather, gelato, pecorino & views",emoji:"🏛️",accent:T.tl,stops:[{t:"9:30",n:"Caffè Poliziano",d:"Art nouveau café since 1868.",dr:"15 min",map:"Caffe+Poliziano+Montepulciano"},{t:"10:30",n:"Montepulciano Centro",d:"Leather, wine shops, De Ricci caves.",dr:null,map:"Montepulciano+centro+storico"},{t:"12:30",n:"L'Altro Cantuccio",d:"Tasting menus. Reservations essential!",dr:null,map:"L'Altro+Cantuccio+Montepulciano",book:true},{t:"3:00",n:"Pienza",d:"UNESCO views, pecorino, Palazzo Piccolomini.",dr:"10 min",map:"Pienza+centro+storico"},{t:"5:00",n:"Cugusi",d:"Hams, cheeses, wine, picnic baskets.",dr:"15 min",map:"Cugusi+Pienza"}]},
+  {id:"valdorcia",title:"Val d'Orcia Explorer",sub:"Hot springs, Brunello & cypress lanes",emoji:"🌾",accent:T.ol,stops:[{t:"9:30",n:"San Quirico d'Orcia",d:"Gardens, medieval gates.",dr:"35 min",map:"San+Quirico+d'Orcia"},{t:"11:30",n:"Bagno Vignoni",d:"Thermal piazza + Parco dei Mulini.",dr:"5 min",map:"Bagno+Vignoni"},{t:"1:00",n:"Cugusi Picnic",d:"Pre-order a basket!",dr:null,map:"Cugusi+Pienza",book:true},{t:"2:30",n:"Montalcino",d:"Brunello tastings, Fortress.",dr:"25 min",map:"Fortezza+Montalcino"},{t:"4:30",n:"Sant'Antimo Abbey",d:"Romanesque abbey, olive groves.",dr:"10 min",map:"Abbazia+di+Sant'Antimo"}]},
+  {id:"farm",title:"Farm & Food Day",sub:"Truffles, cooking & artisan tastings",emoji:"🧑‍🍳",accent:T.tl,stops:[{t:"10:00",n:"Podere il Casale",d:"Truffle hunt or cooking class!",dr:"8 min",map:"Podere+il+Casale+Pienza",book:true,bookUrl:"https://www.podereilcasale.com"},{t:"1:00",n:"Farm Lunch",d:"Everything grown on-site.",dr:null},{t:"3:00",n:"Pecorino Factory",d:"Tour & tastings.",dr:"15 min",book:true},{t:"4:30",n:"Cugusi",d:"Stock up on everything.",dr:"10 min",map:"Cugusi+Pienza"},{t:"5:30",n:"Olmaia Brewery",d:"Craft brewery. Check hours!",dr:"5 min",map:"Birrificio+Olmaia"}]},
+  {id:"siena",title:"Siena Day Trip",sub:"Palio piazza, Duomo & medieval alleys",emoji:"🏰",accent:T.sl,stops:[{t:"9:30",n:"Piazza del Campo",d:"Shell-shaped piazza.",dr:"65 min",map:"Piazza+del+Campo+Siena"},{t:"10:30",n:"Duomo di Siena",d:"Cathedral + Library.",dr:null,map:"Duomo+di+Siena"},{t:"12:00",n:"Torre del Mangia",d:"400 steps, best panorama.",dr:null,map:"Torre+del+Mangia+Siena"},{t:"1:00",n:"Trattoria Lunch",d:"Pici cacio e pepe.",dr:null},{t:"2:30",n:"Wander & Shop",d:"Get lost in medieval streets.",dr:null}]},
+  {id:"relax",title:"Relax & Wellness",sub:"Thermal spa, gardens & slow vibes",emoji:"🧖",accent:"#A8D5BA",stops:[{t:"9:30",n:"Theia Thermal Spa",d:"Indoor/outdoor/kids pools.",dr:"10 min",map:"Theia+Thermal+Spa+Chianciano"},{t:"12:00",n:"Lunch at Theia",d:"No need to leave.",dr:null},{t:"2:30",n:"La Foce Gardens",d:"Wed/Sun only.",dr:"20 min",map:"La+Foce+Gardens",book:true},{t:"4:30",n:"Dopolavoro",d:"Aperitivo across from La Foce.",dr:null,map:"Dopolavoro+La+Foce"}]},
 ];
 
-const INF=[
-{title:"The Villa",icon:"\uD83C\uDFE1",items:[{t:"Check-in / Check-out",d:"In: 4 PM \u00B7 Out: 11 AM"},{t:"WiFi",d:"Network: Molino \u00B7 Password: ayiayiayi"},{t:"Pool & Jacuzzi",d:"Open daily. Close the pool cover for next guests on departure."},{t:"Wine & Cocktail Bar",d:"Included! Self-serve wine, spirits, mixers."},{t:"No Smoking",d:"Outdoors only please."}]},
-{title:"Contacts",icon:"\uD83D\uDCDE",items:[{t:"Kyle",d:"+39 348 363 4104"},{t:"Charles",d:"+39 349 399 3132"},{t:"Daniela (housekeeper)",d:"+39 347 876 6705"},{t:"Emergency",d:"112 (all services)"}]},
-{title:"Markets & Groceries",icon:"\uD83D\uDED2",items:[{t:"Pasticceria Regina",d:"Closest bakery \u2014 cornetti & coffee. 3 min."},{t:"Hurrah Market",d:"Small, convenient. 5 min."},{t:"Coop",d:"Best selection & prices. 9 min."},{t:"Conad",d:"Good deli counter. 15 min."}]},
-{title:"Private Chefs",icon:"\uD83E\uDDD1\u200D\uD83C\uDF73",items:[{t:"Chef Alessio",d:"~80-100\u20AC/pp. Traditional Tuscan."},{t:"Chef Francesco",d:"~75\u20AC/pp. +39 340 742 4654."},{t:"Chef Nicolo (ex-Masterchef)",d:"~150\u20AC/pp. +39 320 1827 215."}]},
-];
+const GUIDE=`You are the AI concierge for Molino Nobile, a converted 17th-century flour mill vacation rental in the De Ricci vino nobile vineyards near Montepulciano, Tuscany. Address: Via Fontecornino, 7a, Sant'Albino, SI. Speak like a warm local friend. Drive times as "X min drive". Keep concise.
+HOUSE: Check-in 4PM, Check-out 11AM. WiFi: "Molino"/"ayiayiayi". Pool/jacuzzi. Included wine & cocktail bar. No smoking indoors.
+CONTACTS: Kyle +39 348 363 4104, Charles +39 349 399 3132, Daniela +39 347 876 6705, Emergency 112.
+MARKETS: Pasticceria Regina (3 min), Hurrah (5 min), Coop (9 min, best), Eurospin (12 min), Conad (15 min).
+CHEFS: Alessio ~80-100€/pp, Francesco ~75€/pp, Nicolo (ex-Masterchef) ~150€/pp.
+WINERIES: De Ricci, Bindella, Dei, Salcheto, Tenimenti Andreucci, Contucci (free), Avignonesi, Boscarelli, Talosa.
+RESTAURANTS: Podere il Casale, Acquachetta, Rosso Vivo, La Grotta, Porto di Bacco, L'Altro Cantuccio, Dopolavoro, Le Logge del Vignola, La Chiusa, L'Oliveto, Villa Cozzano, La Cantina Monticchiello, Fra Paolino, La Taverna di Fucile, BBQ Pienza, Latte di Luna, Bar Romantico.
+EXPERIENCES: Podere il Casale truffles/cooking, Theia Spa, La Foce, Terme San Filippo, Monticchiello, Villa Cozzano cooking, balloon, Antico Frantoio olive oil, e-bikes Urban Bikery/Pastri Motors.`;
 
-function fD(s){if(!s)return"";return new Date(s+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
-function aD(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d;}
+/* ═══ HELPERS ═══ */
+function MapsBtn({q}){if(!q)return null;return <a href={MB+q} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10,color:T.gold,textDecoration:"none",padding:"3px 8px",background:T.gold+"12",borderRadius:5,border:"1px solid "+T.gold+"20"}}>📍 Maps</a>;}
+function BookBadge({url}){return url?<a href={url} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10,color:T.red,textDecoration:"none",padding:"3px 8px",background:"#2D1818",borderRadius:5,border:"1px solid #5C282833"}}>📞 Book</a>:<span style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10,color:T.red,padding:"3px 8px",background:"#2D1818",borderRadius:5,border:"1px solid #5C282833"}}>📞 Book Ahead</span>;}
+function fmtDate(d){if(!d)return"";try{return new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}catch{return d;}}
+function addDays(d,n){const dt=new Date(d+"T12:00:00");dt.setDate(dt.getDate()+n);return dt.toISOString().split("T")[0];}
 
-// UTF-8 safe base64 using TextEncoder
-function toB64(s){
-const bytes=new TextEncoder().encode(s);
-let bin="";for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
-return btoa(bin);
-}
-function fromB64(s){
-const bin=atob(s);
-const bytes=new Uint8Array(bin.length);
-for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-return new TextDecoder().decode(bytes);
-}
-
-// Clipboard with fallback + prompt as last resort
-function copyText(text){
-try{
-const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="position:fixed;top:0;left:0;opacity:0";
-document.body.appendChild(ta);ta.focus();ta.select();
-const ok=document.execCommand("copy");
-document.body.removeChild(ta);
-if(!ok)throw new Error("execCommand failed");
-}catch(e){
-try{navigator.clipboard.writeText(text)}catch(e2){
-window.prompt("Copy this link:",text);
-}
-}
-}
-
-function Header({tab,setTab,isO,setIsO,gi}){
-const[sp,setSp]=useState(false);const[p,setP]=useState("");
-const gt=[{id:"week",l:"Your Week",i:"\uD83D\uDCC5"},{id:"crawls",l:"Day Trips",i:"\uD83D\uDDFA\uFE0F"},{id:"essentials",l:"Essentials",i:"\uD83C\uDFE0"},{id:"bookings",l:"Bookings",i:"\uD83D\uDCCB"},{id:"chat",l:"Concierge",i:"\uD83D\uDCAC"}];
-const tabs=isO?[...gt,{id:"owner",l:"Dashboard",i:"\u2699\uFE0F"}]:gt;
-return(
-<header style={{background:"rgba(250,250,248,.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid "+C.bd,position:"sticky",top:0,zIndex:100}}>
-<div style={{maxWidth:680,margin:"0 auto",padding:"16px 20px 0"}}>
-<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:gi?10:14}}>
-<div style={{width:38,height:38,borderRadius:12,background:"linear-gradient(135deg,#B8963E,#B8763C)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{"\uD83C\uDFE1"}</div>
-<div style={{flex:1}}>
-<h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:19,fontWeight:400,lineHeight:1.1}}>Molino Nobile</h1>
-<p style={{fontSize:11,color:C.mt,marginTop:1}}>Your Tuscan villa concierge</p>
-</div>
-{!isO&&!sp&&!gi&&<button onClick={()=>setSp(true)} style={{fontSize:11,color:C.mt,background:C.wh,border:"1px solid "+C.bd,borderRadius:20,padding:"6px 14px",cursor:"pointer"}}>Host</button>}
-{sp&&!isO&&<div style={{display:"flex",gap:4}}>
-<input value={p} onChange={e=>setP(e.target.value)} placeholder="PIN" type="password" style={{width:70,padding:"6px 10px",background:C.wh,border:"1px solid "+C.bd,borderRadius:20,fontSize:11,outline:"none",textAlign:"center"}} onKeyDown={e=>{if(e.key==="Enter"&&p===PIN){setIsO(true);setSp(false);setP("");}}}/>
-<button onClick={()=>{if(p===PIN){setIsO(true);setSp(false);setP("");}}} style={{fontSize:11,color:C.cr,background:"none",border:"1px solid rgba(184,118,60,.2)",borderRadius:20,padding:"6px 10px",cursor:"pointer"}}>{"\u2192"}</button>
-</div>}
-{isO&&<button onClick={()=>setIsO(false)} style={{fontSize:11,color:C.sg,background:C.sgS,border:"1px solid rgba(107,143,107,.2)",borderRadius:20,padding:"6px 14px",cursor:"pointer",fontWeight:600}}>Owner</button>}
-</div>
-{gi&&<div style={{background:C.wmS,borderRadius:14,padding:"10px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:10,border:"1px solid "+C.bd}}>
-<span style={{fontSize:20}}>{"\uD83D\uDC4B"}</span>
-<div style={{flex:1}}>
-<span style={{fontSize:14,fontWeight:600}}>Welcome, {gi.name}</span>
-<span style={{fontSize:12,color:C.mt,marginLeft:8}}>{fD(gi.ci)} {"\u2192"} {fD(gi.co)}</span>
-</div>
-</div>}
-<nav style={{display:"flex",gap:2,overflowX:"auto"}}>
-{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:"0 0 auto",padding:"10px 14px 12px",background:"none",border:"none",borderBottom:tab===t.id?"2px solid "+C.cr:"2px solid transparent",color:tab===t.id?C.fg:C.mt,fontSize:12,fontWeight:tab===t.id?600:400,cursor:"pointer",whiteSpace:"nowrap",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{t.i} {t.l}</button>)}
-</nav>
-</div>
-</header>);
+/* ═══ HEADER ═══ */
+function Header({tab,setTab,isOwner,setIsOwner,guestMode,guestInfo}){
+  const[sp,setSp]=useState(false);const[pin,setPin]=useState("");
+  const gT=[{id:"week",l:"Your Week",i:"📅"},{id:"trips",l:"Day Trips",i:"🗺️"},{id:"info",l:"Essentials",i:"🏠"},{id:"requests",l:"Bookings",i:"📋"},{id:"chat",l:"Concierge",i:"💬"}];
+  const tabs=isOwner?[...gT,{id:"owner",l:"Dashboard",i:"⚙️"}]:gT;
+  return<header style={{background:T.dw,borderBottom:"1px solid "+T.bdr,position:"sticky",top:0,zIndex:100}}>
+    <div style={{maxWidth:780,margin:"0 auto",padding:"12px 14px 0"}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:guestInfo?6:10}}>
+        <div style={{width:34,height:34,borderRadius:"50%",background:"linear-gradient(135deg,"+T.gold+","+T.terra+")",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 10px "+T.gold+"33"}}>🏡</div>
+        <div style={{flex:1}}><h1 style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:T.cream,lineHeight:1}}>Molino Nobile</h1><p style={{fontSize:9,color:T.mut,letterSpacing:1.8,textTransform:"uppercase",marginTop:1}}>Tuscan Villa Concierge</p></div>
+        {!guestMode&&!isOwner&&!sp&&<button onClick={()=>setSp(true)} style={{fontSize:10,color:T.mut,background:"none",border:"none",cursor:"pointer"}}>Host Login</button>}
+        {sp&&!isOwner&&<div style={{display:"flex",gap:4}}><input value={pin} onChange={e=>setPin(e.target.value)} placeholder="PIN" type="password" style={{width:60,padding:"4px 8px",background:T.card,border:"1px solid "+T.bdr,borderRadius:6,color:T.cream,fontSize:11,outline:"none"}} onKeyDown={e=>{if(e.key==="Enter"&&pin===OWNER_PIN){setIsOwner(true);setSp(false);setPin("");}}}/><button onClick={()=>{if(pin===OWNER_PIN){setIsOwner(true);setSp(false);setPin("");}}} style={{fontSize:10,color:T.gold,background:"none",border:"1px solid "+T.gold+"33",borderRadius:6,padding:"4px 8px",cursor:"pointer"}}>→</button></div>}
+        {isOwner&&<button onClick={()=>setIsOwner(false)} style={{fontSize:10,color:T.ol,background:T.ol+"15",border:"1px solid "+T.ol+"33",borderRadius:6,padding:"4px 10px",cursor:"pointer"}}>🔓 Owner</button>}
+      </div>
+      {guestInfo&&<div style={{background:T.gold+"12",borderRadius:8,padding:"6px 10px",marginBottom:8,border:"1px solid "+T.gold+"25",display:"flex",alignItems:"center",gap:8}}>
+        <span style={{fontSize:12}}>👋</span>
+        <div style={{flex:1}}><span style={{fontSize:12,fontWeight:600,color:T.gl}}>Welcome, {guestInfo.name}!</span><span style={{fontSize:10,color:T.mut,marginLeft:8}}>{fmtDate(guestInfo.checkin)} → {fmtDate(guestInfo.checkout)}</span></div>
+        <span style={{fontSize:9,color:T.mut}}>Edits auto-save</span>
+      </div>}
+      <nav style={{display:"flex",overflowX:"auto"}}>{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:"0 0 auto",padding:"7px 8px 9px",background:"none",border:"none",borderBottom:tab===t.id?"2px solid "+T.gold:"2px solid transparent",color:tab===t.id?T.gold:T.mut,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:tab===t.id?600:400,cursor:"pointer",whiteSpace:"nowrap"}}><span style={{marginRight:2}}>{t.i}</span>{t.l}</button>)}</nav>
+    </div>
+  </header>;
 }
 
-function TravelBadge({item,origin}){
-const tt=travelTime(origin,item.m);
-if(!tt)return null;
-const showWalk=tt.walkMin<=30;
-return(<>
-{showWalk&&<span style={{fontSize:10,padding:"3px 8px",background:"#F0F5ED",color:"#6B8F6B",borderRadius:20,fontWeight:600}}>{"\uD83D\uDEB6"} {tt.walkMin} min</span>}
-<span style={{fontSize:10,padding:"3px 8px",background:C.bgS,color:C.mt,borderRadius:20,fontWeight:600}}>{"\uD83D\uDE97"} {tt.driveMin} min</span>
-</>);
+/* ═══ WEEK TAB ═══ */
+function WeekTab({week,setWeek,terms,guestInfo}){
+  const[open,setOpen]=useState(0);const[dragDay,setDragDay]=useState(null);const[dragBlock,setDragBlock]=useState(null);
+  const onDDS=(e,i)=>{setDragDay(i);setDragBlock(null);e.dataTransfer.effectAllowed="move";};
+  const onDDO=(e,i)=>{e.preventDefault();if(dragDay===null||dragDay===i)return;setWeek(w=>{const n=[...w];const it=n.splice(dragDay,1)[0];n.splice(i,0,it);setDragDay(i);return n;});};
+  const onBDS=(e,di,bi)=>{e.stopPropagation();setDragBlock({di,bi});setDragDay(null);e.dataTransfer.effectAllowed="move";};
+  const onBDO=(e,di,bi)=>{e.preventDefault();e.stopPropagation();if(!dragBlock||dragBlock.di!==di||dragBlock.bi===bi)return;
+    setWeek(w=>w.map((d,i)=>{if(i!==di)return d;const nb=[...d.blocks];const it=nb.splice(dragBlock.bi,1)[0];nb.splice(bi,0,it);setDragBlock({di,bi});return{...d,blocks:nb};}));};
+  const usedLabels=new Set(week.flatMap(d=>d.blocks.map(b=>b.l)));
+  const delB=(di,bi)=>setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.filter((_,j)=>j!==bi)}:d));
+  const repB=(di,bi)=>{const b=week[di].blocks[bi];const alt=getAlt(b.cat||b.tag,usedLabels);setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.map((bl,j)=>j===bi?{id:"n"+Date.now(),t:bl.t,l:alt.l,d:alt.d,tag:alt.tag,cat:alt.cat,map:alt.map||null,book:!!alt.book,bookUrl:alt.bookUrl}:bl)}:d));};
+  const dirUrl=day=>{const stops=day.blocks.filter(b=>b.map);if(!stops.length)return null;if(stops.length===1)return MB+stops[0].map;const o=stops[0].map.replace(/\+/g," "),d=stops[stops.length-1].map.replace(/\+/g," "),wp=stops.slice(1,-1).map(s=>s.map.replace(/\+/g," ")).join("|");return"https://www.google.com/maps/dir/?api=1&origin="+encodeURIComponent(o)+"&destination="+encodeURIComponent(d)+(wp?"&waypoints="+encodeURIComponent(wp):"");};
+
+  return<div style={{padding:"16px 12px",maxWidth:780,margin:"0 auto"}}>
+    <div style={{textAlign:"center",marginBottom:16}}><h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.cream}}>{guestInfo?"Your Week, "+guestInfo.name.split(" ")[0]:"Your Week at Molino Nobile"}</h2><p style={{fontSize:11,color:T.mut,maxWidth:460,margin:"4px auto 0",lineHeight:1.5}}>Drag days to reorder · drag blocks within a day · swap or delete anything</p></div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center",marginBottom:14}}>{Object.entries(TS).map(([k,v])=><span key={k} style={{fontSize:9,color:v.a,background:v.bg,padding:"2px 7px",borderRadius:10,border:"1px solid "+v.a+"20"}}>{v.i} {k}</span>)}</div>
+    {week.map((day,di)=>{const du=dirUrl(day);const dn=di+1;const dayDate=guestInfo?.checkin?fmtDate(addDays(guestInfo.checkin,di)):null;return(
+      <div key={day.id||di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO(e,di)} onDragEnd={()=>setDragDay(null)} style={{marginBottom:8,opacity:dragDay===di?.5:1,cursor:"grab"}}>
+        <button onClick={()=>setOpen(open===di?-1:di)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:open===di?T.card:T.dw,border:"1px solid "+(open===di?day.accent+"44":T.bdr),borderRadius:open===di?"11px 11px 0 0":"11px",padding:"12px 14px",cursor:"pointer"}}>
+          <span style={{fontSize:11,color:T.mut,cursor:"grab",userSelect:"none"}}>⠿</span><span style={{fontSize:22}}>{day.emoji}</span>
+          <div style={{textAlign:"left",flex:1}}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:600,color:T.cream}}>Day {dn} {dayDate&&<span style={{fontSize:11,fontWeight:400,color:T.mut}}>· {dayDate}</span>} <span style={{color:day.accent}}>— {day.title}</span></div>
+            <div style={{fontSize:10,color:T.mut}}>{day.sub}</div>
+          </div>
+          {du&&<a href={du} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{fontSize:9,color:T.gold,textDecoration:"none",padding:"4px 8px",background:T.gold+"12",borderRadius:6,border:"1px solid "+T.gold+"20",whiteSpace:"nowrap"}}>🗺️ Route</a>}
+          <span style={{color:day.accent,transform:open===di?"rotate(180deg)":"none",fontSize:14,transition:"transform .15s"}}>▾</span>
+        </button>
+        {open===di&&<div style={{background:T.card,borderRadius:"0 0 11px 11px",padding:"8px 5px 5px",border:"1px solid "+day.accent+"22",borderTop:"none"}}>
+          {day.blocks.map((b,bi)=>{const s=TS[b.tag]||TS.activity;const iDB=dragBlock&&dragBlock.di===di&&dragBlock.bi===bi;return(
+            <div key={b.id||bi} draggable onDragStart={e=>onBDS(e,di,bi)} onDragOver={e=>onBDO(e,di,bi)} onDragEnd={()=>setDragBlock(null)}
+              style={{display:"flex",gap:6,marginBottom:5,opacity:iDB?.4:1,cursor:"grab"}}>
+              <div style={{width:52,textAlign:"right",paddingTop:8,flexShrink:0}}><span style={{fontSize:10,color:T.mut}}>{b.t}</span></div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:14}}><div style={{width:7,height:7,borderRadius:"50%",background:s.a,marginTop:10,flexShrink:0}}/><div style={{width:1,flex:1,background:T.mut+"18",marginTop:2}}/></div>
+              <div style={{flex:1,background:s.bg,borderRadius:9,padding:"8px 10px",border:"1px solid "+s.a+"15"}}>
+                <div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}}>
+                  <span style={{fontSize:12}}>{s.i}</span>
+                  <span style={{fontFamily:"'Playfair Display',serif",fontSize:13,fontWeight:600,color:s.a,flex:1,minWidth:0}}>{aT(b.l,terms)}</span>
+                  <button onClick={()=>repB(di,bi)} title="Swap for similar idea" style={{fontSize:12,color:T.gold,background:T.gold+"18",border:"1px solid "+T.gold+"35",borderRadius:7,padding:"4px 12px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>↻ New Idea</button>
+                  <button onClick={()=>delB(di,bi)} title="Remove" style={{fontSize:12,color:T.red,background:T.red+"12",border:"1px solid "+T.red+"30",borderRadius:7,padding:"4px 10px",cursor:"pointer",fontWeight:600}}>✕</button>
+                </div>
+                <p style={{fontSize:11,color:T.cream+"bb",lineHeight:1.45,marginTop:3}}>{aT(b.d,terms)}</p>
+                <div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:4}}>{b.map&&<MapsBtn q={b.map}/>}{b.book&&<BookBadge url={b.bookUrl}/>}</div>
+              </div>
+            </div>);})}
+        </div>}
+      </div>);})}
+  </div>;
 }
 
-function Card({item,idx,di,onSw,onDl,origin}){
-const ct=CT[item.c]||CT.food;const ps=linkP(item.d);const[o,setO]=useState(false);
-return(
-<div className="fade-up" style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,overflow:"hidden",marginBottom:8,boxShadow:"0 1px 3px rgba(0,0,0,.04)"}}>
-<div style={{display:"flex",gap:12,padding:"14px 16px",alignItems:"flex-start"}}>
-<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,paddingTop:2}}>
-<div style={{width:36,height:36,borderRadius:10,background:ct.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{ct.i}</div>
-<span style={{fontSize:9,color:ct.a,fontWeight:600,letterSpacing:.5,textTransform:"uppercase"}}>{ct.l}</span>
-</div>
-<div style={{flex:1,minWidth:0}}>
-<div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:3}}>
-<span style={{fontSize:15,fontWeight:600,lineHeight:1.3}}>{item.l}</span>
-{item.t&&<span style={{fontSize:11,color:C.mt,fontWeight:500,flexShrink:0}}>{item.t}</span>}
-</div>
-<div style={{fontSize:13,color:C.fgS,lineHeight:1.55}}>
-{ps.map((p,i)=>typeof p==="string"?<span key={i}>{p}</span>:<a key={i} href={MB+p.q} target="_blank" rel="noopener" style={{color:C.sk,textDecoration:"none",borderBottom:"1px solid rgba(91,127,166,.3)",fontWeight:500}}>{p.n}</a>)}
-</div>
-<div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}>
-{item.b&&<span style={{fontSize:10,padding:"3px 8px",background:C.wnS,color:C.wn,borderRadius:20,fontWeight:600}}>Book ahead</span>}
-{item.m&&<a href={MB+item.m} target="_blank" rel="noopener" style={{fontSize:10,padding:"3px 8px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none"}}>{"\uD83D\uDCCD"} Map</a>}
-<TravelBadge item={item} origin={origin}/>
-</div>
-</div>
-<div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0,paddingTop:2}}>
-<button onClick={()=>setO(!o)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:C.mt,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u21BB"}</button>
-{onDl&&<button onClick={()=>onDl(di,idx)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
-</div>
-</div>
-{o&&<div style={{padding:"8px 16px 12px",borderTop:"1px solid "+C.bdL,background:C.bgS,display:"flex",flexWrap:"wrap",gap:5}}>
-<span style={{fontSize:10,color:C.mt,alignSelf:"center",marginRight:4}}>Swap:</span>
-{ALTS.filter(a=>a.l!==item.l).slice(0,8).map((a,i)=><button key={i} onClick={()=>{onSw(di,idx,a);setO(false);}} style={{fontSize:11,padding:"5px 10px",background:C.wh,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer",fontWeight:500}}>{a.l}</button>)}
-</div>}
-</div>);
+/* ═══ TRIPS TAB ═══ */
+function TripsTab({terms}){const[open,setOpen]=useState(null);return<div style={{padding:"16px 12px",maxWidth:780,margin:"0 auto"}}><div style={{textAlign:"center",marginBottom:16}}><h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.cream}}>Themed Day Trips</h2><p style={{fontSize:11,color:T.mut}}>Pick your mood. Maps, drive times & booking tips included.</p></div>{TRIPS.map((trip,i)=><div key={trip.id} style={{marginBottom:8}}><button onClick={()=>setOpen(open===i?null:i)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:open===i?T.card:T.dw,border:"1px solid "+(open===i?trip.accent+"55":T.bdr),borderRadius:open===i?"11px 11px 0 0":"11px",padding:"14px 16px",cursor:"pointer"}}><div style={{width:40,height:40,borderRadius:9,background:trip.accent+"20",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{trip.emoji}</div><div style={{textAlign:"left",flex:1}}><div style={{fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:600,color:T.cream}}>{trip.title}</div><div style={{fontSize:10,color:T.mut}}>{trip.sub}</div></div><span style={{color:trip.accent,transform:open===i?"rotate(180deg)":"none",transition:"transform .15s"}}>▾</span></button>{open===i&&<div style={{background:T.card,borderRadius:"0 0 11px 11px",padding:"12px 8px",border:"1px solid "+trip.accent+"28",borderTop:"none"}}>{trip.stops.map((s,j)=><div key={j} style={{display:"flex",gap:7,marginBottom:7}}><div style={{width:42,textAlign:"right",paddingTop:3,flexShrink:0}}><span style={{fontSize:10,color:T.mut}}>{s.t}</span></div><div style={{display:"flex",flexDirection:"column",alignItems:"center",width:12}}><div style={{width:6,height:6,borderRadius:"50%",background:trip.accent,marginTop:5}}/><div style={{width:1,flex:1,background:trip.accent+"22",marginTop:2}}/></div><div style={{flex:1}}><div style={{fontFamily:"'Playfair Display',serif",fontSize:13,fontWeight:600,color:T.cream}}>{s.n}</div><p style={{fontSize:11,color:T.cream+"aa",lineHeight:1.4,marginTop:1}}>{aT(s.d,terms)}</p><div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:3}}>{s.dr&&<span style={{fontSize:9,color:T.mut}}>🚗 {s.dr}</span>}{s.map&&<MapsBtn q={s.map}/>}{s.book&&<BookBadge url={s.bookUrl}/>}</div></div></div>)}</div>}</div>)}</div>;}
+
+/* ═══ INFO TAB ═══ */
+function InfoTab(){const[copied,setCopied]=useState(false);return<div style={{padding:"16px 12px",maxWidth:780,margin:"0 auto"}}><h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.cream,textAlign:"center",marginBottom:16}}>House Essentials</h2>
+  <div style={{background:T.card,borderRadius:12,padding:16,marginBottom:12,border:"1px solid "+T.gold+"28",textAlign:"center"}}><div style={{fontSize:24,marginBottom:4}}>📶</div><div style={{display:"flex",justifyContent:"center",gap:20,marginTop:6}}><div><div style={{fontSize:9,color:T.mut}}>Network</div><div style={{fontSize:16,fontFamily:"'Playfair Display',serif",color:T.cream}}>Molino</div></div><div style={{width:1,background:T.bdr}}/><div><div style={{fontSize:9,color:T.mut}}>Password</div><div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:16,color:T.gold,letterSpacing:1}}>ayiayiayi</span><button onClick={()=>{navigator.clipboard?.writeText("ayiayiayi");setCopied(true);setTimeout(()=>setCopied(false),1500);}} style={{fontSize:9,color:copied?T.ol:T.mut,background:"none",border:"1px solid "+T.bdr,borderRadius:5,padding:"1px 6px",cursor:"pointer"}}>{copied?"Copied!":"Copy"}</button></div></div></div></div>
+  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}><div style={{background:T.card,borderRadius:10,padding:12,textAlign:"center",border:"1px solid "+T.bdr}}><div style={{fontSize:18}}>🔑</div><div style={{fontSize:9,color:T.mut}}>CHECK-IN</div><div style={{fontSize:14,fontFamily:"'Playfair Display',serif",color:T.cream}}>From 4:00 PM</div></div><div style={{background:T.card,borderRadius:10,padding:12,textAlign:"center",border:"1px solid "+T.bdr}}><div style={{fontSize:18}}>🚪</div><div style={{fontSize:9,color:T.mut}}>CHECK-OUT</div><div style={{fontSize:14,fontFamily:"'Playfair Display',serif",color:T.cream}}>By 11:00 AM</div></div></div>
+  <div style={{background:T.card,borderRadius:10,padding:12,marginBottom:12,border:"1px solid "+T.bdr,display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:18}}>📍</span><div style={{flex:1}}><div style={{fontSize:12,color:T.cream}}>Via Fontecornino, 7a, Sant'Albino, SI</div><p style={{fontSize:10,color:T.mut,marginTop:2}}>Google Maps/Waze only. Dirt road → keep going around corner, up hill.</p></div><a href={MB+"Via+Fontecornino+7a+Sant'Albino"} target="_blank" rel="noopener noreferrer" style={{fontSize:10,color:T.gold,textDecoration:"none",padding:"5px 9px",border:"1px solid "+T.gold+"33",borderRadius:7}}>Navigate</a></div>
+  <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:14,color:T.gl,marginBottom:6,paddingBottom:4,borderBottom:"1px solid "+T.bdr}}>📞 Contacts</h3>
+  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>{[{n:"Kyle",r:"Host",p:"+39 348 363 4104"},{n:"Charles",r:"Host",p:"+39 349 399 3132"},{n:"Daniela",r:"House Manager",p:"+39 347 876 6705"},{n:"Gabriela",r:"English Local",p:"+39 339 858 7915"}].map((c,i)=><a key={i} href={"tel:"+c.p.replace(/\s/g,"")} style={{textDecoration:"none",background:T.dw,borderRadius:8,padding:"8px 10px",border:"1px solid "+T.bdr}}><div style={{fontSize:12,fontWeight:600,color:T.cream}}>{c.n}</div><div style={{fontSize:9,color:T.mut}}>{c.r}</div><div style={{fontSize:11,color:T.gold,marginTop:3}}>{c.p}</div></a>)}</div>
+  <div style={{fontSize:11,color:T.red,marginBottom:12,padding:"6px 10px",background:"#2D1818",borderRadius:7,textAlign:"center"}}>🚨 Emergency: <strong>112</strong></div>
+  <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:14,color:T.gl,marginBottom:6,paddingBottom:4,borderBottom:"1px solid "+T.bdr}}>👨‍🍳 Private Chefs</h3>
+  {[{n:"Alessio Berlionni",s:"Refined & elegant",pr:"~80-100€/pp",p:"+39 370 372 7927"},{n:"Chef Francesco",s:"Traditional Italian",pr:"~75€/pp",p:"+39 340 742 4654"},{n:"Nicolo Duchini",s:"Masterchef level",pr:"~150€/pp",p:"+39 320 1827 215"}].map((c,i)=><div key={i} style={{background:T.dw,borderRadius:8,padding:10,marginBottom:6,border:"1px solid "+T.bdr,display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontSize:13,fontWeight:600,color:T.cream}}>{c.n}</div><div style={{fontSize:10,color:T.mut}}>{c.s} · <span style={{color:T.gl}}>{c.pr}</span></div></div><a href={"tel:"+c.p.replace(/\s/g,"")} style={{fontSize:10,color:T.gold,textDecoration:"none",padding:"5px 10px",border:"1px solid "+T.gold+"33",borderRadius:7}}>Call</a></div>)}
+  <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:14,color:T.gl,marginTop:12,marginBottom:6,paddingBottom:4,borderBottom:"1px solid "+T.bdr}}>🛒 Supermarkets & Bakery</h3>
+  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>{[{n:"Pasticceria Regina",t:"3 min",x:"Sant'Albino · cornetti ★"},{n:"Hurrah",t:"5 min",x:"Basic"},{n:"Coop",t:"9 min",x:"Best nearby ★"},{n:"Eurospin",t:"12 min",x:"Budget"},{n:"Conad",t:"15 min",x:"Top quality"}].map((m,i)=><div key={i} style={{background:T.dw,borderRadius:8,padding:10,border:"1px solid "+T.bdr}}><div style={{fontSize:12,fontWeight:600,color:T.cream}}>{m.n}</div><div style={{fontSize:10,color:T.mut}}>{m.t} · {m.x}</div></div>)}</div>
+</div>;}
+
+/* ═══ REQUESTS (BOOKINGS) TAB ═══ */
+function RequestsTab({requests,setRequests,isOwner}){const[form,setForm]=useState({venue:"",date:"",time:"",guests:"",phone:"",notes:""});const[submitted,setSubmitted]=useState(false);const submit=()=>{if(!form.venue||!form.guests)return;setRequests(p=>[...p,{...form,id:Date.now(),status:"pending",ownerNotes:""}]);setForm({venue:"",date:"",time:"",guests:"",phone:"",notes:""});setSubmitted(true);setTimeout(()=>setSubmitted(false),3000);};const iS={width:"100%",padding:"9px 12px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:8,color:T.cream,fontSize:12,fontFamily:"'DM Sans',sans-serif",outline:"none"};
+  return<div style={{padding:"16px 12px",maxWidth:780,margin:"0 auto"}}><h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.cream,textAlign:"center",marginBottom:4}}>{isOwner?"Booking Requests":"Request a Booking"}</h2><p style={{fontSize:11,color:T.mut,textAlign:"center",marginBottom:16}}>{isOwner?"Manage dining, tour & experience bookings for guests":"Ask your host to book a restaurant, winery tour, or experience for you"}</p>
+    {!isOwner&&<div style={{background:T.card,borderRadius:12,padding:16,border:"1px solid "+T.bdr,marginBottom:16}}>{submitted?<div style={{textAlign:"center",padding:20}}><div style={{fontSize:28,marginBottom:8}}>✅</div><div style={{fontSize:14,color:T.ol}}>Request sent! Your host will confirm shortly.</div></div>:<><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}><div><label style={{fontSize:10,color:T.mut,display:"block",marginBottom:3}}>Restaurant / Winery / Experience *</label><input value={form.venue} onChange={e=>setForm({...form,venue:e.target.value})} placeholder="e.g. Bindella winery tour" style={iS}/></div><div><label style={{fontSize:10,color:T.mut,display:"block",marginBottom:3}}>Guests *</label><input value={form.guests} onChange={e=>setForm({...form,guests:e.target.value})} placeholder="4 adults, 2 kids" style={iS}/></div></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}><div><label style={{fontSize:10,color:T.mut,display:"block",marginBottom:3}}>Date</label><input value={form.date} onChange={e=>setForm({...form,date:e.target.value})} placeholder="Tuesday, June 10" style={iS}/></div><div><label style={{fontSize:10,color:T.mut,display:"block",marginBottom:3}}>Time</label><input value={form.time} onChange={e=>setForm({...form,time:e.target.value})} placeholder="12:30 PM" style={iS}/></div></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}><div><label style={{fontSize:10,color:T.mut,display:"block",marginBottom:3}}>Phone (WhatsApp)</label><input value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} placeholder="+1 555 123 4567" style={iS}/></div><div><label style={{fontSize:10,color:T.mut,display:"block",marginBottom:3}}>Notes</label><input value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} placeholder="Allergies, highchair..." style={iS}/></div></div><button onClick={submit} style={{width:"100%",padding:"10px",background:form.venue&&form.guests?T.gold:T.card,color:form.venue&&form.guests?T.dark:T.mut,border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:form.venue&&form.guests?"pointer":"default"}}>Submit Booking Request</button></>}</div>}
+    {requests.length===0&&<div style={{textAlign:"center",padding:40,color:T.mut,fontSize:12}}>{isOwner?"No booking requests yet.":"Your booking requests will appear here."}</div>}
+    {requests.map(r=><div key={r.id} style={{background:T.card,borderRadius:10,padding:14,marginBottom:8,border:"1px solid "+(r.status==="confirmed"?T.ol+"44":r.status==="declined"?T.red+"44":T.bdr)}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:600,color:T.cream}}>{r.venue}</div><span style={{fontSize:10,padding:"2px 8px",borderRadius:10,fontWeight:600,background:r.status==="confirmed"?T.ol+"20":r.status==="declined"?"#2D1818":T.dw,color:r.status==="confirmed"?T.ol:r.status==="declined"?T.red:T.gold}}>{r.status==="confirmed"?"✓ Confirmed":r.status==="declined"?"✗ Unavailable":"⏳ Pending"}</span></div><div style={{display:"flex",gap:16,fontSize:11,color:T.mut,marginBottom:4}}>{r.date&&<span>📅 {r.date}</span>}{r.time&&<span>🕐 {r.time}</span>}{r.guests&&<span>👥 {r.guests}</span>}</div>{r.ownerNotes&&<p style={{fontSize:11,color:T.ol,marginTop:4}}>🏡 Host: {r.ownerNotes}</p>}{isOwner&&r.status==="pending"&&<div style={{display:"flex",gap:6,marginTop:8}}><button onClick={()=>setRequests(p=>p.map(x=>x.id===r.id?{...x,status:"confirmed"}:x))} style={{flex:1,padding:"7px",background:T.ol+"20",color:T.ol,border:"1px solid "+T.ol+"33",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer"}}>✓ Confirm</button><button onClick={()=>setRequests(p=>p.map(x=>x.id===r.id?{...x,status:"declined"}:x))} style={{flex:1,padding:"7px",background:"#2D1818",color:T.red,border:"1px solid #5C282833",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer"}}>✗ Decline</button><input placeholder="Add note..." onBlur={e=>setRequests(p=>p.map(x=>x.id===r.id?{...x,ownerNotes:e.target.value}:x))} style={{flex:2,padding:"7px 10px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:7,color:T.cream,fontSize:11,outline:"none"}}/></div>}</div>)}
+  </div>;
 }
 
-function ConfCard({bk}){
-return(<div style={{background:"#F0FAF0",borderRadius:16,border:"2px solid #5A9E6F",padding:"14px 16px",marginBottom:8}}>
-<div style={{display:"flex",alignItems:"center",gap:8}}>
-<span style={{fontSize:18}}>{"\u2705"}</span>
-<div style={{flex:1}}>
-<div style={{fontSize:14,fontWeight:600}}>{bk.v}</div>
-<div style={{fontSize:12,color:"#5A9E6F",fontWeight:600}}>Confirmed Reservation</div>
-<div style={{fontSize:12,color:C.mt}}>{bk.g} guests{bk.d?" \u00B7 "+fD(bk.d):""}</div>
-</div>
-<span style={{fontSize:11,padding:"4px 10px",background:"#DFF2E1",color:"#3D7A4F",borderRadius:20,fontWeight:600}}>Booked</span>
-</div>
-</div>);
+/* ═══ CHAT TAB ═══ */
+function ChatTab({terms,guestInfo}){const[msgs,setMsgs]=useState([{role:"assistant",content:"Ciao! 🌿 I'm your Molino Nobile guide."+(guestInfo?" Welcome, "+guestInfo.name.split(" ")[0]+"!":"")+"\n\nAsk me anything about restaurants, wineries, activities, or the house.\n\nTip: Use the Bookings tab to request restaurant & tour reservations!"}]);const[input,setInput]=useState("");const[loading,setLoading]=useState(false);const endRef=useRef(null);
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,loading]);
+  const chips=["Plan today — we have kids","Best winery for beginners?","Restaurant for tonight?","Rainy day plan?","WiFi password?","Best sunset spot?","Fresh cornetti nearby?"];
+  const send=async t=>{if(!t.trim()||loading)return;const um={role:"user",content:t.trim()};setMsgs(p=>[...p,um]);setInput("");setLoading(true);try{const h=[...msgs.filter(m=>m.role!=="system"),um].map(m=>({role:m.role,content:m.content}));const res=await fetch(API_PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:GUIDE,messages:h})});const data=await res.json();const reply=data.content?.map(b=>b.text||"").join("\n")||"Sorry, try again!";setMsgs(p=>[...p,{role:"assistant",content:reply}]);}catch{setMsgs(p=>[...p,{role:"assistant",content:"Connection issue. Check Essentials or text Kyle: +39 348 363 4104"}]);}setLoading(false);};
+  const renderMsg=text=>{const parts=linkP(aT(text,terms));if(typeof parts==="string")return parts;return parts.map((p,i)=>typeof p==="string"?<span key={i}>{p}</span>:<a key={i} href={MB+p.query} target="_blank" rel="noopener noreferrer" style={{color:T.gold,textDecoration:"underline",textDecorationColor:T.gold+"55",textUnderlineOffset:2}}>{p.place}</a>);};
+  return<div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 95px)",maxWidth:780,margin:"0 auto"}}><div style={{flex:1,overflowY:"auto",padding:"12px 12px 6px"}}>{msgs.map((m,i)=><div key={i} style={{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",marginBottom:8}}>{m.role==="assistant"&&<div style={{width:26,height:26,borderRadius:"50%",background:"linear-gradient(135deg,"+T.gold+","+T.terra+")",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,marginRight:5,flexShrink:0,marginTop:2}}>🏡</div>}<div style={{maxWidth:"82%",padding:"9px 12px",borderRadius:m.role==="user"?"13px 13px 3px 13px":"13px 13px 13px 3px",background:m.role==="user"?T.gold:T.dw,color:m.role==="user"?T.dark:T.cream,fontSize:12,lineHeight:1.6,whiteSpace:"pre-wrap",border:m.role==="user"?"none":"1px solid "+T.bdr}}>{m.role==="assistant"?renderMsg(m.content):m.content}</div></div>)}{loading&&<div style={{display:"flex",gap:5,marginBottom:8}}><div style={{width:26,height:26,borderRadius:"50%",background:"linear-gradient(135deg,"+T.gold+","+T.terra+")",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>🏡</div><div style={{padding:"9px 12px",background:T.dw,borderRadius:"13px 13px 13px 3px",border:"1px solid "+T.bdr,color:T.mut,fontSize:12}}><span style={{animation:"pulse 1s ease infinite"}}>●</span><span style={{animation:"pulse 1s ease infinite .2s"}}> ●</span><span style={{animation:"pulse 1s ease infinite .4s"}}> ●</span></div></div>}{msgs.length<=1&&!loading&&<div style={{marginTop:4}}><p style={{fontSize:10,color:T.mut,marginBottom:6}}>Quick questions:</p><div style={{display:"flex",flexWrap:"wrap",gap:4}}>{chips.map((c,i)=><button key={i} onClick={()=>send(c)} style={{background:T.dw,border:"1px solid "+T.gold+"20",color:T.gl,fontSize:10,padding:"6px 10px",borderRadius:16,cursor:"pointer"}}>{c}</button>)}</div></div>}<div ref={endRef}/></div>
+    <div style={{padding:"6px 12px 12px",borderTop:"1px solid "+T.bdr,background:T.dark}}><div style={{display:"flex",gap:5}}><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send(input)} placeholder="Ask about restaurants, wineries, activities..." style={{flex:1,padding:"10px 12px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:9,color:T.cream,fontSize:12,fontFamily:"'DM Sans',sans-serif",outline:"none"}}/><button onClick={()=>send(input)} disabled={loading||!input.trim()} style={{padding:"10px 16px",background:input.trim()?T.gold:T.card,border:"none",borderRadius:9,color:input.trim()?T.dark:T.mut,fontWeight:600,fontSize:12,cursor:input.trim()?"pointer":"default"}}>Send</button></div></div>
+  </div>;
 }
 
-function WkTab({wk,setWk,gi,origin,confirmed,editingTpl,onSaveTpl,onCancelTpl}){
-const sw=(di,ii,a)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{l:a.l,d:a.d,c:a.c,m:a.m,b:a.b,t:t.t}:t)}:d));};
-const dl=(di,ii)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.filter((_,j)=>j!==ii)}:d));};
-return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-{editingTpl&&<div style={{background:C.crS,border:"2px solid "+C.cr,borderRadius:14,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
-<span style={{fontSize:14}}>📝</span>
-<div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:C.cr}}>Editing: {editingTpl.name}</div><div style={{fontSize:12,color:C.mt}}>Swap or remove cards, then save your template.</div></div>
-<button onClick={onSaveTpl} style={{fontSize:12,padding:"8px 16px",background:C.sg,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600}}>Save Template</button>
-<button onClick={onCancelTpl} style={{fontSize:12,padding:"8px 16px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer"}}>Cancel</button>
-</div>}
-<div style={{textAlign:"center",marginBottom:28}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>{editingTpl?"Template: "+editingTpl.name:"Your Week in Tuscany"}</h2>
-<p style={{fontSize:14,color:C.mt,marginTop:6}}>{editingTpl?"Remove or swap cards to customize this template.":"Curated by your hosts. Tap "+"\u21BB"+" to swap any spot."}</p>
-</div>
-{wk.map((day,di)=>{
-const ds=gi&&gi.ci?aD(gi.ci,di).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"}):null;
-return(<div key={di} style={{marginBottom:24}}>
-<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-<div style={{width:40,height:40,borderRadius:12,background:C.crS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{day.emoji}</div>
-<div style={{flex:1}}>
-<div style={{fontSize:11,color:C.cr,fontWeight:600,letterSpacing:.5,textTransform:"uppercase"}}>Day {di+1}{ds?" \u00B7 "+ds:""}</div>
-<div style={{fontSize:17,fontWeight:600,marginTop:1}}>{day.title}</div>
-</div>
-{(()=>{const spots=day.items.filter(x=>x.m).map(x=>x.m.replace(/\+/g," "));if(spots.length<2)return null;const url="https://www.google.com/maps/dir/"+spots.join("/");return <a href={url} target="_blank" rel="noopener" style={{fontSize:11,padding:"6px 12px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none",display:"flex",alignItems:"center",gap:4,flexShrink:0}}>{"\uD83D\uDDFA\uFE0F"} Route</a>;})()}
-</div>
-{day.items.map((it,ii)=><Card key={ii} item={it} idx={ii} di={di} onSw={sw} onDl={dl} origin={origin}/>)}
-{confirmed&&confirmed.filter(b=>{if(!b.d||!gi||!gi.ci)return false;const bd=new Date(b.d);const ci=new Date(gi.ci);const diff=Math.round((bd-ci)/864e5);return diff===di;}).map((b,i)=><ConfCard key={"bk"+i} bk={b}/>)}
-</div>);})}
-</div>);
+/* ═══ OWNER TAB ═══ */
+function OwnerTab({terms,setTerms,week,guests,setGuests}){
+  const[nk,setNk]=useState("");const[nv,setNv]=useState("");
+  const[newG,setNewG]=useState({name:"",checkin:"",checkout:"",notes:""});
+  const[copied,setCopied]=useState(null);
+  const[editG,setEditG]=useState(null);
+  const add=()=>{if(nk&&nv){setTerms(p=>({...p,[nk]:nv}));setNk("");setNv("");}};
+  const iS={width:"100%",padding:"8px 10px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:7,color:T.cream,fontSize:12,outline:"none",fontFamily:"'DM Sans',sans-serif"};
+
+  const addGuest=()=>{
+    if(!newG.name||!newG.checkin)return;
+    const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    const numDays=newG.checkout?Math.ceil((new Date(newG.checkout)-new Date(newG.checkin))/(86400000))+1:7;
+    const baseWeek=JSON.parse(JSON.stringify(week)).slice(0,Math.min(numDays,week.length));
+    const guest={id,name:newG.name,checkin:newG.checkin,checkout:newG.checkout||addDays(newG.checkin,6),notes:newG.notes,week:baseWeek,created:Date.now()};
+    setGuests(p=>[...p,guest]);
+    saveGuestData(id,guest);
+    setNewG({name:"",checkin:"",checkout:"",notes:""});
+  };
+
+  const genLink=(g)=>{
+    const payload={id:g.id,name:g.name,checkin:g.checkin,checkout:g.checkout,week:g.week};
+    const encoded=btoa(encodeURIComponent(JSON.stringify(payload)));
+    const base=window.location.origin+window.location.pathname;
+    const link=base+"?g="+g.id+"&d="+encoded;
+    navigator.clipboard?.writeText(link);
+    setCopied(g.id);
+    setTimeout(()=>setCopied(null),2500);
+  };
+
+  const delGuest=(id)=>{setGuests(p=>p.filter(g=>g.id!==id));try{localStorage.removeItem(STORAGE_PREFIX+id);}catch{}};
+
+  return<div style={{padding:"16px 12px",maxWidth:780,margin:"0 auto"}}>
+    <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.cream,textAlign:"center",marginBottom:16}}>Owner Dashboard</h2>
+
+    {/* ═══ GUEST MANAGER ═══ */}
+    <div style={{background:T.card,borderRadius:12,padding:16,border:"1px solid "+T.gold+"28",marginBottom:16}}>
+      <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:16,color:T.gl,marginBottom:12}}>👥 Guest Manager</h3>
+      <p style={{fontSize:11,color:T.mut,marginBottom:12,lineHeight:1.5}}>Create a personalized guide per guest. Generates a shareable link where they see their dates, can drag/reorder activities, and all edits auto-save.</p>
+
+      <div style={{background:T.dw,borderRadius:10,padding:14,border:"1px solid "+T.bdr,marginBottom:12}}>
+        <div style={{fontSize:12,fontWeight:600,color:T.cream,marginBottom:8}}>+ New Guest</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          <div><label style={{fontSize:10,color:T.mut}}>Guest Name *</label><input value={newG.name} onChange={e=>setNewG({...newG,name:e.target.value})} placeholder="Sarah & Mike Johnson" style={iS}/></div>
+          <div><label style={{fontSize:10,color:T.mut}}>Notes (from their messages)</label><input value={newG.notes} onChange={e=>setNewG({...newG,notes:e.target.value})} placeholder="2 kids under 5, love wine, gluten-free" style={iS}/></div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+          <div><label style={{fontSize:10,color:T.mut}}>Check-in *</label><input type="date" value={newG.checkin} onChange={e=>setNewG({...newG,checkin:e.target.value})} style={iS}/></div>
+          <div><label style={{fontSize:10,color:T.mut}}>Check-out</label><input type="date" value={newG.checkout} onChange={e=>setNewG({...newG,checkout:e.target.value})} style={iS}/></div>
+          <div style={{display:"flex",alignItems:"flex-end"}}><button onClick={addGuest} style={{width:"100%",padding:"8px",background:newG.name&&newG.checkin?T.gold:T.card,color:newG.name&&newG.checkin?T.dark:T.mut,border:"none",borderRadius:7,fontSize:12,fontWeight:600,cursor:newG.name&&newG.checkin?"pointer":"default"}}>Create Guide</button></div>
+        </div>
+      </div>
+
+      {guests.length===0?<div style={{textAlign:"center",padding:20,color:T.mut,fontSize:12}}>No guests yet. Create your first guest guide above.</div>:
+        guests.map(g=><div key={g.id} style={{background:T.dw,borderRadius:10,padding:14,marginBottom:8,border:"1px solid "+T.bdr}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+            <div><div style={{fontSize:14,fontWeight:600,color:T.cream}}>{g.name}</div><div style={{fontSize:10,color:T.mut}}>{fmtDate(g.checkin)} → {fmtDate(g.checkout)} · {g.week.length} days</div></div>
+            <div style={{display:"flex",gap:5}}>
+              <button onClick={()=>genLink(g)} style={{fontSize:11,color:copied===g.id?T.ol:T.gold,background:copied===g.id?T.ol+"15":T.gold+"15",border:"1px solid "+(copied===g.id?T.ol:T.gold)+"33",borderRadius:7,padding:"5px 12px",cursor:"pointer",fontWeight:600}}>{copied===g.id?"✓ Copied!":"🔗 Copy Link"}</button>
+              <button onClick={()=>delGuest(g.id)} style={{fontSize:11,color:T.red,background:T.red+"10",border:"1px solid "+T.red+"25",borderRadius:7,padding:"5px 8px",cursor:"pointer"}}>✕</button>
+            </div>
+          </div>
+          {g.notes&&<p style={{fontSize:11,color:T.gold,marginBottom:4}}>📝 {g.notes}</p>}
+          <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{g.week.map((d,i)=><span key={i} style={{fontSize:9,padding:"2px 6px",background:T.card,borderRadius:5,color:T.mut,border:"1px solid "+T.bdr}}>{d.emoji} {d.title}</span>)}</div>
+        </div>)
+      }
+    </div>
+
+    {/* ═══ TERMS ═══ */}
+    <div style={{background:T.card,borderRadius:12,padding:16,border:"1px solid "+T.bdr,marginBottom:16}}>
+      <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:14,color:T.gl,marginBottom:10}}>🔄 Global Term Replacements</h3>
+      {Object.entries(terms).map(([k,v])=><div key={k} style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,padding:"6px 10px",background:T.dw,borderRadius:8,border:"1px solid "+T.bdr}}><span style={{fontSize:11,color:T.red,textDecoration:"line-through",flex:1}}>{k}</span><span style={{fontSize:11,color:T.mut}}>→</span><span style={{fontSize:11,color:T.ol,flex:1}}>{v}</span><button onClick={()=>setTerms(p=>{const n={...p};delete n[k];return n;})} style={{fontSize:10,color:T.red,background:"none",border:"none",cursor:"pointer"}}>✕</button></div>)}
+      <div style={{display:"flex",gap:6,marginTop:8}}><input value={nk} onChange={e=>setNk(e.target.value)} placeholder="Find..." style={{flex:1,...iS}}/><span style={{color:T.mut,alignSelf:"center"}}>→</span><input value={nv} onChange={e=>setNv(e.target.value)} placeholder="Replace..." style={{flex:1,...iS}}/><button onClick={add} style={{padding:"7px 14px",background:nk&&nv?T.gold:T.card,color:nk&&nv?T.dark:T.mut,border:"none",borderRadius:7,fontSize:11,fontWeight:600,cursor:nk&&nv?"pointer":"default"}}>Add</button></div>
+    </div>
+
+    {/* ═══ STATS ═══ */}
+    <div style={{background:T.card,borderRadius:12,padding:16,border:"1px solid "+T.bdr}}>
+      <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:14,color:T.gl,marginBottom:8}}>📊 Idea Bank: {ALTS.length} ideas</h3>
+      <p style={{fontSize:11,color:T.cream+"bb",lineHeight:1.6}}>{ALTS.filter(a=>a.cat==="dinner").length} dinners · {ALTS.filter(a=>a.cat==="lunch").length} lunches · {ALTS.filter(a=>["breakfast","cafe","gelato"].includes(a.cat)).length} breakfast/café · {ALTS.filter(a=>a.cat==="wine").length} wineries · {ALTS.filter(a=>["town","nature","experience","spa"].includes(a.cat)).length} activities. The ↻ New Idea button matches by category.</p>
+    </div>
+  </div>;
 }
 
-function CrTab({origin}){return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-<div style={{textAlign:"center",marginBottom:24}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Day Trips</h2>
-<p style={{fontSize:14,color:C.mt,marginTop:6}}>Suggested routes from the villa.</p>
-</div>
-{TRIPS.map((t,i)=>(<div key={i} style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:12}}>
-<div style={{display:"flex",gap:10,marginBottom:10}}>
-<span style={{fontSize:22}}>{t.emoji}</span>
-<div><div style={{fontSize:16,fontWeight:600}}>{t.title}</div><div style={{fontSize:13,color:C.fgS,lineHeight:1.5,marginTop:3}}>{t.d}</div></div>
-</div>
-<div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-{t.spots.map((p,j)=>{const q=PL[p];const tt=q?travelTime(origin,q):null;return q?<a key={j} href={MB+q} target="_blank" rel="noopener" style={{fontSize:12,padding:"6px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,textDecoration:"none",fontWeight:500}}>{"\uD83D\uDCCD"} {p}{tt?" \u00B7 \uD83D\uDE97 "+tt.driveMin+"m":""}</a>:<span key={j} style={{fontSize:12,padding:"6px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,color:C.mt}}>{p}</span>;})}
-</div>
-</div>))}
-</div>);}
-
-function EsTab({inf,setInf,isO}){
-const[ed,setEd]=useState(null); // {si, ii} section + item index
-const[et,setEt]=useState("");const[edesc,setEdesc]=useState("");
-const startEdit=(si,ii)=>{if(!isO)return;setEd({si,ii});setEt(inf[si].items[ii].t);setEdesc(inf[si].items[ii].d);};
-const save=()=>{if(!ed)return;const n=inf.map((s,si)=>si===ed.si?{...s,items:s.items.map((m,ii)=>ii===ed.ii?{...m,t:et,d:edesc}:m)}:s);setInf(n);setEd(null);};
-const addItem=(si)=>{const n=inf.map((s,i)=>i===si?{...s,items:[...s.items,{t:"New Item",d:"Description here"}]}:s);setInf(n);};
-const delItem=(si,ii)=>{const n=inf.map((s,i)=>i===si?{...s,items:s.items.filter((_,j)=>j!==ii)}:s);setInf(n);};
-const iS={width:"100%",padding:"8px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:10,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
-return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-<div style={{textAlign:"center",marginBottom:24}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Villa Essentials</h2>
-{isO&&<p style={{fontSize:12,color:C.cr,marginTop:4}}>Tap any card to edit</p>}
-</div>
-{inf.map((s,si)=>(<div key={si} style={{marginBottom:20}}>
-<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:18}}>{s.icon}</span><h3 style={{fontSize:16,fontWeight:600}}>{s.title}</h3></div>
-{s.items.map((m,ii)=>(
-ed&&ed.si===si&&ed.ii===ii?
-<div key={ii} style={{background:C.wh,borderRadius:14,border:"2px solid "+C.cr,padding:"12px 16px",marginBottom:6}}>
-<input value={et} onChange={e=>setEt(e.target.value)} style={{...iS,fontWeight:600,marginBottom:6}} placeholder="Title"/>
-<textarea value={edesc} onChange={e=>setEdesc(e.target.value)} rows={2} style={{...iS,resize:"vertical"}} placeholder="Description"/>
-<div style={{display:"flex",gap:6,marginTop:8}}>
-<button onClick={save} style={{fontSize:12,padding:"6px 16px",background:C.sg,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600}}>Save</button>
-<button onClick={()=>setEd(null)} style={{fontSize:12,padding:"6px 16px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer"}}>Cancel</button>
-{isO&&<button onClick={()=>{delItem(si,ii);setEd(null);}} style={{fontSize:12,padding:"6px 16px",background:"#FEE",color:"#D4766A",border:"1px solid #ECC",borderRadius:20,cursor:"pointer",marginLeft:"auto"}}>Delete</button>}
-</div>
-</div>
-:<div key={ii} onClick={()=>startEdit(si,ii)} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"12px 16px",marginBottom:6,cursor:isO?"pointer":"default",transition:"border-color .15s",...(isO?{":hover":{borderColor:C.cr}}:{})}}>
-<div style={{fontSize:14,fontWeight:600,marginBottom:2}}>{m.t}</div>
-<div style={{fontSize:13,color:C.fgS,lineHeight:1.5}}>{m.d}</div>
-{isO&&<div style={{fontSize:10,color:C.mtL,marginTop:4}}>✏️ click to edit</div>}
-</div>
-))}
-{isO&&<button onClick={()=>addItem(si)} style={{fontSize:12,color:C.cr,background:C.crS,border:"none",borderRadius:20,padding:"8px 16px",cursor:"pointer",fontWeight:600,marginTop:4}}>+ Add Item</button>}
-</div>))}
-</div>);}
-
-function BkTab({rq,setRq,isO}){
-const[f,sF]=useState({v:"",g:"",d:"",n:""});
-const sub=()=>{if(!f.v||!f.g)return;setRq([...rq,{...f,id:Date.now(),st:"pending"}]);sF({v:"",g:"",d:"",n:""});};
-const iS={width:"100%",padding:"11px 14px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:12,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
-return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-<div style={{textAlign:"center",marginBottom:20}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>{isO?"Manage Bookings":"Request a Booking"}</h2>
-</div>
-{!isO&&<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:20}}>
-<div style={{marginBottom:10}}><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Restaurant / Winery / Experience *</label><input value={f.v} onChange={e=>sF({...f,v:e.target.value})} placeholder="e.g. Acquachetta, Salcheto..." style={iS}/></div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Party Size *</label><input value={f.g} onChange={e=>sF({...f,g:e.target.value})} placeholder="4" style={iS}/></div>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Date</label><input type="date" value={f.d} onChange={e=>sF({...f,d:e.target.value})} style={iS}/></div>
-</div>
-<button onClick={sub} style={{width:"100%",padding:"12px",background:f.v&&f.g?C.cr:C.bd,color:f.v&&f.g?"#fff":C.mt,border:"none",borderRadius:12,fontSize:14,fontWeight:600,cursor:"pointer"}}>Submit</button>
-</div>}
-{rq.length===0&&<div style={{textAlign:"center",padding:30,color:C.mtL}}>No requests yet</div>}
-{rq.map((r,i)=>(<div key={r.id} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"12px 16px",marginBottom:6,display:"flex",alignItems:"center",gap:12}}>
-<div style={{flex:1}}><div style={{fontSize:14,fontWeight:600}}>{r.v}</div><div style={{fontSize:12,color:C.mt}}>{r.g} guests{r.d?" \u00B7 "+fD(r.d):""}</div></div>
-{isO?<select value={r.st} onChange={e=>{const n=[...rq];n[i]={...n[i],st:e.target.value};setRq(n);}} style={{padding:"6px 10px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:10,fontSize:12}}>
-<option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option>
-</select>:<span style={{fontSize:11,padding:"4px 12px",borderRadius:20,fontWeight:600,background:r.st==="confirmed"?C.sgS:r.st==="declined"?C.crS:C.wmS,color:r.st==="confirmed"?C.sg:r.st==="declined"?"#C94E38":C.wm}}>{r.st}</span>}
-</div>))}
-</div>);}
-
-function ChTab(){
-const[ms,setMs]=useState([{r:"a",t:"Ciao! \uD83C\uDF77 I'm your Molino Nobile concierge. Ask me about restaurants, wineries, day trips, or anything Tuscan!"}]);
-const[inp,setInp]=useState("");const[ld,setLd]=useState(false);const er=useRef(null);
-useEffect(()=>{er.current&&er.current.scrollIntoView({behavior:"smooth"});},[ms]);
-const send=async()=>{
-if(!inp.trim()||ld)return;const u=inp.trim();setInp("");
-setMs(p=>[...p,{r:"u",t:u}]);setLd(true);
-try{
-const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,system:"You are the Molino Nobile concierge \u2014 a converted 17th-century flour mill in the De Ricci vineyards near Montepulciano, Tuscany. Warm, knowledgeable, like a local friend. Give specific restaurants, wineries, drive times. WiFi: Molino/ayiayiayi. Pool/jacuzzi included. Wine & cocktail bar included. Contacts: Kyle +39 348 363 4104, Daniela +39 347 876 6705. Private chefs: Francesco ~75\u20AC, Nicolo (Masterchef) ~150\u20AC. Keep concise.",messages:[...ms.slice(-6).map(m=>({role:m.r==="a"?"assistant":"user",content:m.t})),{role:"user",content:u}]})});
-const data=await res.json();
-setMs(p=>[...p,{r:"a",t:(data.content&&data.content[0]&&data.content[0].text)||"Hmm, try again!"}]);
-}catch(e){setMs(p=>[...p,{r:"a",t:"Connection hiccup!"}]);}
-setLd(false);};
-return(
-<div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 110px)",maxWidth:680,margin:"0 auto"}}>
-<div style={{flex:1,overflowY:"auto",padding:"20px 20px 10px"}}>
-{ms.map((m,i)=>(<div key={i} style={{marginBottom:12,display:"flex",justifyContent:m.r==="u"?"flex-end":"flex-start"}}>
-{m.r==="a"&&<div style={{width:28,height:28,borderRadius:8,background:C.crS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,marginRight:8,flexShrink:0,marginTop:2}}>{"\uD83C\uDFE1"}</div>}
-<div style={{maxWidth:"75%",padding:"12px 16px",borderRadius:m.r==="u"?"18px 18px 4px 18px":"18px 18px 18px 4px",background:m.r==="u"?C.fg:C.wh,border:m.r==="u"?"none":"1px solid "+C.bd,color:m.r==="u"?"#fff":C.fg,fontSize:14,lineHeight:1.55,whiteSpace:"pre-wrap"}}>{m.t}</div>
-</div>))}
-{ld&&<div style={{display:"flex",gap:8,marginBottom:12}}>
-<div style={{width:28,height:28,borderRadius:8,background:C.crS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{"\uD83C\uDFE1"}</div>
-<div style={{padding:"12px 16px",background:C.wh,border:"1px solid "+C.bd,borderRadius:"18px 18px 18px 4px",color:C.mt}}>Thinking...</div>
-</div>}
-<div ref={er}/>
-</div>
-<div style={{padding:"12px 20px 16px",borderTop:"1px solid "+C.bd,background:C.bg,display:"flex",gap:8}}>
-<input value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Best winery for sunset?" style={{flex:1,padding:"12px 16px",background:C.wh,border:"1px solid "+C.bd,borderRadius:24,fontSize:14,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"}}/>
-<button onClick={send} disabled={ld} style={{padding:"12px 20px",background:C.cr,color:"#fff",border:"none",borderRadius:24,fontSize:14,fontWeight:600,cursor:"pointer"}}>Send</button>
-</div>
-</div>);}
-
-function parseICal(text){
-const evts=[];const blocks=text.split("BEGIN:VEVENT");
-for(let i=1;i<blocks.length;i++){
-const b=blocks[i].split("END:VEVENT")[0].replace(/\r\n /g,"");
-const get=(k)=>{const m=b.match(new RegExp(k+"[^:]*:(.+)"));return m?m[1].trim():null;};
-const sum=get("SUMMARY")||"";
-// Skip blocked/unavailable periods
-if(/not available|blocked|closed/i.test(sum))continue;
-const ds=get("DTSTART");const de=get("DTEND");
-if(!ds||!de)continue;
-const ci=ds.replace(/(\d{4})(\d{2})(\d{2}).*/,"$1-$2-$3");
-const co=de.replace(/(\d{4})(\d{2})(\d{2}).*/,"$1-$2-$3");
-// Skip past reservations
-if(new Date(co)<new Date())continue;
-const desc=(get("DESCRIPTION")||"").replace(/\\n/g,"\n");
-// Extract phone (last 4 digits pattern)
-const phone=(desc.match(/(\d{4})\s*$/m)||[])[1]||"";
-// Extract reservation codes/URLs
-const airbnbRes=(desc.match(/reservations\/details\/(\w+)/)||[])[1]||"";
-// Extract email if present (common in Rezdy, Booking.com, etc.)
-const email=(desc.match(/[\w.-]+@[\w.-]+\.\w{2,}/)||[])[0]||(b.match(/ATTENDEE.*mailto:([\w.-]+@[\w.-]+\.\w{2,})/)||[])[1]||"";
-// Extract guest name: prefer SUMMARY if it's not generic
-const isGeneric=/^(reserved|booking|reservation|blocked|busy)$/i.test(sum.trim());
-const name=isGeneric?"":sum.replace(/\s*-\s*\d+\s*guest.*$/i,"").replace(/\s*\(.*\)$/,"").trim();
-// Extract guest count if in summary or description
-const guestCount=(sum.match(/(\d+)\s*guest/i)||desc.match(/(\d+)\s*guest/i)||desc.match(/party.*?(\d+)/i)||[])[1]||"";
-evts.push({ci,co,phone,resCode:airbnbRes,name,email,guests:guestCount,summary:sum,desc});
-}
-// Sort by check-in date
-evts.sort((a,b)=>a.ci.localeCompare(b.ci));
-return evts;
-}
-
-function OwTab({gs,setGs,tpls,setTpls,onEditTpl}){
-const[ng,sNg]=useState({name:"",ci:"",co:"",n:"",tpl:""});const[cp,sCp]=useState(null);
-const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[renName,setRenName]=useState("");
-const[editId,setEditId]=useState(null);const[editData,setEditData]=useState({});
-const ICAL_STORE="mn_ical_url";
-const[icalUrl,setIcalUrl]=useState(()=>{try{return localStorage.getItem(ICAL_STORE)||"";}catch(e){return "";}});
-const[icalLoading,setIcalLoading]=useState(false);const[icalRes,setIcalRes]=useState(null);const[icalErr,setIcalErr]=useState("");
-const defTpl=tpls.find(t=>t.isDefault)||tpls[0];
-const selTpl=tpls.find(t=>t.id===(ng.tpl||defTpl?.id))||defTpl;
-const add=()=>{if(!ng.name||!ng.ci||!selTpl)return;setGs([...gs,{name:ng.name,ci:ng.ci,co:ng.co,n:ng.n,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(selTpl.wk)),tplName:selTpl.name}]);sNg({name:"",ci:"",co:"",n:"",tpl:""});};
-const mkLink=(g)=>{try{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,tpl:g.tplName||"Default"}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;}catch(e){alert("Error: "+e.message);return null;}};
-const cpy=g=>{const link=mkLink(g);if(!link)return;copyText(link);sCp(g.id);setTimeout(()=>sCp(null),3000);};
-const addTpl=()=>{if(!newTpl.trim()||!defTpl)return;const t={id:Date.now()+"",name:newTpl.trim(),wk:JSON.parse(JSON.stringify(defTpl.wk)),isDefault:false};setTpls([...tpls,t]);setNewTpl("");};
-const setDef=(id)=>{setTpls(tpls.map(t=>({...t,isDefault:t.id===id})));};
-const delTpl=(id)=>{if(tpls.length<=1)return;const t=tpls.find(x=>x.id===id);if(t&&t.isDefault){const rest=tpls.filter(x=>x.id!==id);rest[0].isDefault=true;setTpls(rest);}else{setTpls(tpls.filter(x=>x.id!==id));}};
-const rename=(id)=>{if(!renName.trim())return;setTpls(tpls.map(t=>t.id===id?{...t,name:renName.trim()}:t));setRenId(null);setRenName("");};
-const fetchICal=async()=>{
-if(!icalUrl.trim())return;setIcalLoading(true);setIcalErr("");setIcalRes(null);
-try{localStorage.setItem(ICAL_STORE,icalUrl.trim());}catch(e){}
-try{
-const proxy="https://api.allorigins.win/raw?url="+encodeURIComponent(icalUrl.trim());
-const res=await fetch(proxy);if(!res.ok)throw new Error("Fetch failed ("+res.status+")");
-const text=await res.text();const evts=parseICal(text);
-if(!evts.length){setIcalErr("No upcoming reservations found.");} else{setIcalRes(evts);}
-}catch(e){setIcalErr("Could not fetch calendar: "+e.message);}
-setIcalLoading(false);
-};
-const importRes=(r)=>{
-const exists=gs.some(g=>g.ci===r.ci&&g.co===r.co);if(exists)return;
-const defT=tpls.find(t=>t.isDefault)||tpls[0];
-const gName=r.name||( r.phone?"Guest ..."+r.phone:"Guest");
-const notes=[r.resCode?"Ref: "+r.resCode:"",r.email?"Email: "+r.email:"",r.guests?r.guests+" guests":""].filter(Boolean).join(" · ");
-setGs(prev=>[...prev,{name:gName,ci:r.ci,co:r.co,n:notes,email:r.email||"",id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(defT.wk)),tplName:defT.name}]);
-};
-const importAll=()=>{if(!icalRes)return;icalRes.forEach(r=>importRes(r));};
-const iS={width:"100%",padding:"11px 14px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:12,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
-return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-<div style={{textAlign:"center",marginBottom:24}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Owner Dashboard</h2>
-</div>
-
-{/* Templates */}
-<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:16}}>
-<h3 style={{fontSize:16,fontWeight:600,marginBottom:12}}>Templates</h3>
-<div style={{marginBottom:10}}>
-{tpls.map(t=>(<div key={t.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid "+C.bdL}}>
-<button onClick={()=>setDef(t.id)} style={{background:"none",border:"none",fontSize:16,cursor:"pointer",flexShrink:0}} title={t.isDefault?"Default":"Set as default"}>{t.isDefault?"\u2B50":"\u2606"}</button>
-{renId===t.id?<div style={{flex:1,display:"flex",gap:4}}>
-<input value={renName} onChange={e=>setRenName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&rename(t.id)} style={{...iS,flex:1}} autoFocus/>
-<button onClick={()=>rename(t.id)} style={{fontSize:11,color:C.sg,background:C.sgS,border:"none",borderRadius:20,padding:"6px 12px",cursor:"pointer",fontWeight:600}}>Save</button>
-</div>:<>
-<div style={{flex:1}}>
-<span style={{fontSize:14,fontWeight:t.isDefault?600:400}}>{t.name}</span>
-{t.isDefault&&<span style={{fontSize:10,color:C.cr,marginLeft:6,fontWeight:600}}>DEFAULT</span>}
-<span style={{fontSize:11,color:C.mt,marginLeft:6}}>{t.wk.length} days</span>
-</div>
-<button onClick={()=>onEditTpl(t)} style={{fontSize:10,color:C.cr,background:C.crS,border:"none",borderRadius:8,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>Edit</button>
-<button onClick={()=>{setRenId(t.id);setRenName(t.name);}} style={{fontSize:10,color:C.mt,background:C.bgS,border:"1px solid "+C.bd,borderRadius:8,padding:"4px 8px",cursor:"pointer"}}>Rename</button>
-{tpls.length>1&&<button onClick={()=>delTpl(t.id)} style={{width:24,height:24,borderRadius:6,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:10,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
-</>}
-</div>))}
-</div>
-<div style={{display:"flex",gap:6}}>
-<input value={newTpl} onChange={e=>setNewTpl(e.target.value)} placeholder="New template name..." onKeyDown={e=>e.key==="Enter"&&addTpl()} style={{...iS,flex:1}}/>
-<button onClick={addTpl} style={{fontSize:12,color:newTpl.trim()?C.cr:C.mt,background:newTpl.trim()?C.crS:C.bgS,border:"none",borderRadius:12,padding:"11px 16px",cursor:"pointer",fontWeight:600,flexShrink:0}}>+ Add</button>
-</div>
-<p style={{fontSize:11,color:C.mt,marginTop:8}}>New templates copy the default itinerary. Switch to Your Week tab to edit, then come back.</p>
-</div>
-
-{/* iCal Import */}
-<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:16}}>
-<h3 style={{fontSize:16,fontWeight:600,marginBottom:4}}>Import Reservations</h3>
-<p style={{fontSize:12,color:C.mt,marginBottom:12}}>Paste your iCal URL from Airbnb, Vrbo, Rezdy, Booking.com, or any platform.</p>
-<div style={{display:"flex",gap:6,marginBottom:8}}>
-<input value={icalUrl} onChange={e=>setIcalUrl(e.target.value)} placeholder="https://... .ics calendar URL" onKeyDown={e=>e.key==="Enter"&&fetchICal()} style={{...iS,flex:1,fontSize:12}}/>
-<button onClick={fetchICal} disabled={icalLoading} style={{fontSize:12,color:icalUrl.trim()?C.cr:C.mt,background:icalUrl.trim()?C.crS:C.bgS,border:"none",borderRadius:12,padding:"11px 16px",cursor:"pointer",fontWeight:600,flexShrink:0}}>{icalLoading?"Syncing...":"Sync"}</button>
-</div>
-{icalErr&&<div style={{fontSize:12,color:"#D4766A",marginBottom:8}}>{icalErr}</div>}
-{icalRes&&<div>
-<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-<span style={{fontSize:13,fontWeight:600}}>{icalRes.length} upcoming reservation{icalRes.length>1?"s":""}</span>
-<button onClick={importAll} style={{fontSize:11,color:"#fff",background:C.sg,border:"none",borderRadius:20,padding:"7px 16px",cursor:"pointer",fontWeight:600}}>Import All</button>
-</div>
-{icalRes.map((r,i)=>{const exists=gs.some(g=>g.ci===r.ci&&g.co===r.co);const nights=Math.round((new Date(r.co)-new Date(r.ci))/864e5);return(
-<div key={i} style={{background:C.bgS,borderRadius:12,padding:"10px 14px",marginBottom:6}}>
-<div style={{display:"flex",alignItems:"center",gap:10}}>
-<div style={{width:36,height:36,borderRadius:10,background:C.wmS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:C.wm}}>{r.name?r.name.charAt(0):"\uD83D\uDCC5"}</div>
-<div style={{flex:1}}>
-<div style={{fontSize:13,fontWeight:600}}>{r.name||"Guest"+(r.phone?" ..."+r.phone:"")}</div>
-<div style={{fontSize:12,color:C.mt}}>{fD(r.ci)} {"\u2192"} {fD(r.co)} · {nights} night{nights>1?"s":""}</div>
-<div style={{fontSize:11,color:C.mt}}>{[r.email,r.resCode?"Ref: "+r.resCode:"",r.guests?r.guests+" guests":"",r.phone&&!r.name?"..."+r.phone:""].filter(Boolean).join(" · ")}</div>
-</div>
-{exists?<span style={{fontSize:11,color:C.sg,fontWeight:600,flexShrink:0}}>{"\u2713"} Added</span>:
-<button onClick={()=>importRes(r)} style={{fontSize:11,color:"#fff",background:C.cr,border:"none",borderRadius:20,padding:"7px 14px",cursor:"pointer",fontWeight:600,flexShrink:0}}>Import</button>}
-</div>
-</div>);})}
-</div>}
-</div>
-
-{/* Create Guest */}
-<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:20}}>
-<h3 style={{fontSize:16,fontWeight:600,marginBottom:14}}>Create Guest Guide</h3>
-<div style={{marginBottom:10}}>
-<label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Template</label>
-<select value={ng.tpl||defTpl?.id||""} onChange={e=>sNg({...ng,tpl:e.target.value})} style={{...iS,cursor:"pointer"}}>
-{tpls.map(t=><option key={t.id} value={t.id}>{t.name}{t.isDefault?" (default)":""}</option>)}
-</select>
-</div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Name</label><input value={ng.name} onChange={e=>sNg({...ng,name:e.target.value})} placeholder="The Smiths" style={iS}/></div>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Notes</label><input value={ng.n} onChange={e=>sNg({...ng,n:e.target.value})} placeholder="Allergies, kids..." style={iS}/></div>
-</div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Check-in</label><input type="date" value={ng.ci} onChange={e=>sNg({...ng,ci:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Check-out</label><input type="date" value={ng.co} onChange={e=>sNg({...ng,co:e.target.value})} style={iS}/></div>
-</div>
-<button onClick={add} style={{width:"100%",padding:"12px",background:ng.name&&ng.ci?C.cr:C.bd,color:ng.name&&ng.ci?"#fff":C.mt,border:"none",borderRadius:12,fontSize:14,fontWeight:600,cursor:"pointer"}}>Create & Share</button>
-</div>
-
-{/* Guest List */}
-{gs.length===0&&<div style={{textAlign:"center",padding:30,color:C.mtL}}>No guests yet</div>}
-{gs.map(g=>{const link=mkLink(g);const mailBody=link?"Hi "+g.name.split(" ")[0]+",\n\nHere's your personalized guide for your stay:\n"+link+"\n\nLooking forward to hosting you!":"";const mailto=g.email?"mailto:"+g.email+"?subject=Your+Stay+Guide&body="+encodeURIComponent(mailBody):"";
-const isEd=editId===g.id;
-return(<div key={g.id} style={{background:C.wh,borderRadius:14,border:isEd?"2px solid "+C.cr:"1px solid "+C.bd,padding:"14px 16px",marginBottom:8}}>
-{isEd?<div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Name</label><input value={editData.name||""} onChange={e=>setEditData({...editData,name:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Email</label><input value={editData.email||""} onChange={e=>setEditData({...editData,email:e.target.value})} placeholder="guest@email.com" style={iS}/></div>
-</div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Check-in</label><input type="date" value={editData.ci||""} onChange={e=>setEditData({...editData,ci:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Check-out</label><input type="date" value={editData.co||""} onChange={e=>setEditData({...editData,co:e.target.value})} style={iS}/></div>
-</div>
-<div style={{marginBottom:8}}><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Notes</label><input value={editData.n||""} onChange={e=>setEditData({...editData,n:e.target.value})} placeholder="Allergies, preferences..." style={iS}/></div>
-<div style={{marginBottom:10}}><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Template</label>
-<select value={editData.tplId||""} onChange={e=>{const t=tpls.find(x=>x.id===e.target.value);if(t)setEditData({...editData,tplId:t.id,tplName:t.name,wk:JSON.parse(JSON.stringify(t.wk))});}} style={{...iS,cursor:"pointer"}}>
-{tpls.map(t=><option key={t.id} value={t.id}>{t.name}{t.isDefault?" (default)":""}</option>)}
-</select></div>
-<div style={{display:"flex",gap:6}}>
-<button onClick={()=>{setGs(gs.map(x=>x.id===g.id?{...x,name:editData.name,ci:editData.ci,co:editData.co,n:editData.n,email:editData.email,tplName:editData.tplName,wk:editData.wk||x.wk}:x));setEditId(null);}} style={{flex:1,fontSize:13,color:"#fff",background:C.sg,border:"none",borderRadius:20,padding:"10px",cursor:"pointer",fontWeight:600}}>Save</button>
-<button onClick={()=>setEditId(null)} style={{fontSize:13,color:C.mt,background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,padding:"10px 16px",cursor:"pointer"}}>Cancel</button>
-</div>
-</div>:<>
-<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8,cursor:"pointer"}} onClick={()=>{setEditId(g.id);setEditData({name:g.name,ci:g.ci,co:g.co,n:g.n||"",email:g.email||"",tplId:(tpls.find(t=>t.name===g.tplName)||tpls[0]).id,tplName:g.tplName,wk:g.wk});}}>
-<div style={{width:36,height:36,borderRadius:10,background:C.wmS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:C.wm}}>{g.name.charAt(0)}</div>
-<div style={{flex:1}}>
-<div style={{fontSize:14,fontWeight:600}}>{g.name} <span style={{fontSize:10,color:C.mtL}}>✏️</span></div>
-<div style={{fontSize:12,color:C.mt}}>{fD(g.ci)} {"\u2192"} {fD(g.co)}{g.tplName?" \u00B7 "+g.tplName:""}</div>
-{g.n&&<div style={{fontSize:11,color:C.mt}}>{g.n}</div>}
-</div>
-<button onClick={e=>{e.stopPropagation();setGs(gs.filter(x=>x.id!==g.id));}} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>
-</div>
-<div style={{display:"flex",gap:6}}>
-<button onClick={()=>cpy(g)} style={{flex:1,fontSize:13,color:cp===g.id?C.sg:C.cr,background:cp===g.id?C.sgS:C.crS,border:"none",borderRadius:20,padding:"10px 14px",cursor:"pointer",fontWeight:600}}>{cp===g.id?"\u2713 Link Copied!":"\uD83D\uDD17 Copy Link"}</button>
-{g.email&&<a href={mailto} style={{flex:1,fontSize:13,color:"#fff",background:C.sg,border:"none",borderRadius:20,padding:"10px 14px",cursor:"pointer",fontWeight:600,textDecoration:"none",textAlign:"center",display:"block"}}>{"\u2709\uFE0F"} Email Guide</a>}
-</div>
-</>}
-</div>)})}
-</div>);}
-
-const TPL_KEY="mn_templates";const GS_KEY="mn_guests";const INF_KEY="mn_essentials";const RQ_KEY="mn_bookings";
-function loadTpls(){try{const s=localStorage.getItem(TPL_KEY);if(s){const t=JSON.parse(s);if(t.length)return t;}}catch(e){}return[{id:"default",name:"Default",wk:JSON.parse(JSON.stringify(IW)),isDefault:true}];}
-function loadGs(){try{const s=localStorage.getItem(GS_KEY);if(s)return JSON.parse(s);}catch(e){}return[];}
-function loadInf(){try{const s=localStorage.getItem(INF_KEY);if(s)return JSON.parse(s);}catch(e){}return JSON.parse(JSON.stringify(INF));}
-function loadRq(){try{const s=localStorage.getItem(RQ_KEY);if(s)return JSON.parse(s);}catch(e){}return[];}
-
+/* ═══ APP ═══ */
 function App(){
-const[tab,setTab]=useState("week");const[isO,setIsO]=useState(false);
-const[wk,setWk]=useState(JSON.parse(JSON.stringify(IW)));
-const[editingTpl,setEditingTpl]=useState(null);const[preEditWk,setPreEditWk]=useState(null);
-const[rq,setRq]=useState(loadRq);
-const[gs,setGs]=useState(loadGs);
-const[tpls,setTpls]=useState(loadTpls);
-const[inf,setInf]=useState(loadInf);
-const pr=new URLSearchParams(window.location.search);
-const gid=pr.get("g");
-const[gi,setGi]=useState(null);
-const origin=DEF_ORIGIN;
+  const[tab,setTab]=useState("week");
+  const[isOwner,setIsOwner]=useState(false);
+  const[terms,setTerms]=useState(DEFAULT_TERMS);
+  const[week,setWeek]=useState(initWeek);
+  const[requests,setRequests]=useState([]);
+  const[guests,setGuests]=useState([]);
+  const[guestMode,setGuestMode]=useState(false);
+  const[guestInfo,setGuestInfo]=useState(null);
 
-// Persist templates, guests & essentials to localStorage
-useEffect(()=>{try{localStorage.setItem(TPL_KEY,JSON.stringify(tpls))}catch(e){}},[tpls]);
-useEffect(()=>{try{localStorage.setItem(GS_KEY,JSON.stringify(gs))}catch(e){}},[gs]);
-useEffect(()=>{try{localStorage.setItem(INF_KEY,JSON.stringify(inf))}catch(e){}},[inf]);
-useEffect(()=>{try{localStorage.setItem(RQ_KEY,JSON.stringify(rq))}catch(e){}},[rq]);
+  // Check URL for guest mode on mount
+  useEffect(()=>{
+    const gId=getURLGuest();
+    if(!gId)return;
+    // Try localStorage first (returning guest)
+    const saved=loadGuestData(gId);
+    if(saved){
+      setGuestInfo({name:saved.name,checkin:saved.checkin,checkout:saved.checkout});
+      setWeek(saved.week);
+      setGuestMode(true);
+      return;
+    }
+    // Try URL-encoded data (first visit)
+    const decoded=decodeGuestURL();
+    if(decoded){
+      setGuestInfo({name:decoded.name,checkin:decoded.checkin,checkout:decoded.checkout});
+      setWeek(decoded.week);
+      saveGuestData(gId,decoded);
+      setGuestMode(true);
+    }
+  },[]);
 
-useEffect(()=>{
-if(!gid)return;
-// Try localStorage first (returning guest on same device)
-try{const s=localStorage.getItem("mn_"+gid);if(s){const d=JSON.parse(s);if(d.wk)setWk(d.wk);setGi({name:d.name,ci:d.ci,co:d.co});return;}}catch(e){}
-// New guest from link — decode name/dates, use default itinerary
-const d=pr.get("d");if(d){try{const dc=JSON.parse(fromB64(d));setGi({name:dc.name,ci:dc.ci,co:dc.co});
-// wk already initialized to IW (default template)
-localStorage.setItem("mn_"+gid,JSON.stringify({name:dc.name,ci:dc.ci,co:dc.co,wk}));}catch(e){}}
-},[]);
-useEffect(()=>{if(gid&&gi)try{localStorage.setItem("mn_"+gid,JSON.stringify({...gi,wk}))}catch(e){}},[wk]);
-const tw=gi&&gi.ci&&gi.co?(function(){const n=Math.round((new Date(gi.co)-new Date(gi.ci))/864e5);return wk.slice(0,Math.max(1,n));}()):wk;
-return(
-<div style={{minHeight:"100vh",background:C.bg}}>
-<Header tab={tab} setTab={setTab} isO={isO} setIsO={setIsO} gi={gi}/>
-{tab==="week"&&<WkTab wk={editingTpl?wk:tw} setWk={setWk} gi={editingTpl?null:gi} origin={origin} confirmed={rq.filter(r=>r.st==="confirmed")} editingTpl={editingTpl}
-onSaveTpl={()=>{if(editingTpl){setTpls(tpls.map(t=>t.id===editingTpl.id?{...t,wk:JSON.parse(JSON.stringify(wk))}:t));setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditWk(null);}}}}
-onCancelTpl={()=>{setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditWk(null);}}}/>}
-{tab==="crawls"&&<CrTab origin={origin}/>}
-{tab==="essentials"&&<EsTab inf={inf} setInf={setInf} isO={isO}/>}
-{tab==="bookings"&&<BkTab rq={rq} setRq={setRq} isO={isO}/>}
-{tab==="chat"&&<ChTab/>}
-{tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} tpls={tpls} setTpls={setTpls} onEditTpl={(t)=>{setPreEditWk(JSON.parse(JSON.stringify(wk)));setWk(JSON.parse(JSON.stringify(t.wk)));setEditingTpl({id:t.id,name:t.name});setTab("week");}}/>}
-<div style={{textAlign:"center",padding:"24px 20px",fontSize:11,color:C.mtL}}>Powered by <span style={{color:C.cr,fontWeight:600}}>Arrivo</span></div>
-</div>);
+  // Auto-save guest edits
+  useEffect(()=>{
+    if(!guestMode)return;
+    const gId=getURLGuest();
+    if(!gId)return;
+    const data={...guestInfo,id:gId,week};
+    saveGuestData(gId,data);
+  },[week,guestMode,guestInfo]);
+
+  return<div style={{minHeight:"100vh",background:T.dark,position:"relative",zIndex:1}}>
+    <Header tab={tab} setTab={setTab} isOwner={isOwner} setIsOwner={setIsOwner} guestMode={guestMode} guestInfo={guestInfo}/>
+    {tab==="week"&&<WeekTab week={week} setWeek={setWeek} terms={terms} guestInfo={guestInfo}/>}
+    {tab==="trips"&&<TripsTab terms={terms}/>}
+    {tab==="info"&&<InfoTab/>}
+    {tab==="requests"&&<RequestsTab requests={requests} setRequests={setRequests} isOwner={isOwner}/>}
+    {tab==="chat"&&<ChatTab terms={terms} guestInfo={guestInfo}/>}
+    {tab==="owner"&&isOwner&&<OwnerTab terms={terms} setTerms={setTerms} week={week} guests={guests} setGuests={setGuests}/>}
+  </div>;
 }
+
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
