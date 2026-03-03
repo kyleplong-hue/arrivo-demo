@@ -282,7 +282,21 @@ return(
 </div>);
 }
 
-function WkTab({wk,setWk,gi,origin}){
+function ConfCard({bk}){
+return(<div style={{background:"#F0FAF0",borderRadius:16,border:"2px solid #5A9E6F",padding:"14px 16px",marginBottom:8}}>
+<div style={{display:"flex",alignItems:"center",gap:8}}>
+<span style={{fontSize:18}}>{"\u2705"}</span>
+<div style={{flex:1}}>
+<div style={{fontSize:14,fontWeight:600}}>{bk.v}</div>
+<div style={{fontSize:12,color:"#5A9E6F",fontWeight:600}}>Confirmed Reservation</div>
+<div style={{fontSize:12,color:C.mt}}>{bk.g} guests{bk.d?" \u00B7 "+fD(bk.d):""}</div>
+</div>
+<span style={{fontSize:11,padding:"4px 10px",background:"#DFF2E1",color:"#3D7A4F",borderRadius:20,fontWeight:600}}>Booked</span>
+</div>
+</div>);
+}
+
+function WkTab({wk,setWk,gi,origin,confirmed}){
 const sw=(di,ii,a)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{l:a.l,d:a.d,c:a.c,m:a.m,b:a.b}:t)}:d));};
 const dl=(di,ii)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.filter((_,j)=>j!==ii)}:d));};
 return(
@@ -303,6 +317,7 @@ return(<div key={di} style={{marginBottom:24}}>
 {(()=>{const spots=day.items.filter(x=>x.m).map(x=>x.m.replace(/\+/g," "));if(spots.length<2)return null;const url="https://www.google.com/maps/dir/"+spots.join("/");return <a href={url} target="_blank" rel="noopener" style={{fontSize:11,padding:"6px 12px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none",display:"flex",alignItems:"center",gap:4,flexShrink:0}}>{"\uD83D\uDDFA\uFE0F"} Route</a>;})()}
 </div>
 {day.items.map((it,ii)=><Card key={ii} item={it} idx={ii} di={di} onSw={sw} onDl={dl} origin={origin}/>)}
+{confirmed&&confirmed.filter(b=>{if(!b.d||!gi||!gi.ci)return false;const bd=new Date(b.d);const ci=new Date(gi.ci);const diff=Math.round((bd-ci)/864e5);return diff===di;}).map((b,i)=><ConfCard key={"bk"+i} bk={b}/>)}
 </div>);})}
 </div>);
 }
@@ -501,15 +516,16 @@ return(
 </div>))}
 </div>);}
 
-const TPL_KEY="ut_templates";const GS_KEY="ut_guests";const INF_KEY="ut_essentials";
+const TPL_KEY="ut_templates";const GS_KEY="ut_guests";const INF_KEY="ut_essentials";const RQ_KEY="ut_bookings";
 function loadTpls(){try{const s=localStorage.getItem(TPL_KEY);if(s){const t=JSON.parse(s);if(t.length)return t;}}catch(e){}return[{id:"default",name:"Default",wk:JSON.parse(JSON.stringify(IW)),isDefault:true}];}
 function loadGs(){try{const s=localStorage.getItem(GS_KEY);if(s)return JSON.parse(s);}catch(e){}return[];}
 function loadInf(){try{const s=localStorage.getItem(INF_KEY);if(s)return JSON.parse(s);}catch(e){}return JSON.parse(JSON.stringify(INF));}
+function loadRq(){try{const s=localStorage.getItem(RQ_KEY);if(s)return JSON.parse(s);}catch(e){}return[];}
 
 function App(){
 const[tab,setTab]=useState("week");const[isO,setIsO]=useState(false);
 const[wk,setWk]=useState(JSON.parse(JSON.stringify(IW)));
-const[rq,setRq]=useState([]);
+const[rq,setRq]=useState(loadRq);
 const[gs,setGs]=useState(loadGs);
 const[tpls,setTpls]=useState(loadTpls);
 const[inf,setInf]=useState(loadInf);
@@ -521,6 +537,7 @@ const origin=DEF_ORIGIN;
 useEffect(()=>{try{localStorage.setItem(TPL_KEY,JSON.stringify(tpls))}catch(e){}},[tpls]);
 useEffect(()=>{try{localStorage.setItem(GS_KEY,JSON.stringify(gs))}catch(e){}},[gs]);
 useEffect(()=>{try{localStorage.setItem(INF_KEY,JSON.stringify(inf))}catch(e){}},[inf]);
+useEffect(()=>{try{localStorage.setItem(RQ_KEY,JSON.stringify(rq))}catch(e){}},[rq]);
 
 useEffect(()=>{
 if(!gid)return;
@@ -535,7 +552,7 @@ const tw=gi&&gi.ci&&gi.co?(function(){const n=Math.round((new Date(gi.co)-new Da
 return(
 <div style={{minHeight:"100vh",background:C.bg}}>
 <Header tab={tab} setTab={setTab} isO={isO} setIsO={setIsO} gi={gi}/>
-{tab==="week"&&<WkTab wk={tw} setWk={setWk} gi={gi} origin={origin}/>}
+{tab==="week"&&<WkTab wk={tw} setWk={setWk} gi={gi} origin={origin} confirmed={rq.filter(r=>r.st==="confirmed")}/>}
 {tab==="crawls"&&<CrTab origin={origin}/>}
 {tab==="essentials"&&<EsTab inf={inf} setInf={setInf} isO={isO}/>}
 {tab==="bookings"&&<BkTab rq={rq} setRq={setRq} isO={isO}/>}
