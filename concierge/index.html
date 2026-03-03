@@ -435,9 +435,28 @@ return(
 </div>
 </div>);}
 
+function parseICal(text){
+const evts=[];const blocks=text.split("BEGIN:VEVENT");
+for(let i=1;i<blocks.length;i++){
+const b=blocks[i].split("END:VEVENT")[0].replace(/\r\n /g,"");
+const get=(k)=>{const m=b.match(new RegExp(k+"[^:]*:(.+)"));return m?m[1].trim():null;};
+const sum=get("SUMMARY");if(sum&&sum.includes("Not available"))continue;
+const ds=get("DTSTART");const de=get("DTEND");
+if(!ds||!de)continue;
+const ci=ds.replace(/(\d{4})(\d{2})(\d{2}).*/,"$1-$2-$3");
+const co=de.replace(/(\d{4})(\d{2})(\d{2}).*/,"$1-$2-$3");
+const desc=get("DESCRIPTION")||"";
+const phone=(desc.match(/(\d{4})\s*$/)||[])[1]||"";
+const resUrl=(desc.match(/https:\/\/www\.airbnb\.com\/hosting\/reservations\/details\/(\w+)/)||[])[1]||"";
+evts.push({ci,co,phone,resCode:resUrl,summary:sum||"Reserved"});
+}
+return evts;
+}
+
 function OwTab({gs,setGs,tpls,setTpls}){
 const[ng,sNg]=useState({name:"",ci:"",co:"",n:"",tpl:""});const[cp,sCp]=useState(null);
 const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[renName,setRenName]=useState("");
+const[icalUrl,setIcalUrl]=useState("");const[icalLoading,setIcalLoading]=useState(false);const[icalRes,setIcalRes]=useState(null);const[icalErr,setIcalErr]=useState("");
 const defTpl=tpls.find(t=>t.isDefault)||tpls[0];
 const selTpl=tpls.find(t=>t.id===(ng.tpl||defTpl?.id))||defTpl;
 const add=()=>{if(!ng.name||!ng.ci||!selTpl)return;setGs([...gs,{name:ng.name,ci:ng.ci,co:ng.co,n:ng.n,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(selTpl.wk)),tplName:selTpl.name}]);sNg({name:"",ci:"",co:"",n:"",tpl:""});};
@@ -447,6 +466,22 @@ const addTpl=()=>{if(!newTpl.trim()||!defTpl)return;const t={id:Date.now()+"",na
 const setDef=(id)=>{setTpls(tpls.map(t=>({...t,isDefault:t.id===id})));};
 const delTpl=(id)=>{if(tpls.length<=1)return;const t=tpls.find(x=>x.id===id);if(t&&t.isDefault){const rest=tpls.filter(x=>x.id!==id);rest[0].isDefault=true;setTpls(rest);}else{setTpls(tpls.filter(x=>x.id!==id));}};
 const rename=(id)=>{if(!renName.trim())return;setTpls(tpls.map(t=>t.id===id?{...t,name:renName.trim()}:t));setRenId(null);setRenName("");};
+const fetchICal=async()=>{
+if(!icalUrl.trim())return;setIcalLoading(true);setIcalErr("");setIcalRes(null);
+try{
+const proxy="https://api.allorigins.win/raw?url="+encodeURIComponent(icalUrl.trim());
+const res=await fetch(proxy);if(!res.ok)throw new Error("Fetch failed ("+res.status+")");
+const text=await res.text();const evts=parseICal(text);
+if(!evts.length){setIcalErr("No reservations found in this calendar.");} else{setIcalRes(evts);}
+}catch(e){setIcalErr("Could not fetch calendar: "+e.message);}
+setIcalLoading(false);
+};
+const importRes=(r)=>{
+const exists=gs.some(g=>g.ci===r.ci&&g.co===r.co);if(exists)return;
+const defT=tpls.find(t=>t.isDefault)||tpls[0];
+setGs([...gs,{name:r.phone?"Guest ..."+r.phone:"Guest",ci:r.ci,co:r.co,n:r.resCode?"Airbnb "+r.resCode:"",id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(defT.wk)),tplName:defT.name}]);
+};
+const importAll=()=>{if(!icalRes)return;icalRes.forEach(r=>importRes(r));};
 const iS={width:"100%",padding:"11px 14px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:12,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
 return(
 <div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
@@ -479,6 +514,32 @@ return(
 <button onClick={addTpl} style={{fontSize:12,color:newTpl.trim()?C.cr:C.mt,background:newTpl.trim()?C.crS:C.bgS,border:"none",borderRadius:12,padding:"11px 16px",cursor:"pointer",fontWeight:600,flexShrink:0}}>+ Add</button>
 </div>
 <p style={{fontSize:11,color:C.mt,marginTop:8}}>New templates copy the default itinerary. Switch to Your Week tab to edit, then come back.</p>
+</div>
+
+{/* iCal Import */}
+<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:16}}>
+<h3 style={{fontSize:16,fontWeight:600,marginBottom:4}}>Import from Airbnb</h3>
+<p style={{fontSize:12,color:C.mt,marginBottom:12}}>Paste your Airbnb iCal URL to auto-import upcoming reservations.</p>
+<div style={{display:"flex",gap:6,marginBottom:8}}>
+<input value={icalUrl} onChange={e=>setIcalUrl(e.target.value)} placeholder="https://www.airbnb.com/calendar/ical/..." onKeyDown={e=>e.key==="Enter"&&fetchICal()} style={{...iS,flex:1,fontSize:12}}/>
+<button onClick={fetchICal} disabled={icalLoading} style={{fontSize:12,color:icalUrl.trim()?C.cr:C.mt,background:icalUrl.trim()?C.crS:C.bgS,border:"none",borderRadius:12,padding:"11px 16px",cursor:"pointer",fontWeight:600,flexShrink:0}}>{icalLoading?"Loading...":"Fetch"}</button>
+</div>
+{icalErr&&<div style={{fontSize:12,color:"#D4766A",marginBottom:8}}>{icalErr}</div>}
+{icalRes&&<div>
+<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+<span style={{fontSize:13,fontWeight:600}}>{icalRes.length} reservation{icalRes.length>1?"s":""} found</span>
+<button onClick={importAll} style={{fontSize:11,color:C.sg,background:C.sgS,border:"none",borderRadius:20,padding:"6px 14px",cursor:"pointer",fontWeight:600}}>Import All</button>
+</div>
+{icalRes.map((r,i)=>{const exists=gs.some(g=>g.ci===r.ci&&g.co===r.co);return(
+<div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:"1px solid "+C.bdL}}>
+<div style={{flex:1}}>
+<div style={{fontSize:13,fontWeight:600}}>{fD(r.ci)} {"\u2192"} {fD(r.co)}</div>
+<div style={{fontSize:11,color:C.mt}}>{r.phone?"Phone: ..."+r.phone:""}{r.resCode?" \u00B7 "+r.resCode:""}</div>
+</div>
+{exists?<span style={{fontSize:11,color:C.sg,fontWeight:600}}>{"\u2713"} Added</span>:
+<button onClick={()=>importRes(r)} style={{fontSize:11,color:C.cr,background:C.crS,border:"none",borderRadius:20,padding:"6px 12px",cursor:"pointer",fontWeight:600}}>+ Import</button>}
+</div>);})}
+</div>}
 </div>
 
 {/* Create Guest */}
