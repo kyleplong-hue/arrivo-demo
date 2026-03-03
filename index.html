@@ -131,29 +131,6 @@ footer{padding:30px 0;text-align:center;font-size:11px;color:var(--mut);border-t
 </head>
 <body>
 
-<!-- ═══ PASSWORD GATE ═══ -->
-<div id="gate">
-  <div style="font-size:28px;margin-bottom:-8px">🧭</div>
-  <h2>Arrivo <span style="color:#B8963E">for Tours</span></h2>
-  <p>This is a private demo. Enter the password to continue.</p>
-  <input id="gatePw" type="password" placeholder="••••••••" autofocus>
-  <button onclick="tryGate()">Enter</button>
-  <div class="err" id="gateErr"></div>
-</div>
-<script>
-function tryGate(){
-  const pw=document.getElementById('gatePw').value;
-  if(pw==='untour'||pw==='arrivo'){
-    document.getElementById('gate').classList.add('hidden');
-    document.body.style.overflow='auto';
-  }else{
-    document.getElementById('gateErr').textContent='Wrong password';
-    document.getElementById('gatePw').value='';
-  }
-}
-document.getElementById('gatePw').addEventListener('keydown',e=>{if(e.key==='Enter')tryGate()});
-document.body.style.overflow='hidden';
-</script>
 
 <!-- ═══ NAV ═══ -->
 <nav>
