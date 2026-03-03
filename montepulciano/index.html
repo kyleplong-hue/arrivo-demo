@@ -457,19 +457,61 @@ return(
 </div>
 </div>);}
 
-function OwTab({gs,setGs,wk}){
-const[ng,sNg]=useState({name:"",ci:"",co:"",n:""});const[cp,sCp]=useState(null);
-const add=()=>{if(!ng.name||!ng.ci)return;setGs([...gs,{...ng,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(wk))}]);sNg({name:"",ci:"",co:"",n:""});};
-const mkLink=(g)=>{try{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,wk:g.wk}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;}catch(e){alert("Error generating link: "+e.message);return null;}};
+function OwTab({gs,setGs,tpls,setTpls}){
+const[ng,sNg]=useState({name:"",ci:"",co:"",n:"",tpl:""});const[cp,sCp]=useState(null);
+const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[renName,setRenName]=useState("");
+const defTpl=tpls.find(t=>t.isDefault)||tpls[0];
+const selTpl=tpls.find(t=>t.id===(ng.tpl||defTpl?.id))||defTpl;
+const add=()=>{if(!ng.name||!ng.ci||!selTpl)return;setGs([...gs,{name:ng.name,ci:ng.ci,co:ng.co,n:ng.n,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(selTpl.wk)),tplName:selTpl.name}]);sNg({name:"",ci:"",co:"",n:"",tpl:""});};
+const mkLink=(g)=>{try{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,wk:g.wk}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;}catch(e){alert("Error: "+e.message);return null;}};
 const cpy=g=>{const link=mkLink(g);if(!link)return;copyText(link);sCp(g.id);setTimeout(()=>sCp(null),3000);};
+const addTpl=()=>{if(!newTpl.trim()||!defTpl)return;const t={id:Date.now()+"",name:newTpl.trim(),wk:JSON.parse(JSON.stringify(defTpl.wk)),isDefault:false};setTpls([...tpls,t]);setNewTpl("");};
+const setDef=(id)=>{setTpls(tpls.map(t=>({...t,isDefault:t.id===id})));};
+const delTpl=(id)=>{if(tpls.length<=1)return;const t=tpls.find(x=>x.id===id);if(t&&t.isDefault){const rest=tpls.filter(x=>x.id!==id);rest[0].isDefault=true;setTpls(rest);}else{setTpls(tpls.filter(x=>x.id!==id));}};
+const rename=(id)=>{if(!renName.trim())return;setTpls(tpls.map(t=>t.id===id?{...t,name:renName.trim()}:t));setRenId(null);setRenName("");};
 const iS={width:"100%",padding:"11px 14px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:12,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
 return(
 <div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
 <div style={{textAlign:"center",marginBottom:24}}>
 <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Owner Dashboard</h2>
 </div>
+
+{/* Templates */}
+<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:16}}>
+<h3 style={{fontSize:16,fontWeight:600,marginBottom:12}}>Templates</h3>
+<div style={{marginBottom:10}}>
+{tpls.map(t=>(<div key={t.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid "+C.bdL}}>
+<button onClick={()=>setDef(t.id)} style={{background:"none",border:"none",fontSize:16,cursor:"pointer",flexShrink:0}} title={t.isDefault?"Default":"Set as default"}>{t.isDefault?"\u2B50":"\u2606"}</button>
+{renId===t.id?<div style={{flex:1,display:"flex",gap:4}}>
+<input value={renName} onChange={e=>setRenName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&rename(t.id)} style={{...iS,flex:1}} autoFocus/>
+<button onClick={()=>rename(t.id)} style={{fontSize:11,color:C.sg,background:C.sgS,border:"none",borderRadius:20,padding:"6px 12px",cursor:"pointer",fontWeight:600}}>Save</button>
+</div>:<>
+<div style={{flex:1}}>
+<span style={{fontSize:14,fontWeight:t.isDefault?600:400}}>{t.name}</span>
+{t.isDefault&&<span style={{fontSize:10,color:C.cr,marginLeft:6,fontWeight:600}}>DEFAULT</span>}
+<span style={{fontSize:11,color:C.mt,marginLeft:6}}>{t.wk.length} days</span>
+</div>
+<button onClick={()=>{setRenId(t.id);setRenName(t.name);}} style={{fontSize:10,color:C.mt,background:C.bgS,border:"1px solid "+C.bd,borderRadius:8,padding:"4px 8px",cursor:"pointer"}}>Rename</button>
+{tpls.length>1&&<button onClick={()=>delTpl(t.id)} style={{width:24,height:24,borderRadius:6,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:10,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
+</>}
+</div>))}
+</div>
+<div style={{display:"flex",gap:6}}>
+<input value={newTpl} onChange={e=>setNewTpl(e.target.value)} placeholder="New template name..." onKeyDown={e=>e.key==="Enter"&&addTpl()} style={{...iS,flex:1}}/>
+<button onClick={addTpl} style={{fontSize:12,color:newTpl.trim()?C.cr:C.mt,background:newTpl.trim()?C.crS:C.bgS,border:"none",borderRadius:12,padding:"11px 16px",cursor:"pointer",fontWeight:600,flexShrink:0}}>+ Add</button>
+</div>
+<p style={{fontSize:11,color:C.mt,marginTop:8}}>New templates copy the default itinerary. Switch to Your Week tab to edit, then come back.</p>
+</div>
+
+{/* Create Guest */}
 <div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:20}}>
 <h3 style={{fontSize:16,fontWeight:600,marginBottom:14}}>Create Guest Guide</h3>
+<div style={{marginBottom:10}}>
+<label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Template</label>
+<select value={ng.tpl||defTpl?.id||""} onChange={e=>sNg({...ng,tpl:e.target.value})} style={{...iS,cursor:"pointer"}}>
+{tpls.map(t=><option key={t.id} value={t.id}>{t.name}{t.isDefault?" (default)":""}</option>)}
+</select>
+</div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
 <div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Name</label><input value={ng.name} onChange={e=>sNg({...ng,name:e.target.value})} placeholder="The Smiths" style={iS}/></div>
 <div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Notes</label><input value={ng.n} onChange={e=>sNg({...ng,n:e.target.value})} placeholder="Allergies, kids..." style={iS}/></div>
@@ -480,25 +522,41 @@ return(
 </div>
 <button onClick={add} style={{width:"100%",padding:"12px",background:ng.name&&ng.ci?C.cr:C.bd,color:ng.name&&ng.ci?"#fff":C.mt,border:"none",borderRadius:12,fontSize:14,fontWeight:600,cursor:"pointer"}}>Create & Share</button>
 </div>
+
+{/* Guest List */}
 {gs.length===0&&<div style={{textAlign:"center",padding:30,color:C.mtL}}>No guests yet</div>}
 {gs.map(g=>(<div key={g.id} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"14px 16px",marginBottom:8}}>
 <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
 <div style={{width:36,height:36,borderRadius:10,background:C.wmS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:C.wm}}>{g.name.charAt(0)}</div>
-<div style={{flex:1}}><div style={{fontSize:14,fontWeight:600}}>{g.name}</div><div style={{fontSize:12,color:C.mt}}>{fD(g.ci)} {"\u2192"} {fD(g.co)}</div></div>
+<div style={{flex:1}}>
+<div style={{fontSize:14,fontWeight:600}}>{g.name}</div>
+<div style={{fontSize:12,color:C.mt}}>{fD(g.ci)} {"\u2192"} {fD(g.co)}{g.tplName?" \u00B7 "+g.tplName:""}</div>
+</div>
 <button onClick={()=>setGs(gs.filter(x=>x.id!==g.id))} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>
 </div>
 <button onClick={()=>cpy(g)} style={{width:"100%",fontSize:13,color:cp===g.id?C.sg:C.cr,background:cp===g.id?C.sgS:C.crS,border:"none",borderRadius:20,padding:"10px 14px",cursor:"pointer",fontWeight:600}}>{cp===g.id?"\u2713 Link Copied!":"Copy Guest Link"}</button>
 </div>))}
 </div>);}
 
+const TPL_KEY="mn_templates";const GS_KEY="mn_guests";
+function loadTpls(){try{const s=localStorage.getItem(TPL_KEY);if(s){const t=JSON.parse(s);if(t.length)return t;}}catch(e){}return[{id:"default",name:"Default",wk:JSON.parse(JSON.stringify(IW)),isDefault:true}];}
+function loadGs(){try{const s=localStorage.getItem(GS_KEY);if(s)return JSON.parse(s);}catch(e){}return[];}
+
 function App(){
 const[tab,setTab]=useState("week");const[isO,setIsO]=useState(false);
 const[wk,setWk]=useState(JSON.parse(JSON.stringify(IW)));
-const[rq,setRq]=useState([]);const[gs,setGs]=useState([]);
+const[rq,setRq]=useState([]);
+const[gs,setGs]=useState(loadGs);
+const[tpls,setTpls]=useState(loadTpls);
 const pr=new URLSearchParams(window.location.search);
 const gid=pr.get("g");
 const[gi,setGi]=useState(null);
 const origin=DEF_ORIGIN;
+
+// Persist templates & guests to localStorage
+useEffect(()=>{try{localStorage.setItem(TPL_KEY,JSON.stringify(tpls))}catch(e){}},[tpls]);
+useEffect(()=>{try{localStorage.setItem(GS_KEY,JSON.stringify(gs))}catch(e){}},[gs]);
+
 useEffect(()=>{
 if(!gid)return;
 try{const s=localStorage.getItem("mn_"+gid);if(s){const d=JSON.parse(s);setWk(d.wk||wk);setGi({name:d.name,ci:d.ci,co:d.co});return;}}catch(e){}
@@ -514,7 +572,7 @@ return(
 {tab==="essentials"&&<EsTab/>}
 {tab==="bookings"&&<BkTab rq={rq} setRq={setRq} isO={isO}/>}
 {tab==="chat"&&<ChTab/>}
-{tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} wk={wk}/>}
+{tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} tpls={tpls} setTpls={setTpls}/>}
 <div style={{textAlign:"center",padding:"24px 20px",fontSize:11,color:C.mtL}}>Powered by <span style={{color:C.cr,fontWeight:600}}>Arrivo</span></div>
 </div>);
 }
