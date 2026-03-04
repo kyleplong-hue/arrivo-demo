@@ -3,790 +3,455 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Shanghai Food Guide</title>
+<title>UnTour Food Tours Shanghai — Your Personal Food Guide</title>
+<meta name="description" content="AI-powered personal food concierge for UnTour Food Tours Shanghai. Curated restaurants, food crawls, and insider knowledge.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇨🇳</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body,#root{min-height:100vh;background:#FAFAF8;color:#1A1A1A;font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#D4D0C8;border-radius:3px}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{animation:fadeUp .5s ease both}
-a{color:inherit}
-input:focus,textarea:focus,select:focus{outline:none;border-color:#222!important;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
-button{font-family:'Plus Jakarta Sans',sans-serif}
+html,body,#root{height:100%;background:#FAF8F5;color:#1C1917;font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#F3F0EB}::-webkit-scrollbar-thumb{background:#C4BFB5;border-radius:2px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+a:hover{opacity:.85}
+input:focus,textarea:focus,select:focus{border-color:#A0522D!important}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useRef,useEffect}=React;
-const C={bg:"#FAFAF8",bgS:"#F5F4F0",wh:"#FFF",fg:"#1A1A1A",fgS:"#484540",mt:"#9B958A",mtL:"#C4BFB5",bd:"#E8E5DE",bdL:"#F0EDE6",cr:"#E8634A",crS:"#FFF0ED",crD:"#C94E38",sg:"#6B8F6B",sgS:"#F0F5ED",sk:"#5B8DB8",skS:"#EDF4FA",wm:"#8B7355",wmS:"#F8F4EE"};
+const {useState,useRef,useEffect,useCallback}=React;
+const T={bg:"#FAF8F5",bgS:"#F3F0EB",wh:"#FFF",fg:"#1C1917",fgS:"#44403C",mt:"#9C9589",mtL:"#C4BFB5",bd:"#E7E3DC",bdL:"#F0EDE6",
+terra:"#E8634A",terraS:"#FFF0ED",terraD:"#C94E38",terraL:"#F08070",
+olive:"#5C6B3C",oliveS:"#F2F5EC",oliveL:"#8BA65C",
+wine:"#7B2D3B",wineS:"#FBF0F2",
+gold:"#B8963E",goldS:"#FBF6EC",goldL:"#D4B36A",
+sky:"#4A7C9B",skyS:"#EDF4F9",skyL:"#7BB4D4",
+red:"#D44040",ink:"#2C2520"};
 const MB="https://www.google.com/maps/search/?api=1&query=";
-const PIN="untour2024";
-const DEF_ORIGIN=[31.2200,121.4580]; // Central Shanghai
-const DRIVE_SPD=25; // km/h avg Shanghai traffic
+const API_PROXY_URL="https://api.anthropic.com/v1/messages";
+const OWNER_PIN="untour2024";
+const HOME_PLACE={l:"The Puli Hotel & Spa",q:"The+Puli+Hotel+Spa+Shanghai"};
 
-const PL={"Jia Jia Tangbao":"Jia+Jia+Tangbao+Shanghai","Dong Tai Xiang":"Dong+Tai+Xiang+Shanghai","Wei Xiang Zhai":"Wei+Xiang+Zhai+Shanghai","FU 1088":"FU+1088+Shanghai","Jianguo 328":"Jianguo+328+Shanghai","Old Jesse":"Lao+Ji+Shi+Old+Jesse+Shanghai","Pengyuan Guotie":"Pengyuan+Guotie+Shanghai","Ben Zhen":"Ben+Zhen+Sichuan+Shanghai","Liu Tang Men":"Liu+Tang+Men+Shanghai","Lotus Eatery":"Lotus+Eatery+Shanghai","Four Seasons Dumpling King":"Si+Ji+Minfu+Dumpling+Shanghai","Yanji Old Beijing Hotpot":"Yanji+Old+Beijing+Hotpot+Shanghai","Lazy Monkey Paomo":"Lazy+Monkey+Paomo+Shanghai","Maolago":"Maolago+Shanghai","Bastard":"Bastard+Shanghai+Restaurant","Oha":"Oha+Anfu+Rd+Shanghai","Canton Table":"Canton+Table+Three+on+the+Bund+Shanghai","Imperial Treasure":"Imperial+Treasure+Shanghai","Seventh Son":"Seventh+Son+Shanghai","Highline":"Highline+Shanghai+Ascott","Avenue Joffre":"Avenue+Joffre+Shanghai","Union Trading Company":"Union+Trading+Company+Shanghai","The Captain":"The+Captain+Bar+Shanghai","Flair":"Flair+Ritz+Carlton+Pudong","KEV":"KEV+Bund+18+Shanghai","Mr & Mrs Bund":"Mr+Mrs+Bund+Shanghai","Tai'An Table":"Tai+An+Table+Shanghai"};
+const PLACES={"Jia Jia Tangbao":"Jia+Jia+Tangbao+Shanghai","Dong Tai Xiang":"Dong+Tai+Xiang+Shanghai","Wei Xiang Zhai":"Wei+Xiang+Zhai+Shanghai","FU 1088":"FU+1088+Shanghai","Jianguo 328":"Jianguo+328+Shanghai","Old Jesse":"Lao+Ji+Shi+Old+Jesse+Shanghai","Pengyuan Guotie":"Pengyuan+Guotie+Shanghai","Ben Zhen":"Ben+Zhen+Sichuan+Shanghai","Liu Tang Men":"Liu+Tang+Men+Shanghai","Lotus Eatery":"Lotus+Eatery+Shanghai","Maolago":"Maolago+Shanghai","Canton Table":"Canton+Table+Three+on+the+Bund+Shanghai","Tai\'An Table":"Tai+An+Table+Shanghai","Highline":"Highline+Shanghai+Ascott","Avenue Joffre":"Avenue+Joffre+Shanghai","The Captain":"The+Captain+Bar+Shanghai","Flair":"Flair+Ritz+Carlton+Pudong","KEV":"KEV+Bund+18+Shanghai","The Bund":"The+Bund+Shanghai","French Concession":"Wukang+Mansion+Shanghai","Yu Garden":"Yu+Garden+Shanghai","Tianzifang":"Tianzifang+Shanghai","Xintiandi":"Xintiandi+Shanghai","Nanjing Road":"Nanjing+Road+Shanghai"};
 
-// Venue coordinates [lat, lng]
-const COORDS={
-"Jia+Jia+Tangbao+Shanghai":[31.2350,121.4690],
-"Dong+Tai+Xiang+Shanghai":[31.2340,121.4700],
-"Wei+Xiang+Zhai+Shanghai":[31.2230,121.4650],
-"FU+1088+Shanghai":[31.2200,121.4400],
-"Jianguo+328+Shanghai":[31.2050,121.4500],
-"Lao+Ji+Shi+Old+Jesse+Shanghai":[31.2150,121.4520],
-"Pengyuan+Guotie+Shanghai":[31.2130,121.4450],
-"Ben+Zhen+Sichuan+Shanghai":[31.2180,121.4480],
-"Liu+Tang+Men+Shanghai":[31.2100,121.4350],
-"Lotus+Eatery+Shanghai":[31.2160,121.4530],
-"Si+Ji+Minfu+Dumpling+Shanghai":[31.2300,121.4750],
-"Yanji+Old+Beijing+Hotpot+Shanghai":[31.2180,121.4550],
-"Lazy+Monkey+Paomo+Shanghai":[31.2140,121.4470],
-"Maolago+Shanghai":[31.2170,121.4510],
-"Bastard+Shanghai+Restaurant":[31.2120,121.4430],
-"Oha+Anfu+Rd+Shanghai":[31.2140,121.4400],
-"Canton+Table+Three+on+the+Bund+Shanghai":[31.2400,121.4900],
-"Imperial+Treasure+Shanghai":[31.2380,121.4870],
-"Seventh+Son+Shanghai":[31.2250,121.4600],
-"Highline+Shanghai+Ascott":[31.2210,121.4580],
-"Avenue+Joffre+Shanghai":[31.2170,121.4460],
-"Union+Trading+Company+Shanghai":[31.2160,121.4480],
-"The+Captain+Bar+Shanghai":[31.2410,121.4910],
-"Flair+Ritz+Carlton+Pudong":[31.2350,121.5050],
-"KEV+Bund+18+Shanghai":[31.2420,121.4900],
-"Mr+Mrs+Bund+Shanghai":[31.2430,121.4890],
-"Tai+An+Table+Shanghai":[31.2100,121.4350],
-"Jianbing+1370+Xikang+Rd+Shanghai":[31.2280,121.4380],
-"Yili+Baozi+Shanghai":[31.2050,121.4400],
-"Egg+Cafe+Shanghai":[31.2200,121.4550],
-"A+Niang+Mian+Shanghai":[31.2180,121.4500],
-"Propaganda+Poster+Museum+Shanghai":[31.2070,121.4380],
-"Wukang+Mansion+Shanghai":[31.2100,121.4370],
-"Yu+Garden+Shanghai":[31.2270,121.4920],
-"Tianzifang+Shanghai":[31.2100,121.4680],
-"The+Bund+Shanghai":[31.2400,121.4900],
-"Xintiandi+Shanghai":[31.2190,121.4730],
+/* ═══ UNTOUR STORIES ═══ */
+const STORIES={
+"Jia Jia Tangbao":{url:"https://untourfoodtours.com/shanghai-restaurants/jia-jia-tangbao/",excerpt:"At 127 Huanghe Road, there's a queue that starts before the doors open. Jia Jia Tangbao serves what many consider Shanghai's definitive soup dumpling — delicate skins, scalding broth, and fillings that range from classic pork to salted duck egg yolk. The kitchen is visible through glass, the menu is four items, and the experience is transcendent. Eat them the moment they hit the table."},
+"Old Jesse":{url:"https://untourfoodtours.com/shanghai-restaurants/old-jesse/",excerpt:"Lao Ji Shi — Old Jesse — is Shanghainese home cooking elevated to legend. Chef has been doing this for decades on Tianping Road. The codfish head is famous: pre-order it or weep. The red-braised pork shank falls apart at a glance. Soy-braised greens, drunken chicken, lion's head meatballs — everything tastes like someone's grandmother made it, and that grandmother was extraordinary."},
+"Canton Table":{url:"https://untourfoodtours.com/shanghai-restaurants/canton-table/",excerpt:"On the third floor of Three on the Bund, Canton Table marries Hong Kong dim sum tradition with Shanghai riverside theater. The har gow are translucent. The char siu is lacquered. The tea sommelier will change how you think about Pu-erh. Views of the Pudong skyline through floor-to-ceiling glass make this a lunch that lingers — both in memory and on the palate."},
+"Tai\'An Table":{url:"https://untourfoodtours.com/shanghai-restaurants/taian-table/",excerpt:"Three Michelin stars. Chef Stefan Stiller's tasting menu is the Shanghai splurge — and worth every yuan. Hidden in a nondescript lane house, the dining room seats barely twenty. Each course is a meditation: locally sourced, globally inspired, technically perfect. The surprise menu format means you surrender control, and that's the point. Book weeks ahead."},
+"Wei Xiang Zhai":{url:"https://untourfoodtours.com/shanghai-restaurants/wei-xiang-zhai/",excerpt:"At 14 Yandang Road, a sesame-peanut noodle shop has been doing one thing brilliantly for years. The cold noodles arrive slicked in a paste of toasted sesame and ground peanut, with a hit of vinegar and chili. The texture is slippery, the flavor is nutty-spicy-tangy, and the price is almost insulting. Wei Xiang Zhai proves that simplicity, done perfectly, is genius."},
+"Ben Zhen":{url:"https://untourfoodtours.com/shanghai-restaurants/ben-zhen/",excerpt:"Sichuan food in Shanghai reaches its peak at Ben Zhen. The peppercorn fish swims in a bath of chili oil and Sichuan peppercorns that numb your lips and light up your brain. The craft beer selection is excellent — you'll need it. The space is modern, the crowd is young, and the spice levels are not for the faint of heart. Order the cold chicken in chili sauce to start."},
 };
 
-// Haversine distance in km
-function hav(a,b){
-const R=6371,toR=Math.PI/180;
-const dLat=(b[0]-a[0])*toR,dLon=(b[1]-a[1])*toR;
-const x=Math.sin(dLat/2)**2+Math.cos(a[0]*toR)*Math.cos(b[0]*toR)*Math.sin(dLon/2)**2;
-return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
-}
-function travelTime(origin,mapQ){
-if(!mapQ)return null;
-const dest=COORDS[mapQ];if(!dest)return null;
-const km=hav(origin,dest);if(km<0.15)return null;
-const walkMin=Math.round(km/5*60/5)*5;
-const driveMin=Math.max(5,Math.round(km/DRIVE_SPD*60/5)*5);
-return{km,walkMin,driveMin};
-}
+function linkP(text){if(!text)return text;let parts=[];let rem=text;const sk=Object.keys(PLACES).sort((a,b)=>b.length-a.length);while(rem.length>0){let e={idx:Infinity,key:null};for(const k of sk){const i=rem.indexOf(k);if(i!==-1&&i<e.idx)e={idx:i,key:k};}if(!e.key){parts.push(rem);break;}if(e.idx>0)parts.push(rem.slice(0,e.idx));parts.push({place:e.key,query:PLACES[e.key]});rem=rem.slice(e.idx+e.key.length);}return parts;}
 
-function linkP(t){if(!t)return[t];let p=[],r=t;const sk=Object.keys(PL).sort((a,b)=>b.length-a.length);while(r.length>0){let b={i:Infinity,k:null};for(const k of sk){const i=r.indexOf(k);if(i!==-1&&i<b.i)b={i:i,k:k};}if(!b.k){p.push(r);break;}if(b.i>0)p.push(r.slice(0,b.i));p.push({n:b.k,q:PL[b.k]});r=r.slice(b.i+b.k.length);}return p;}
-const CT={breakfast:{bg:"#FBF6EC",a:"#C49A3C",l:"Morning"},lunch:{bg:"#F0F5ED",a:"#6B8F6B",l:"Midday"},dinner:{bg:"#FFF0ED",a:"#E8634A",l:"Evening"},drinks:{bg:"#F3EEF8",a:"#8B6BAF",l:"Night Out"},sightseeing:{bg:"#EDF4FA",a:"#5B8DB8",l:"Explore"},tour:{bg:"#FFF0ED",a:"#E8634A",l:"Tour"},brunch:{bg:"#F0F5ED",a:"#6B8F6B",l:"Brunch"},hotel:{bg:"#F0EDE6",a:"#4A4540",l:"Hotel"}};
+/* ═══ TAG SYSTEM ═══ */
+const TS={breakfast:{bg:"#FBF6EC",a:T.gold,l:"Breakfast"},lunch:{bg:"#F2F5EC",a:T.olive,l:"Lunch"},dinner:{bg:"#FDF5EF",a:T.terra,l:"Dinner"},street:{bg:"#FDF5EF",a:T.terraL,l:"Street Food"},noodles:{bg:"#F2F5EC",a:T.olive,l:"Noodles"},drinks:{bg:"#FBF0F2",a:T.wine,l:"Drinks"},sichuan:{bg:"#FDF5EF",a:T.terra,l:"Sichuan"},brunch:{bg:"#FBF6EC",a:T.gold,l:"Brunch"},coffee:{bg:"#F3F0EB",a:"#6B5C4D",l:"Coffee"},walk:{bg:"#EDF4F9",a:T.sky,l:"Walk"},sight:{bg:"#EDF4F9",a:T.sky,l:"Sight"},tour:{bg:"#FDF5EF",a:T.terra,l:"Tour"},hotel:{bg:"#F0EDE6",a:"#4A4540",l:"Hotel"}};
 
+/* ═══ ALTS BANK ═══ */
 const ALTS=[
-{l:"Jia Jia Tangbao",d:"Best soup dumplings. Pork XLB, salted egg yolk. 127 Huanghe Rd.",c:"breakfast",m:"Jia+Jia+Tangbao+Shanghai"},
-{l:"Yili Baozi",d:"Juicy pork buns & egg custard near Shanghai Library.",c:"breakfast",m:"Yili+Baozi+Shanghai"},
-{l:"Jianbing Stall",d:"Best Chinese crepe. 1370 Xikang Rd, 7-11am.",c:"breakfast",m:"Jianbing+1370+Xikang+Rd+Shanghai"},
-{l:"Dong Tai Xiang",d:"Fried soup dumplings. 24hr at 188 Chongqing North Rd.",c:"breakfast",m:"Dong+Tai+Xiang+Shanghai"},
-{l:"Egg Cafe",d:"Western all-day breakfast. 12 Xiangyang North Rd.",c:"breakfast",m:"Egg+Cafe+Shanghai"},
-{l:"Jianguo 328",d:"Clean Shanghainese. Noodles, red-braised pork, spring rolls.",c:"lunch",m:"Jianguo+328+Shanghai"},
-{l:"A Niang Mian",d:"Ningbo seafood noodles. Yellow croaker fish-bone broth.",c:"lunch",m:"A+Niang+Mian+Shanghai"},
-{l:"Wei Xiang Zhai",d:"Legendary sesame-peanut noodles. 14 Yandang Rd.",c:"lunch",m:"Wei+Xiang+Zhai+Shanghai"},
-{l:"Liu Tang Men",d:"Fiery Sichuan noodles. Mark your spice level!",c:"lunch",m:"Liu+Tang+Men+Shanghai"},
-{l:"Pengyuan Guotie",d:"Best potstickers. Husband-wife stall. 102 Gao'an Rd.",c:"lunch",m:"Pengyuan+Guotie+Shanghai"},
-{l:"Old Jesse",d:"Best Shanghainese. Pre-order codfish head & pork shank!",c:"dinner",m:"Lao+Ji+Shi+Old+Jesse+Shanghai",b:true},
-{l:"FU 1088",d:"Celebrity chef's art deco villa. Smoked fish, wasabi shrimp.",c:"dinner",m:"FU+1088+Shanghai",b:true},
-{l:"Ben Zhen",d:"Spicy Sichuan + craft beer. Peppercorn fish is a must.",c:"dinner",m:"Ben+Zhen+Sichuan+Shanghai"},
-{l:"Lotus Eatery",d:"Yunnan: fried insects, edible flowers, goat cheese.",c:"dinner",m:"Lotus+Eatery+Shanghai"},
-{l:"Maolago",d:"Guizhou food. Sour tomato fish hotpot & cocktails.",c:"dinner",m:"Maolago+Shanghai"},
-{l:"Canton Table",d:"High-end Cantonese, Bund views, tea sommelier.",c:"dinner",m:"Canton+Table+Three+on+the+Bund+Shanghai",b:true},
-{l:"Tai'An Table",d:"Three Michelin stars. THE splurge.",c:"dinner",m:"Tai+An+Table+Shanghai",b:true},
-{l:"Yanji Hotpot",d:"Coal steamboat, thin-sliced lamb, sesame dip.",c:"dinner",m:"Yanji+Old+Beijing+Hotpot+Shanghai"},
-{l:"Highline",d:"Best brunch. Southern hospitality, fireplace patio.",c:"brunch",m:"Highline+Shanghai+Ascott",b:true},
-{l:"Flair",d:"58th floor. Highest patio bar. Pearl Tower views.",c:"drinks",m:"Flair+Ritz+Carlton+Pudong"},
-{l:"The Captain",d:"Cheapest Bund skyline drink since 2005.",c:"drinks",m:"The+Captain+Bar+Shanghai"},
-{l:"KEV",d:"Top of Bund 18. Champagne, DJs, terrace.",c:"drinks",m:"KEV+Bund+18+Shanghai"},
-{l:"Avenue Joffre",d:"Japanese cocktail perfection. 8pm-2am.",c:"drinks",m:"Avenue+Joffre+Shanghai"},
-{l:"UnTour Street Eats",d:"French Concession street food crawl.",c:"tour",b:true},
-{l:"The Bund Walk",d:"Iconic waterfront. Best at sunset.",c:"sightseeing",m:"The+Bund+Shanghai"},
-{l:"French Concession",d:"Tree-lined streets, boutiques, cafes.",c:"sightseeing",m:"Wukang+Mansion+Shanghai"},
-{l:"Yu Garden",d:"Classic Chinese garden & bazaar.",c:"sightseeing",m:"Yu+Garden+Shanghai"},
-{l:"Tianzifang",d:"Artsy laneways in old shikumen houses.",c:"sightseeing",m:"Tianzifang+Shanghai"},
+{l:"Jia Jia Tangbao",d:"Best soup dumplings in Shanghai. Pork XLB, salted duck egg yolk. 127 Huanghe Rd.",tag:"breakfast",cat:"breakfast",map:"Jia+Jia+Tangbao+Shanghai"},
+{l:"Dong Tai Xiang",d:"Sheng jian bao (fried soup dumplings). Open 24 hours. 188 Chongqing North Rd.",tag:"breakfast",cat:"breakfast",map:"Dong+Tai+Xiang+Shanghai"},
+{l:"Egg Cafe",d:"Western all-day breakfast & great coffee. 12 Xiangyang North Rd.",tag:"breakfast",cat:"breakfast",map:"Egg+Cafe+Shanghai"},
+{l:"Jianbing Stall",d:"Best Chinese crepe. 1370 Xikang Rd, 7-11am only. Say 'bula' for no chili.",tag:"street",cat:"street",map:"Jianbing+1370+Xikang+Rd+Shanghai"},
+{l:"Wei Xiang Zhai",d:"Legendary sesame-peanut cold noodles. 14 Yandang Rd.",tag:"noodles",cat:"noodles",map:"Wei+Xiang+Zhai+Shanghai"},
+{l:"Liu Tang Men",d:"Fiery Sichuan noodles. Mark your spice level. 419-1 Xinhua Rd.",tag:"sichuan",cat:"sichuan",map:"Liu+Tang+Men+Shanghai"},
+{l:"Pengyuan Guotie",d:"Best potstickers in Shanghai. Husband-wife stall. 102 Gao\'an Rd.",tag:"lunch",cat:"lunch",map:"Pengyuan+Guotie+Shanghai"},
+{l:"Jianguo 328",d:"Clean Shanghainese. Noodles, red-braised pork, spring rolls.",tag:"lunch",cat:"lunch",map:"Jianguo+328+Shanghai"},
+{l:"Old Jesse",d:"Best Shanghainese. Pre-order codfish head & red-braised pork shank!",tag:"dinner",cat:"dinner",map:"Lao+Ji+Shi+Old+Jesse+Shanghai",book:true},
+{l:"FU 1088",d:"Celebrity chef\'s art deco villa. Smoked fish, wasabi shrimp.",tag:"dinner",cat:"dinner",map:"FU+1088+Shanghai",book:true},
+{l:"Ben Zhen",d:"Spicy Sichuan + craft beer. Peppercorn fish is a must.",tag:"sichuan",cat:"sichuan",map:"Ben+Zhen+Sichuan+Shanghai"},
+{l:"Lotus Eatery",d:"Yunnan: fried insects, edible flowers, goat cheese.",tag:"dinner",cat:"dinner",map:"Lotus+Eatery+Shanghai"},
+{l:"Maolago",d:"Guizhou food. Sour tomato fish hotpot & cocktails.",tag:"dinner",cat:"dinner",map:"Maolago+Shanghai"},
+{l:"Canton Table",d:"High-end Cantonese at Three on the Bund. Tea sommelier.",tag:"dinner",cat:"dinner",map:"Canton+Table+Three+on+the+Bund+Shanghai",book:true},
+{l:"Tai\'An Table",d:"Three Michelin stars. THE Shanghai splurge.",tag:"dinner",cat:"dinner",map:"Tai+An+Table+Shanghai",book:true},
+{l:"Highline",d:"Shanghai\'s best brunch. Southern hospitality, fireplace patio.",tag:"brunch",cat:"brunch",map:"Highline+Shanghai+Ascott",book:true},
+{l:"Flair",d:"58th floor Ritz-Carlton. Highest patio bar in Shanghai.",tag:"drinks",cat:"drinks",map:"Flair+Ritz+Carlton+Pudong"},
+{l:"The Captain",d:"Cheapest Bund skyline drink since 2005.",tag:"drinks",cat:"drinks",map:"The+Captain+Bar+Shanghai"},
+{l:"KEV",d:"Top of Bund 18. Champagne, DJs, terrace.",tag:"drinks",cat:"drinks",map:"KEV+Bund+18+Shanghai"},
+{l:"Avenue Joffre",d:"Japanese cocktail bar. Classics done to perfection.",tag:"drinks",cat:"drinks",map:"Avenue+Joffre+Shanghai"},
+{l:"UnTour Street Eats",d:"Guided French Concession street food crawl.",tag:"tour",cat:"tour",book:true},
+{l:"The Bund Walk",d:"Iconic waterfront. Art Deco meets Pudong skyline.",tag:"sight",cat:"sight",map:"The+Bund+Shanghai"},
+{l:"French Concession",d:"Tree-lined streets, boutiques, cafes.",tag:"walk",cat:"walk",map:"Wukang+Mansion+Shanghai"},
+{l:"Yu Garden",d:"Classic Chinese garden & bazaar.",tag:"sight",cat:"sight",map:"Yu+Garden+Shanghai"},
+{l:"Tianzifang",d:"Artsy laneways in old shikumen houses.",tag:"walk",cat:"walk",map:"Tianzifang+Shanghai"},
+];
 ];
 
-const IW=[
-{title:"Dumpling Day",items:[
-{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{t:"10:00 AM",l:"Jia Jia Tangbao",d:"Best soup dumplings. Pork XLB, salted duck egg yolk. 127 Huanghe Rd.",c:"breakfast",m:"Jia+Jia+Tangbao+Shanghai"},
-{t:"11:30 AM",l:"French Concession Walk",d:"Stroll tree-lined streets from Wukang Mansion through boutiques.",c:"sightseeing",m:"Wukang+Mansion+Shanghai"},
-{t:"1:00 PM",l:"Pengyuan Guotie",d:"Best potstickers. Husband-wife stall. 102 Gao'an Rd.",c:"lunch",m:"Pengyuan+Guotie+Shanghai"},
-{t:"3:00 PM",l:"Yu Garden",d:"Classic Chinese garden & bazaar. Nanxiang dumplings nearby.",c:"sightseeing",m:"Yu+Garden+Shanghai"},
-{t:"5:00 PM",l:"Old Jesse",d:"Best Shanghainese. Pre-order codfish head & red-braised pork shank!",c:"dinner",m:"Lao+Ji+Shi+Old+Jesse+Shanghai",b:true},
-{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+const CAT_MAP={dinner:["dinner","sichuan"],lunch:["lunch","dinner","noodles"],breakfast:["breakfast","brunch"],street:["street","noodles","lunch"],noodles:["noodles","street","lunch"],drinks:["drinks"],sichuan:["sichuan","dinner"],brunch:["brunch","breakfast"],coffee:["coffee","breakfast"],walk:["walk","sight"],sight:["sight","walk"],tour:["tour","walk"]};
+function getAlt(cat,usedLabels){const fb=CAT_MAP[cat]||[cat];for(const c of fb){const opts=ALTS.filter(a=>a.cat===c&&!usedLabels.has(a.l));if(opts.length>0)return opts[Math.floor(Math.random()*opts.length)];}const any=ALTS.filter(a=>!usedLabels.has(a.l));return any.length>0?any[Math.floor(Math.random()*any.length)]:ALTS[0];}
+
+/* ═══ GUEST PERSISTENCE ═══ */
+const SP="ut_guest_";
+function saveGD(id,data){try{localStorage.setItem(SP+id,JSON.stringify(data));}catch{}}
+function loadGD(id){try{const d=localStorage.getItem(SP+id);return d?JSON.parse(d):null;}catch{return null;}}
+function getURLGuest(){return new URLSearchParams(window.location.search).get("g");}
+function decodeGuestURL(){const d=new URLSearchParams(window.location.search).get("d");if(!d)return null;try{return JSON.parse(decodeURIComponent(atob(d)));}catch{return null;}}
+
+/* ═══ DEFAULT WEEK ═══ */
+const initWeek=()=>[
+{id:"d1",title:"Dumpling Day",sub:"XLB, potstickers & the French Concession",accent:T.terra,blocks:[
+{id:"d1b0",t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing\'an. Walk to French Concession & Nanjing Rd.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d1b1",t:"9:00 AM",l:"Jia Jia Tangbao",d:"Best soup dumplings in Shanghai. Pork XLB, salted duck egg yolk. 127 Huanghe Rd.",tag:"breakfast",cat:"breakfast",map:"Jia+Jia+Tangbao+Shanghai",dr:"15 min walk"},
+{id:"d1b2",t:"10:30 AM",l:"French Concession Walk",d:"Stroll tree-lined streets from Wukang Mansion through boutiques & cafes.",tag:"walk",cat:"walk",map:"Wukang+Mansion+Shanghai",dr:"10 min taxi"},
+{id:"d1b3",t:"12:30 PM",l:"Pengyuan Guotie",d:"Best potstickers in Shanghai. Husband-wife stall. 102 Gao\'an Rd.",tag:"lunch",cat:"lunch",map:"Pengyuan+Guotie+Shanghai",dr:"8 min walk"},
+{id:"d1b4",t:"2:30 PM",l:"Yu Garden",d:"Classic Chinese garden & bazaar. Nanxiang dumplings nearby.",tag:"sight",cat:"sight",map:"Yu+Garden+Shanghai",dr:"20 min taxi"},
+{id:"d1b5",t:"5:00 PM",l:"Wei Xiang Zhai",d:"Legendary sesame-peanut cold noodles. 14 Yandang Rd.",tag:"noodles",cat:"noodles",map:"Wei+Xiang+Zhai+Shanghai",dr:"15 min taxi"},
+{id:"d1b6",t:"7:30 PM",l:"Old Jesse",d:"Best Shanghainese. Pre-order codfish head & red-braised pork shank!",tag:"dinner",cat:"dinner",map:"Lao+Ji+Shi+Old+Jesse+Shanghai",book:true,dr:"10 min walk"},
+{id:"d1b7",t:"9:30 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai",dr:"12 min taxi"},
 ]},
-{title:"Street Food & Noodles",items:[
-{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{t:"10:00 AM",l:"Jianbing Stall",d:"Best Chinese crepe. 1370 Xikang Rd, 7-11am. Say 'bula' no chili.",c:"breakfast",m:"Jianbing+1370+Xikang+Rd+Shanghai"},
-{t:"11:30 AM",l:"UnTour Street Eats",d:"Guided street food crawl through the French Concession.",c:"tour",b:true},
-{t:"1:00 PM",l:"Wei Xiang Zhai",d:"Legendary sesame-peanut noodles. 14 Yandang Rd.",c:"lunch",m:"Wei+Xiang+Zhai+Shanghai"},
-{t:"3:00 PM",l:"Tianzifang",d:"Artsy laneways. Great for souvenirs and coffee.",c:"sightseeing",m:"Tianzifang+Shanghai"},
-{t:"5:00 PM",l:"Liu Tang Men",d:"Fiery Sichuan noodles. Start at mild! 419-1 Xinhua Rd.",c:"dinner",m:"Liu+Tang+Men+Shanghai"},
-{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d2",title:"Street Food & Noodles",sub:"Jianbing, noodle shops & artsy laneways",accent:T.olive,blocks:[
+{id:"d2b0",t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing\'an. Walk to French Concession & Nanjing Rd.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d2b1",t:"9:00 AM",l:"Jianbing Stall",d:"Best Chinese crepe. 1370 Xikang Rd, 7-11am only. Say \'bula\' for no chili.",tag:"street",cat:"street",map:"Jianbing+1370+Xikang+Rd+Shanghai",dr:"10 min walk"},
+{id:"d2b2",t:"10:30 AM",l:"UnTour Street Eats",d:"Your booked tour! Guided street food crawl through the French Concession. Meet at Changshu Road Metro, Exit 1. Guide: UnTour tote bag. Confirmation #UT-2026-0812.",tag:"tour",cat:"tour",book:true,dr:"15 min walk"},
+{id:"d2b3",t:"3:00 PM",l:"Tianzifang",d:"Artsy laneways in old shikumen houses. Great for souvenirs and coffee.",tag:"walk",cat:"walk",map:"Tianzifang+Shanghai",dr:"10 min taxi"},
+{id:"d2b4",t:"5:00 PM",l:"Wei Xiang Zhai",d:"Legendary sesame-peanut cold noodles. 14 Yandang Rd.",tag:"noodles",cat:"noodles",map:"Wei+Xiang+Zhai+Shanghai",dr:"8 min walk"},
+{id:"d2b5",t:"7:30 PM",l:"Liu Tang Men",d:"Fiery Sichuan noodles. Start at mild! 419-1 Xinhua Rd.",tag:"sichuan",cat:"sichuan",map:"Liu+Tang+Men+Shanghai",dr:"12 min walk"},
+{id:"d2b6",t:"9:30 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai",dr:"15 min taxi"},
 ]},
-{title:"Regional Flavors",items:[
-{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{t:"10:00 AM",l:"Dong Tai Xiang",d:"Sheng jian bao (fried soup dumplings). Open 24hrs!",c:"breakfast",m:"Dong+Tai+Xiang+Shanghai"},
-{t:"11:30 AM",l:"Lotus Eatery",d:"Yunnan: fried insects, edible flowers, goat cheese.",c:"lunch",m:"Lotus+Eatery+Shanghai"},
-{t:"1:00 PM",l:"Propaganda Poster Museum",d:"Hidden gem. Fascinating Cold War-era collection.",c:"sightseeing",m:"Propaganda+Poster+Museum+Shanghai"},
-{t:"3:00 PM",l:"Ben Zhen",d:"Spicy Sichuan in style. Craft beer to cool the burn.",c:"dinner",m:"Ben+Zhen+Sichuan+Shanghai"},
-{t:"5:00 PM",l:"Avenue Joffre",d:"Japanese cocktail bar. Classics done to perfection.",c:"drinks",m:"Avenue+Joffre+Shanghai"},
-{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d3",title:"Regional Flavors",sub:"Sichuan fire, Yunnan flowers & Guizhou sour",accent:T.terraL,blocks:[
+{id:"d3b0",t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing\'an. Walk to French Concession & Nanjing Rd.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d3b1",t:"9:00 AM",l:"Dong Tai Xiang",d:"Sheng jian bao (fried soup dumplings). Open 24 hours!",tag:"breakfast",cat:"breakfast",map:"Dong+Tai+Xiang+Shanghai",dr:"10 min taxi"},
+{id:"d3b2",t:"11:00 AM",l:"Propaganda Poster Museum",d:"Hidden gem in a residential basement. Fascinating Cold War-era collection.",tag:"sight",cat:"sight",map:"Propaganda+Poster+Museum+Shanghai",dr:"15 min taxi"},
+{id:"d3b3",t:"1:00 PM",l:"Lotus Eatery",d:"Yunnan cuisine: fried insects, edible flowers, goat cheese. Adventurous.",tag:"lunch",cat:"lunch",map:"Lotus+Eatery+Shanghai",dr:"10 min walk"},
+{id:"d3b4",t:"3:30 PM",l:"Maolago",d:"Guizhou food. Sour tomato fish hotpot & excellent cocktails.",tag:"dinner",cat:"dinner",map:"Maolago+Shanghai",dr:"8 min walk"},
+{id:"d3b5",t:"7:00 PM",l:"Ben Zhen",d:"Spicy Sichuan + craft beer. Peppercorn fish will numb your lips.",tag:"sichuan",cat:"sichuan",map:"Ben+Zhen+Sichuan+Shanghai",dr:"12 min taxi"},
+{id:"d3b6",t:"9:00 PM",l:"Avenue Joffre",d:"Japanese cocktail bar. Classics done to perfection.",tag:"drinks",cat:"drinks",map:"Avenue+Joffre+Shanghai",dr:"5 min walk"},
+{id:"d3b7",t:"10:30 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai",dr:"10 min taxi"},
 ]},
-{title:"The Bund & Fine Dining",items:[
-{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{t:"10:00 AM",l:"Egg Cafe",d:"Western all-day breakfast & great coffee.",c:"breakfast",m:"Egg+Cafe+Shanghai"},
-{t:"11:30 AM",l:"The Bund Walk",d:"Iconic waterfront. Art Deco meets Pudong skyline.",c:"sightseeing",m:"The+Bund+Shanghai"},
-{t:"1:00 PM",l:"Canton Table",d:"High-end dim sum with Bund views & tea sommelier.",c:"lunch",m:"Canton+Table+Three+on+the+Bund+Shanghai",b:true},
-{t:"3:00 PM",l:"Nanjing Road",d:"Pedestrian street, then cab to Jing'an for upscale shopping.",c:"sightseeing"},
-{t:"5:00 PM",l:"Tai'An Table",d:"Three Michelin stars. THE Shanghai splurge.",c:"dinner",m:"Tai+An+Table+Shanghai",b:true},
-{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d4",title:"The Bund & Fine Dining",sub:"Waterfront walks, dim sum & Michelin stars",accent:T.sky,blocks:[
+{id:"d4b0",t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing\'an. Walk to French Concession & Nanjing Rd.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d4b1",t:"9:00 AM",l:"Egg Cafe",d:"Western all-day breakfast & great coffee. 12 Xiangyang North Rd.",tag:"breakfast",cat:"breakfast",map:"Egg+Cafe+Shanghai",dr:"8 min walk"},
+{id:"d4b2",t:"10:30 AM",l:"The Bund Walk",d:"Iconic waterfront. Art Deco facades meet Pudong skyline. Best in morning light.",tag:"sight",cat:"sight",map:"The+Bund+Shanghai",dr:"15 min taxi"},
+{id:"d4b3",t:"12:30 PM",l:"Canton Table",d:"High-end Cantonese dim sum at Three on the Bund. Tea sommelier, river views.",tag:"lunch",cat:"lunch",map:"Canton+Table+Three+on+the+Bund+Shanghai",book:true,dr:"5 min walk"},
+{id:"d4b4",t:"3:00 PM",l:"Nanjing Road",d:"Pedestrian shopping street. Then cab to Jing\'an for upscale boutiques.",tag:"walk",cat:"walk",dr:"10 min walk"},
+{id:"d4b5",t:"7:00 PM",l:"Tai\'An Table",d:"Three Michelin stars. THE Shanghai splurge. Surprise tasting menu. Book weeks ahead.",tag:"dinner",cat:"dinner",map:"Tai+An+Table+Shanghai",book:true,dr:"20 min taxi"},
+{id:"d4b6",t:"10:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai",dr:"10 min taxi"},
 ]},
-{title:"Hotpot & Nightlife",items:[
-{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{t:"10:00 AM",l:"Highline",d:"Shanghai's best brunch. Southern hospitality, fireplace patio.",c:"brunch",m:"Highline+Shanghai+Ascott",b:true},
-{t:"11:30 AM",l:"Xintiandi",d:"Restored shikumen neighborhood. Wandering, shopping.",c:"sightseeing",m:"Xintiandi+Shanghai"},
-{t:"1:00 PM",l:"Yanji Old Beijing Hotpot",d:"Coal steamboat, thin-sliced lamb, sesame dip.",c:"dinner",m:"Yanji+Old+Beijing+Hotpot+Shanghai"},
-{t:"3:00 PM",l:"Flair at the Ritz",d:"58th floor \u2014 highest patio bar. Pearl Tower views.",c:"drinks",m:"Flair+Ritz+Carlton+Pudong"},
-{t:"5:00 PM",l:"KEV or INS",d:"KEV: Bund 18 champagne. INS: six floors of clubs.",c:"drinks",m:"KEV+Bund+18+Shanghai"},
-{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d5",title:"Hotpot & Nightlife",sub:"Brunch, hotpot & Bund bar crawl",accent:T.wine,blocks:[
+{id:"d5b0",t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing\'an. Walk to French Concession & Nanjing Rd.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai"},
+{id:"d5b1",t:"10:00 AM",l:"Highline",d:"Shanghai\'s best brunch. Southern hospitality, fireplace patio.",tag:"brunch",cat:"brunch",map:"Highline+Shanghai+Ascott",book:true,dr:"5 min walk"},
+{id:"d5b2",t:"1:00 PM",l:"Xintiandi",d:"Restored shikumen neighborhood. Wandering, shopping, people-watching.",tag:"walk",cat:"walk",map:"Xintiandi+Shanghai",dr:"15 min taxi"},
+{id:"d5b3",t:"3:30 PM",l:"Jianguo 328",d:"Clean Shanghainese cooking. Great noodles, red-braised pork, spring rolls.",tag:"lunch",cat:"lunch",map:"Jianguo+328+Shanghai",dr:"10 min taxi"},
+{id:"d5b4",t:"6:00 PM",l:"Yanji Old Beijing Hotpot",d:"Coal steamboat, thin-sliced lamb, sesame dip. Proper Northern hotpot.",tag:"dinner",cat:"dinner",map:"Yanji+Old+Beijing+Hotpot+Shanghai",dr:"12 min taxi"},
+{id:"d5b5",t:"8:30 PM",l:"Flair at the Ritz",d:"58th floor — highest patio bar in Shanghai. Pearl Tower views.",tag:"drinks",cat:"drinks",map:"Flair+Ritz+Carlton+Pudong",dr:"20 min taxi"},
+{id:"d5b6",t:"10:30 PM",l:"KEV",d:"Top of Bund 18. Champagne, DJs, terrace.",tag:"drinks",cat:"drinks",map:"KEV+Bund+18+Shanghai",dr:"5 min walk"},
+{id:"d5b7",t:"12:00 AM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai",dr:"20 min taxi"},
 ]},
+];
 ];
 
 const TRIPS=[
-{title:"Dumpling Deep Dive",d:"XLB \u2192 sheng jian \u2192 potstickers \u2192 boiled dumplings.",spots:["Jia Jia Tangbao","Dong Tai Xiang","Pengyuan Guotie","Four Seasons Dumpling King"]},
-{title:"Spice Route",d:"Sichuan \u2192 Guizhou \u2192 Xi'an. Start mild, end sweating.",spots:["Liu Tang Men","Ben Zhen","Maolago","Lazy Monkey Paomo"]},
-{title:"Modern Chinese Bistros",d:"Chinese food meets wine bar. English menus.",spots:["Bastard","Oha","Maolago"]},
-{title:"Bund Bar Crawl",d:"Budget to bougie: The Captain \u2192 KEV \u2192 Flair.",spots:["The Captain","Mr & Mrs Bund","KEV","Flair"]},
-{title:"Fine Dining Circuit",d:"Imperial Treasure \u2192 Seventh Son \u2192 Tai'An Table.",spots:["Imperial Treasure","Seventh Son","Tai'An Table"]},
+{id:"dumplings",title:"Dumpling Deep Dive",sub:"XLB, sheng jian, potstickers & boiled",accent:T.terra,stops:[
+{t:"10:00 AM",n:"Jia Jia Tangbao",d:"Best XLB. Pork and salted egg yolk.",dr:"Huanghe Rd",map:"Jia+Jia+Tangbao+Shanghai"},
+{t:"12:00 PM",n:"Dong Tai Xiang",d:"Fried soup dumplings. Crispy bottoms.",dr:"Chongqing N Rd",map:"Dong+Tai+Xiang+Shanghai"},
+{t:"2:00 PM",n:"Pengyuan Guotie",d:"Husband-wife potsticker stall.",dr:"French Concession",map:"Pengyuan+Guotie+Shanghai"},
+]},
+{id:"spice",title:"Spice Route",sub:"Sichuan, Guizhou & Xi\'an — fire trail",accent:T.terraL,stops:[
+{t:"12:00 PM",n:"Liu Tang Men",d:"Sichuan noodles. Start mild.",dr:"Xinhua Rd",map:"Liu+Tang+Men+Shanghai"},
+{t:"2:00 PM",n:"Ben Zhen",d:"Peppercorn fish & craft beer.",dr:"French Concession",map:"Ben+Zhen+Sichuan+Shanghai"},
+{t:"4:00 PM",n:"Maolago",d:"Guizhou sour tomato hotpot.",dr:"Jing\'an",map:"Maolago+Shanghai"},
+]},
+{id:"bund",title:"Bund Bar Crawl",sub:"Budget to bougie — sunset to late night",accent:T.wine,stops:[
+{t:"6:00 PM",n:"The Captain",d:"Cheapest Bund skyline drink since 2005.",dr:"The Bund",map:"The+Captain+Bar+Shanghai"},
+{t:"8:00 PM",n:"KEV",d:"Bund 18 champagne & DJs.",dr:"The Bund",map:"KEV+Bund+18+Shanghai"},
+{t:"10:00 PM",n:"Flair",d:"58th floor. Pearl Tower views.",dr:"Pudong",map:"Flair+Ritz+Carlton+Pudong"},
+]},
+{id:"fine",title:"Fine Dining Circuit",sub:"Shanghai\'s best tables",accent:T.gold,stops:[
+{t:"12:00 PM",n:"Canton Table",d:"Cantonese dim sum, Bund views.",dr:"Three on the Bund",map:"Canton+Table+Three+on+the+Bund+Shanghai",book:true},
+{t:"3:00 PM",n:"FU 1088",d:"Art deco villa. Celebrity chef.",dr:"French Concession",map:"FU+1088+Shanghai",book:true},
+{t:"7:00 PM",n:"Tai\'An Table",d:"Three Michelin stars. Surprise menu.",dr:"Jing\'an",map:"Tai+An+Table+Shanghai",book:true},
+]},
+];
 ];
 
-const INF=[
-{title:"Getting Around",items:[{t:"Didi",d:"China's Uber. Download, set English. Alipay/WeChat to pay."},{t:"Metro",d:"Clean, cheap, extensive. Alipay QR at gates."},{t:"Walking",d:"French Concession & Bund very walkable."}]},
-{title:"Essential Apps",items:[{t:"WeChat",d:"China's everything app. Set up before arrival."},{t:"Alipay",d:"Link international card for QR payments."},{t:"VPN",d:"Needed for Google, Instagram, WhatsApp. Download first!"}]},
-{title:"Food Tips",items:[{t:"Ordering",d:"Point at other tables! Show Chinese from this guide."},{t:"Spice",d:"'b\u00FAl\u00E0' (\u4E0D\u8FA3) = none \u00B7 'w\u0113il\u00E0' (\u5FAE\u8FA3) = mild."},{t:"Chopsticks",d:"Never stick upright in rice. Lay across bowl."},{t:"Water",d:"Don't drink tap. Hot water (\u5F00\u6C34) always free."},{t:"Tipping",d:"Not expected in China."}]},
-{title:"Contacts",items:[{t:"UnTour Food Tours",d:"info@untourfoodtours.com \u00B7 WeChat: UnTour"},{t:"Emergency",d:"Police 110 \u00B7 Ambulance 120 \u00B7 Fire 119"}]},
-];
+const GUIDE=`You are the UnTour Food Tours Shanghai concierge — warm, specific, deeply knowledgeable about Shanghai's food scene. Speak like a friendly local expert who has eaten at every lane house joint and knows every chef. Give specific restaurants with addresses and neighborhoods. Use Chinese food terms naturally (explain briefly). Keep concise.
+KEY RESTAURANTS:
+- Jia Jia Tangbao (127 Huanghe Rd) — best XLB in Shanghai. Salted egg yolk version.
+- Old Jesse (Tianping Rd) — best Shanghainese. Pre-order codfish head.
+- Canton Table (Three on the Bund) — high-end Cantonese, Bund views.
+- Tai'An Table — three Michelin stars. THE splurge.
+- Wei Xiang Zhai (14 Yandang Rd) — legendary sesame-peanut noodles.
+- Liu Tang Men (419-1 Xinhua Rd) — fiery Sichuan noodles.
+- Ben Zhen — Sichuan + craft beer. Peppercorn fish.
+- Pengyuan Guotie (102 Gao'an Rd) — husband-wife potsticker stall.
+- Highline — Shanghai's best brunch.
+- Flair (Ritz-Carlton Pudong) — 58th floor bar. Best views.
+UNTOUR TOURS: Street Eats (4hr, $99), Dumpling Delights (3hr, $85), Breakfast Walk (3hr, $75), Bund & Beyond (4hr, $110).
+NEIGHBORHOODS: French Concession (tree-lined, cafes), Jing'an (luxury, Nanjing Rd), The Bund (waterfront), Xintiandi (shikumen), Pudong (skyline), Tianzifang (artsy).
+ESSENTIAL: WeChat, Alipay, VPN (download before arrival), Didi (Chinese Uber).`;
 
-function fD(s){if(!s)return"";return new Date(s+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
-function aD(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d;}
+/* ═══ HELPERS ═══ */
+function MapsBtn({q}){if(!q)return null;return<a href={MB+q} target="_blank" rel="noopener" style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10,color:T.sky,textDecoration:"none",padding:"3px 8px",background:T.skyS,borderRadius:5,border:"1px solid "+T.sky+"20"}}>Maps</a>;}
+function BookBadge({url}){return url?<a href={url} target="_blank" rel="noopener" style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10,color:T.wine,textDecoration:"none",padding:"3px 8px",background:T.wineS,borderRadius:5,border:"1px solid "+T.wine+"20"}}>Book</a>:<span style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10,color:T.wine,padding:"3px 8px",background:T.wineS,borderRadius:5,border:"1px solid "+T.wine+"20"}}>Book via CB</span>;}
+function fmtDate(d){if(!d)return"";try{return new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}catch{return d;}}
+function addDays(d,n){const dt=new Date(d+"T12:00:00");dt.setDate(dt.getDate()+n);return dt.toISOString().split("T")[0];}
 
-// UTF-8 safe base64 using TextEncoder
-function toB64(s){
-const bytes=new TextEncoder().encode(s);
-let bin="";for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
-return btoa(bin);
-}
-function fromB64(s){
-const bin=atob(s);
-const bytes=new Uint8Array(bin.length);
-for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-return new TextDecoder().decode(bytes);
-}
+/* ═══ STORY MODAL ═══ */
+function StoryModal({name,onClose}){
+const s=STORIES[name];if(!s)return null;
+return<div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(28,25,23,.7)",backdropFilter:"blur(6px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+<div onClick={e=>e.stopPropagation()} style={{background:T.wh,borderRadius:16,maxWidth:480,width:"100%",maxHeight:"80vh",overflow:"auto",padding:"28px 24px",position:"relative",boxShadow:"0 20px 60px rgba(0,0,0,.25)"}}>
+<button onClick={onClose} style={{position:"absolute",top:12,right:14,background:"none",border:"none",fontSize:18,color:T.mt,cursor:"pointer"}}>✕</button>
+<div style={{fontSize:11,color:T.terra,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:4}}>UnTour Food Tours</div>
+<h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:22,fontWeight:600,color:T.fg,marginBottom:14,lineHeight:1.3}}>{name}</h3>
+<p style={{fontSize:14,color:T.fgS,lineHeight:1.8,marginBottom:20}}>{s.excerpt}</p>
+<a href={s.url} target="_blank" rel="noopener" style={{display:"inline-block",padding:"10px 20px",background:T.terra,color:"#fff",borderRadius:20,fontSize:13,fontWeight:600,textDecoration:"none"}}>Read Full Story on CB →</a>
+</div></div>;}
 
-// Clipboard with fallback + prompt as last resort
-function copyText(text){
-try{
-const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="position:fixed;top:0;left:0;opacity:0";
-document.body.appendChild(ta);ta.focus();ta.select();
-const ok=document.execCommand("copy");
-document.body.removeChild(ta);
-if(!ok)throw new Error("execCommand failed");
-}catch(e){
-try{navigator.clipboard.writeText(text)}catch(e2){
-window.prompt("Copy this link:",text);
-}
-}
-}
-
-function Header({tab,setTab,isO,setIsO,gi}){
-const[sp,setSp]=useState(false);const[p,setP]=useState("");
-const gt=[{id:"week",l:"Your Week"},{id:"crawls",l:"Food Crawls"},{id:"essentials",l:"Essentials"},{id:"bookings",l:"Bookings"},{id:"chat",l:"Ask Us"}];
-const tabs=isO?[...gt,{id:"owner",l:"Dashboard"}]:gt;
-return(
-<header style={{background:"rgba(250,250,248,.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid "+C.bd,position:"sticky",top:0,zIndex:100}}>
-<div style={{maxWidth:680,margin:"0 auto",padding:"16px 20px 0"}}>
-<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:gi?10:14}}>
-<div style={{width:38,height:38,borderRadius:12,background:C.crS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{"\uD83E\uDD5F"}</div>
-<div style={{flex:1}}>
-<h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:19,fontWeight:400,lineHeight:1.1}}>UnTour Food Tours</h1>
-<p style={{fontSize:11,color:C.mt,marginTop:1}}>Your personal Shanghai food guide</p>
+/* ═══ HEADER ═══ */
+function Header({tab,setTab,isOwner,setIsOwner,guestMode,guestInfo}){
+const[sp,setSp]=useState(false);const[pin,setPin]=useState("");
+const gT=[{id:"week",l:"Your Week"},{id:"trips",l:"Food Crawls"},{id:"info",l:"Know Before"},{id:"requests",l:"Bookings"},{id:"chat",l:"Ask UT"}];
+const tabs=isOwner?[...gT,{id:"owner",l:"Dashboard",i:""}]:gT;
+return<header style={{background:"rgba(250,248,245,.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid "+T.bd,position:"sticky",top:0,zIndex:100}}>
+<div style={{maxWidth:700,margin:"0 auto",padding:"14px 16px 0"}}>
+<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:guestInfo?8:12}}>
+<div style={{width:40,height:40,borderRadius:12,background:T.terra,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff",letterSpacing:0,fontFamily:"'DM Serif Display',serif"}}>UT</div>
+<div style={{flex:1}}><h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:19,fontWeight:600,color:T.fg,lineHeight:1}}>UnTour Food Tours</h1><p style={{fontSize:10,color:T.mt,letterSpacing:1.5,textTransform:"uppercase",marginTop:1}}>Shanghai · Personal Food Guide</p></div>
+{!guestMode&&!isOwner&&!sp&&<button onClick={()=>setSp(true)} style={{fontSize:10,color:T.mt,background:"none",border:"none",cursor:"pointer"}}>Host Login</button>}
+{sp&&!isOwner&&<div style={{display:"flex",gap:4}}><input value={pin} onChange={e=>setPin(e.target.value)} placeholder="PIN" type="password" style={{width:60,padding:"4px 8px",background:T.wh,border:"1px solid "+T.bd,borderRadius:6,color:T.fg,fontSize:11,outline:"none"}} onKeyDown={e=>{if(e.key==="Enter"&&pin===OWNER_PIN){setIsOwner(true);setSp(false);setPin("");}}}/><button onClick={()=>{if(pin===OWNER_PIN){setIsOwner(true);setSp(false);setPin("");}}} style={{fontSize:10,color:T.terra,background:"none",border:"1px solid "+T.terra+"33",borderRadius:6,padding:"4px 8px",cursor:"pointer"}}>→</button></div>}
+{isOwner&&<button onClick={()=>setIsOwner(false)} style={{fontSize:10,color:T.olive,background:T.oliveS,border:"1px solid "+T.olive+"33",borderRadius:6,padding:"4px 10px",cursor:"pointer"}}>Owner</button>}
 </div>
-{!isO&&!sp&&!gi&&<button onClick={()=>setSp(true)} style={{fontSize:11,color:C.mt,background:C.wh,border:"1px solid "+C.bd,borderRadius:20,padding:"6px 14px",cursor:"pointer"}}>Host</button>}
-{sp&&!isO&&<div style={{display:"flex",gap:4}}>
-<input value={p} onChange={e=>setP(e.target.value)} placeholder="PIN" type="password" style={{width:70,padding:"6px 10px",background:C.wh,border:"1px solid "+C.bd,borderRadius:20,fontSize:11,outline:"none",textAlign:"center"}} onKeyDown={e=>{if(e.key==="Enter"&&p===PIN){setIsO(true);setSp(false);setP("");}}}/>
-<button onClick={()=>{if(p===PIN){setIsO(true);setSp(false);setP("");}}} style={{fontSize:11,color:C.cr,background:"none",border:"1px solid rgba(232,99,74,.2)",borderRadius:20,padding:"6px 10px",cursor:"pointer"}}>{"\u2192"}</button>
-</div>}
-{isO&&<button onClick={()=>setIsO(false)} style={{fontSize:11,color:C.sg,background:C.sgS,border:"1px solid rgba(107,143,107,.2)",borderRadius:20,padding:"6px 14px",cursor:"pointer",fontWeight:600}}>Owner</button>}
-</div>
-{gi&&<div style={{background:C.wmS,borderRadius:14,padding:"10px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:10,border:"1px solid "+C.bd}}>
-<span style={{fontSize:20}}>{"\uD83D\uDC4B"}</span>
-<div style={{flex:1}}>
-<span style={{fontSize:14,fontWeight:600}}>Welcome, {gi.name}</span>
-<span style={{fontSize:12,color:C.mt,marginLeft:8}}>{fD(gi.ci)} {"\u2192"} {fD(gi.co)}</span>
-</div>
-</div>}
-<nav style={{display:"flex",gap:2,overflowX:"auto"}}>
-{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:"0 0 auto",padding:"10px 14px 12px",background:"none",border:"none",borderBottom:tab===t.id?"2px solid "+C.cr:"2px solid transparent",color:tab===t.id?C.fg:C.mt,fontSize:12,fontWeight:tab===t.id?600:400,cursor:"pointer",whiteSpace:"nowrap",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{t.l}</button>)}
-</nav>
-</div>
-</header>);
-}
-
-function TravelBadge({item,origin}){
-const tt=travelTime(origin,item.m);
-if(!tt)return null;
-const showWalk=tt.walkMin<=30;
-return(<>
-{showWalk&&<span style={{fontSize:10,padding:"3px 8px",background:"#F0F5ED",color:"#6B8F6B",borderRadius:20,fontWeight:600}}>{"\uD83D\uDEB6"} {tt.walkMin} min</span>}
-{tt.driveMin>10&&<span style={{fontSize:10,padding:"3px 8px",background:C.bgS,color:C.mt,borderRadius:20,fontWeight:600}}>{"\uD83D\uDE95"} {tt.driveMin} min</span>}
-</>);
-}
-
-function Card({item,idx,di,onSw,onDl,onEdit,origin,isOwner}){
-const ct=CT[item.c]||CT.dinner;const ps=linkP(item.d);const[o,setO]=useState(false);const[ed,setEd]=useState(false);const[ef,setEf]=useState({});
-const catOpts=["breakfast","lunch","dinner","brunch","drinks","sightseeing","tour"];
-const iS={width:"100%",padding:"7px 10px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:8,fontSize:12,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
-return(
-<div className="fade-up" style={{background:C.wh,borderRadius:16,border:ed?"2px solid "+C.cr:"1px solid "+C.bd,overflow:"hidden",marginBottom:8,boxShadow:"0 1px 3px rgba(0,0,0,.04)"}}>
-{ed?<div style={{padding:"12px 16px"}}>
-<div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,marginBottom:6}}>
-<div><label style={{fontSize:10,color:C.mt}}>Name</label><input value={ef.l||""} onChange={e=>setEf({...ef,l:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:10,color:C.mt}}>Category</label><select value={ef.c||""} onChange={e=>setEf({...ef,c:e.target.value})} style={{...iS,cursor:"pointer",width:110}}>{catOpts.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
-</div>
-<div style={{marginBottom:6}}><label style={{fontSize:10,color:C.mt}}>Description</label><input value={ef.d||""} onChange={e=>setEf({...ef,d:e.target.value})} style={iS}/></div>
-<div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:6,alignItems:"end",marginBottom:6}}>
-<div><label style={{fontSize:10,color:C.mt}}>Maps query</label><input value={ef.m||""} onChange={e=>setEf({...ef,m:e.target.value})} placeholder="Place+Name+City" style={iS}/></div>
-<label style={{fontSize:10,color:C.mt,display:"flex",alignItems:"center",gap:3,padding:"7px 0"}}><input type="checkbox" checked={!!ef.b} onChange={e=>setEf({...ef,b:e.target.checked})}/> Book</label>
-</div>
-<div style={{display:"flex",gap:4}}>
-<button onClick={()=>{onEdit(di,idx,ef);setEd(false);}} style={{padding:"6px 14px",background:C.sg,color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:600,cursor:"pointer"}}>Save</button>
-<button onClick={()=>setEd(false)} style={{padding:"6px 10px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:10,fontSize:11,cursor:"pointer"}}>Cancel</button>
-</div>
-</div>:<>
-<div style={{display:"flex",gap:12,padding:"14px 16px",alignItems:"flex-start"}}>
-<div style={{paddingTop:6,flexShrink:0}}>
-<span style={{fontSize:9,color:ct.a,background:ct.bg,padding:"2px 7px",borderRadius:10,fontWeight:600,letterSpacing:.3}}>{ct.l}</span>
-</div>
-<div style={{flex:1,minWidth:0}}>
-<div style={{fontSize:15,fontWeight:600,lineHeight:1.3,marginBottom:3}}>{item.t&&<span style={{fontSize:10,color:C.mt,fontWeight:400,marginRight:6}}>{item.t}</span>}{item.l}</div>
-<div style={{fontSize:13,color:C.fgS,lineHeight:1.55}}>
-{ps.map((p,i)=>typeof p==="string"?<span key={i}>{p}</span>:<a key={i} href={MB+p.q} target="_blank" rel="noopener" style={{color:C.sk,textDecoration:"none",borderBottom:"1px solid rgba(91,141,184,.3)",fontWeight:500}}>{p.n}</a>)}
-</div>
-<div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}>
-{item.b&&<span style={{fontSize:10,padding:"3px 8px",background:C.crS,color:C.cr,borderRadius:20,fontWeight:600}}>Reservation needed</span>}
-{item.m&&<a href={MB+item.m} target="_blank" rel="noopener" style={{fontSize:10,padding:"3px 8px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none"}}>{"\uD83D\uDCCD"} Map</a>}
-<TravelBadge item={item} origin={origin}/>
-</div>
-</div>
-<div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0,paddingTop:2}}>
-{isOwner&&<button onClick={()=>{setEf({l:item.l,d:item.d,c:item.c,m:item.m||"",b:!!item.b});setEd(true);}} style={{width:28,height:28,borderRadius:8,background:C.wmS,border:"1px solid "+C.bd,color:C.wm,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}} title="Edit"></button>}
-<button onClick={()=>setO(!o)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:C.mt,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u21BB"}</button>
-{onDl&&<button onClick={()=>onDl(di,idx)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
-</div>
-</div>
-{o&&<div style={{padding:"8px 16px 12px",borderTop:"1px solid "+C.bdL,background:C.bgS,display:"flex",flexWrap:"wrap",gap:5}}>
-<span style={{fontSize:10,color:C.mt,alignSelf:"center",marginRight:4}}>Swap:</span>
-{ALTS.filter(a=>a.c===item.c&&a.l!==item.l).concat(ALTS.filter(a=>a.c!==item.c&&a.l!==item.l)).slice(0,8).map((a,i)=><button key={i} onClick={()=>{onSw(di,idx,a);setO(false);}} style={{fontSize:11,padding:"5px 10px",background:a.c===item.c?ct.bg:C.wh,border:"1px solid "+(a.c===item.c?ct.a+"33":C.bd),borderRadius:20,cursor:"pointer",fontWeight:500,color:a.c===item.c?ct.a:C.fg}}>{a.l}</button>)}
-</div>}
-</>}
-</div>);
-}
-
-function ConfCard({bk}){
-return(<div style={{background:"#F0FAF0",borderRadius:16,border:"2px solid #5A9E6F",padding:"14px 16px",marginBottom:8}}>
-<div style={{display:"flex",alignItems:"center",gap:8}}>
-<span style={{fontSize:18}}>{"\u2705"}</span>
-<div style={{flex:1}}>
-<div style={{fontSize:14,fontWeight:600}}>{bk.v}</div>
-<div style={{fontSize:12,color:"#5A9E6F",fontWeight:600}}>Confirmed Reservation</div>
-<div style={{fontSize:12,color:C.mt}}>{bk.g} guests{bk.d?" \u00B7 "+fD(bk.d):""}</div>
-</div>
-<span style={{fontSize:11,padding:"4px 10px",background:"#DFF2E1",color:"#3D7A4F",borderRadius:20,fontWeight:600}}>Booked</span>
-</div>
-</div>);
-}
-
-function WkTab({wk,setWk,gi,origin,confirmed,editingTpl,onSaveTpl,onCancelTpl,isOwner}){
-const[open,setOpen]=useState(0);
-const[dragDay,setDragDay]=useState(null);const[dragItem,setDragItem]=useState(null);
-const onDDS=(e,i)=>{setDragDay(i);setDragItem(null);e.dataTransfer.effectAllowed="move";};
-const onDDO=(e,i)=>{e.preventDefault();if(dragDay===null||dragDay===i)return;setWk(w=>{const n=[...w];const it=n.splice(dragDay,1)[0];n.splice(i,0,it);setDragDay(i);return n;});};
-const onIDS=(e,di,ii)=>{e.stopPropagation();setDragItem({di,ii});setDragDay(null);e.dataTransfer.effectAllowed="move";};
-const onIDO=(e,di,ii)=>{e.preventDefault();e.stopPropagation();if(!dragItem||dragItem.di!==di||dragItem.ii===ii)return;
-setWk(w=>w.map((d,i)=>{if(i!==di)return d;const ni=[...d.items];const times=ni.map(x=>x.t);const it=ni.splice(dragItem.ii,1)[0];ni.splice(ii,0,it);ni.forEach((x,j)=>{if(times[j])x.t=times[j];});setDragItem({di,ii});return{...d,items:ni};}));};
-const sw=(di,ii,a)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{l:a.l,d:a.d,c:a.c,m:a.m,b:a.b}:t)}:d));};
-const dl=(di,ii)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.filter((_,j)=>j!==ii)}:d));};
-const editCard=(di,ii,data)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{...t,...data}:t)}:d));};
-return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-{editingTpl&&<div style={{background:C.crS,border:"2px solid "+C.cr,borderRadius:14,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
+{guestInfo&&<div style={{background:T.goldS,borderRadius:10,padding:"8px 12px",marginBottom:8,border:"1px solid "+T.gold+"25",display:"flex",alignItems:"center",gap:8}}>
 <span style={{fontSize:14}}></span>
-<div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:C.cr}}>Editing: {editingTpl.name}</div><div style={{fontSize:12,color:C.mt}}>Swap or remove cards, then save your template.</div></div>
-<button onClick={onSaveTpl} style={{fontSize:12,padding:"8px 16px",background:C.sg,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600}}>Save Template</button>
-<button onClick={onCancelTpl} style={{fontSize:12,padding:"8px 16px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer"}}>Cancel</button>
+<div style={{flex:1}}><span style={{fontSize:13,fontWeight:600,color:T.fg}}>Welcome, {guestInfo.name}!</span><span style={{fontSize:11,color:T.mt,marginLeft:8}}>{fmtDate(guestInfo.checkin)} → {fmtDate(guestInfo.checkout)}</span></div>
 </div>}
-<div style={{textAlign:"center",marginBottom:20}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>{editingTpl?"Template: "+editingTpl.name:"Your Shanghai Food Week"}</h2>
-<p style={{fontSize:13,color:C.mt,marginTop:6}}>{editingTpl?"Remove or swap cards to customize this template.":"Drag days to reorder \u00B7 drag cards within a day \u00B7 swap or delete anything"}</p>
-</div>
+<nav style={{display:"flex",overflowX:"auto"}}>{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:"0 0 auto",padding:"8px 10px 10px",background:"none",border:"none",borderBottom:tab===t.id?"2px solid "+T.terra:"2px solid transparent",color:tab===t.id?T.fg:T.mt,fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:12,fontWeight:tab===t.id?600:400,cursor:"pointer",whiteSpace:"nowrap"}}>{t.l}</button>)}</nav>
+</div></header>;}
 
-{wk.map((day,di)=>{
-const ds=gi&&gi.ci?aD(gi.ci,di).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):null;
-const isOpen=open===di;
-return(<div key={di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO(e,di)} onDragEnd={()=>setDragDay(null)} style={{marginBottom:8,opacity:dragDay===di?.5:1,cursor:"grab"}}>
-<button onClick={()=>setOpen(isOpen?-1:di)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:isOpen?C.wh:C.bgS,border:"1px solid "+(isOpen?C.cr+"44":C.bd),borderRadius:isOpen?"14px 14px 0 0":"14px",padding:"12px 16px",cursor:"pointer"}}>
-<span style={{fontSize:11,color:C.mt,cursor:"grab",userSelect:"none"}}>{"\u2800\u2807\u2800\u2807"}</span>
+/* ═══ WEEK TAB ═══ */
+function WeekTab({week,setWeek,guestInfo,isOwner}){
+const[open,setOpen]=useState(0);const[dragDay,setDragDay]=useState(null);const[dragBlock,setDragBlock]=useState(null);const[storyOpen,setStoryOpen]=useState(null);const[editTime,setEditTime]=useState(null);
+const onDDS=(e,i)=>{setDragDay(i);setDragBlock(null);e.dataTransfer.effectAllowed="move";};
+const onDDO=(e,i)=>{e.preventDefault();if(dragDay===null||dragDay===i)return;setWeek(w=>{const n=[...w];const it=n.splice(dragDay,1)[0];n.splice(i,0,it);setDragDay(i);return n;});};
+const onBDS=(e,di,bi)=>{e.stopPropagation();setDragBlock({di,bi});setDragDay(null);e.dataTransfer.effectAllowed="move";};
+const onBDO=(e,di,bi)=>{e.preventDefault();e.stopPropagation();if(!dragBlock||dragBlock.di!==di||dragBlock.bi===bi)return;setWeek(w=>w.map((d,i)=>{if(i!==di)return d;const nb=[...d.blocks];const times=nb.map(b=>b.t);const it=nb.splice(dragBlock.bi,1)[0];nb.splice(bi,0,it);nb.forEach((b,j)=>b.t=times[j]);setDragBlock({di,bi});return{...d,blocks:nb};}));};
+const usedLabels=new Set(week.flatMap(d=>d.blocks.map(b=>b.l)));
+const delB=(di,bi)=>setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.filter((_,j)=>j!==bi)}:d));
+const repB=(di,bi)=>{const b=week[di].blocks[bi];const alt=getAlt(b.cat||b.tag,usedLabels);setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.map((bl,j)=>j===bi?{id:"n"+Date.now(),t:bl.t,l:alt.l,d:alt.d,tag:alt.tag,cat:alt.cat,map:alt.map||null,book:!!alt.book}:bl)}:d));};
+const dirUrl=day=>{const stops=day.blocks.filter(b=>b.map);if(!stops.length)return null;const origin=stops[0].map?stops[0].map.replace(/\+/g," "):HOME_PLACE.q.replace(/\+/g," ");const destination=stops[stops.length-1].map.replace(/\+/g," ");const waypoints=stops.slice(1,-1).filter(b=>b.map).map(s=>s.map.replace(/\+/g," ")).join("|");return"https://www.google.com/maps/dir/?api=1&origin="+encodeURIComponent(origin)+"&destination="+encodeURIComponent(destination)+(waypoints?"&waypoints="+encodeURIComponent(waypoints):"");};
 
+return<div style={{padding:"16px 14px",maxWidth:700,margin:"0 auto"}}>
+<div style={{textAlign:"center",marginBottom:18}}><h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,fontWeight:400,fontStyle:"italic",color:T.fg}}>{guestInfo?"Your Week, "+guestInfo.name.split(" ")[0]:"Your Week in Shanghai"}</h2><p style={{fontSize:12,color:T.mt,maxWidth:460,margin:"6px auto 0",lineHeight:1.5}}>Curated by UnTour Food Tours · Drag days to reorder · swap or delete anything</p></div>
+
+{week.map((day,di)=>{const du=dirUrl(day);const dayDate=guestInfo?.checkin?fmtDate(addDays(guestInfo.checkin,di)):null;return(
+<div key={day.id||di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO(e,di)} onDragEnd={()=>setDragDay(null)} style={{marginBottom:8,opacity:dragDay===di?.5:1,cursor:"grab"}}>
+<button onClick={()=>setOpen(open===di?-1:di)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:open===di?T.wh:T.bgS,border:"1px solid "+(open===di?day.accent+"44":T.bd),borderRadius:open===di?"12px 12px 0 0":"12px",padding:"14px 16px",cursor:"pointer"}}>
+<span style={{fontSize:11,color:T.mt,cursor:"grab",userSelect:"none"}}>⠿</span>
 <div style={{textAlign:"left",flex:1}}>
-<div style={{fontSize:11,color:C.cr,fontWeight:600,letterSpacing:.5,textTransform:"uppercase"}}>Day {di+1}{ds?" \u00B7 "+ds:""}</div>
-<div style={{fontSize:16,fontWeight:600,marginTop:1}}>{day.title}</div>
+<div style={{fontFamily:"'DM Serif Display',serif",fontSize:15,fontWeight:600,color:T.fg}}>Day {di+1} {dayDate&&<span style={{fontSize:11,fontWeight:400,color:T.mt}}>· {dayDate}</span>} <span style={{color:day.accent}}>— {day.title}</span></div>
+<div style={{fontSize:11,color:T.mt}}>{day.sub}</div>
 </div>
-{(()=>{const spots=day.items.filter(x=>x.m).map(x=>x.m.replace(/\+/g," "));if(spots.length<2)return null;const url="https://www.google.com/maps/dir/"+spots.join("/");return <a href={url} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:10,padding:"5px 10px",background:C.skS,color:C.sk,borderRadius:20,fontWeight:600,textDecoration:"none",flexShrink:0}}>{"\uD83D\uDDFA\uFE0F"} Route</a>;})()}
-<button onClick={e=>{e.stopPropagation();if(wk.length>1)setWk(w=>w.filter((_,i)=>i!==di));}} title="Delete day" style={{fontSize:12,color:"#C4766A",background:"#C4766A10",border:"1px solid #C4766A25",borderRadius:8,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>{"\u2715"}</button>
-<span style={{color:C.cr,transform:isOpen?"rotate(180deg)":"none",fontSize:14,transition:"transform .15s"}}>{"\u25BE"}</span>
+{du&&<a href={du} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()} style={{fontSize:10,color:T.terra,textDecoration:"none",padding:"5px 10px",background:T.terraS,borderRadius:8,border:"1px solid "+T.terra+"20",whiteSpace:"nowrap"}}>Route</a>}
+<button onClick={e=>{e.stopPropagation();if(week.length>1)setWeek(w=>w.filter((_,i)=>i!==di));}} title="Delete day" style={{fontSize:12,color:T.red,background:T.red+"08",border:"1px solid "+T.red+"20",borderRadius:7,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>✕</button>
+<span style={{color:day.accent,transform:open===di?"rotate(180deg)":"none",fontSize:14,transition:"transform .15s"}}>▾</span>
 </button>
-{isOpen&&<div style={{background:C.wh,borderRadius:"0 0 14px 14px",padding:"8px 8px 4px",border:"1px solid "+C.cr+"22",borderTop:"none"}}>
-{day.items.map((it,ii)=>{const isDI=dragItem&&dragItem.di===di&&dragItem.ii===ii;return(
-<div key={ii} draggable onDragStart={e=>onIDS(e,di,ii)} onDragOver={e=>onIDO(e,di,ii)} onDragEnd={()=>setDragItem(null)} style={{opacity:isDI?.4:1,cursor:"grab"}}>
-<Card item={it} idx={ii} di={di} onSw={sw} onDl={dl} onEdit={editCard} origin={origin} isOwner={isOwner}/>
-</div>);})}
-{confirmed&&confirmed.filter(b=>{if(!b.d||!gi||!gi.ci)return false;const bd=new Date(b.d);const ci=new Date(gi.ci);const diff=Math.round((bd-ci)/864e5);return diff===di;}).map((b,i)=><ConfCard key={"bk"+i} bk={b}/>)}
+{open===di&&<div style={{background:T.wh,borderRadius:"0 0 12px 12px",padding:"8px 6px 6px",border:"1px solid "+day.accent+"22",borderTop:"none"}}>
+{day.blocks.map((b,bi)=>{const s=TS[b.tag]||TS.lunch;const iDB=dragBlock&&dragBlock.di===di&&dragBlock.bi===bi;
+return(<React.Fragment key={b.id||bi}>
+{b.dr&&bi>0&&<div style={{display:"flex",gap:7,marginBottom:1}}>
+<div style={{width:52,flexShrink:0}}/><div style={{width:14,display:"flex",justifyContent:"center"}}><div style={{width:1,height:14,background:T.mt+"30"}}/></div>
+<div style={{fontSize:9,color:T.mt,fontStyle:"italic",paddingTop:1,lineHeight:1}}>{b.dr}</div>
+</div>}
+<div draggable onDragStart={e=>onBDS(e,di,bi)} onDragOver={e=>onBDO(e,di,bi)} onDragEnd={()=>setDragBlock(null)}
+style={{display:"flex",gap:7,marginBottom:5,opacity:iDB?.4:1,cursor:"grab"}}>
+<div style={{width:52,textAlign:"right",paddingTop:9,flexShrink:0}}>{editTime&&editTime.di===di&&editTime.bi===bi?<input autoFocus type="text" defaultValue={b.t} onBlur={e=>{const v=e.target.value.trim();if(v)setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.map((bb,j)=>j===bi?{...bb,t:v}:bb)}:d));setEditTime(null);}} onKeyDown={e=>{if(e.key==="Enter")e.target.blur();if(e.key==="Escape")setEditTime(null);}} style={{width:48,fontSize:10,color:T.mt,background:"transparent",border:"1px solid "+T.bd,borderRadius:4,padding:"2px 4px",textAlign:"right",outline:"none"}}/>:<span onClick={()=>setEditTime({di,bi})} style={{fontSize:10,color:T.mt,cursor:"pointer",borderBottom:"1px dashed "+T.bd}} title="Click to edit time">{b.t}</span>}</div>
+<div style={{display:"flex",flexDirection:"column",alignItems:"center",width:14}}><div style={{width:7,height:7,borderRadius:"50%",background:s.a,marginTop:11,flexShrink:0}}/><div style={{width:1,flex:1,background:s.a+"18",marginTop:2}}/></div>
+<div style={{flex:1,background:s.bg,borderRadius:10,padding:"10px 12px",border:"1px solid "+s.a+"15"}}>
+<div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}}>
+
+{STORIES[b.l]?<span onClick={e=>{e.stopPropagation();setStoryOpen(b.l);}} style={{fontFamily:"'DM Serif Display',serif",fontSize:14,fontWeight:600,color:T.terra,flex:1,minWidth:0,cursor:"pointer",textDecoration:"underline",textDecorationColor:T.terra+"40",textUnderlineOffset:2}}>{b.l}</span>:<span style={{fontFamily:"'DM Serif Display',serif",fontSize:14,fontWeight:600,color:T.fg,flex:1,minWidth:0}}>{b.l}</span>}
+<button onClick={()=>repB(di,bi)} title="Swap" style={{fontSize:12,color:T.terra,background:T.terraS,border:"1px solid "+T.terra+"25",borderRadius:7,padding:"4px 10px",cursor:"pointer",fontWeight:600,whiteSpace:"nowrap"}}>↻ New Idea</button>
+<button onClick={()=>delB(di,bi)} title="Remove" style={{fontSize:12,color:T.red,background:T.red+"10",border:"1px solid "+T.red+"25",borderRadius:7,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>✕</button>
+</div>
+<p style={{fontSize:12,color:T.fgS,lineHeight:1.5,marginTop:3}}>{b.d}</p>
+<div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:4}}>{b.map&&<MapsBtn q={b.map}/>}{b.book&&<BookBadge/>}</div>
+</div>
+</div></React.Fragment>);})}
 </div>}
 </div>);})}
-<button onClick={()=>{const nd={title:"New Day",items:[]};setWk(w=>[...w,nd]);setOpenDay(wk.length);}} style={{width:"100%",padding:"14px",background:C.wh,border:"2px dashed "+C.bd,borderRadius:14,fontSize:13,fontWeight:600,color:C.cr,cursor:"pointer",marginTop:4}}>+ Add Day</button>
-</div>);
-}
+<button onClick={()=>{const nd={id:"new"+Date.now(),title:"New Day",sub:"Add your own activities",accent:T.terra,blocks:[]};setWeek(w=>[...w,nd]);setOpen(week.length);}} style={{width:"100%",padding:"14px",background:T.wh,border:"2px dashed "+T.bd,borderRadius:12,fontSize:13,fontWeight:600,color:T.terra,cursor:"pointer",marginTop:4}}>+ Add Day</button>
+{storyOpen&&<StoryModal name={storyOpen} onClose={()=>setStoryOpen(null)}/>}
+</div>;}
 
-function CrTab({origin}){return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-<div style={{textAlign:"center",marginBottom:24}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Themed Food Crawls</h2>
-<p style={{fontSize:14,color:C.mt,marginTop:6}}>Follow a route. Each is a half-day adventure.</p>
-</div>
-{TRIPS.map((t,i)=>(<div key={i} style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:12}}>
-<div style={{display:"flex",gap:10,marginBottom:10}}>
-<span style={{fontSize:22}}>{t.emoji}</span>
-<div><div style={{fontSize:16,fontWeight:600}}>{t.title}</div><div style={{fontSize:13,color:C.fgS,lineHeight:1.5,marginTop:3}}>{t.d}</div></div>
-</div>
-<div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-{t.spots.map((p,j)=>{const q=PL[p];const tt=q?travelTime(origin,q):null;return q?<a key={j} href={MB+q} target="_blank" rel="noopener" style={{fontSize:12,padding:"6px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,textDecoration:"none",fontWeight:500}}>{"\uD83D\uDCCD"} {p}{tt&&tt.walkMin<=25?" \u00B7 \uD83D\uDEB6 "+tt.walkMin+"m":tt?" \u00B7 \uD83D\uDE95 "+tt.driveMin+"m":""}</a>:<span key={j} style={{fontSize:12,padding:"6px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,color:C.mt}}>{p}</span>;})}
-</div>
-</div>))}
-</div>);}
+/* ═══ TRIPS TAB ═══ */
+function TripsTab({setWeek,setTab}){const[open,setOpen]=useState(null);const[added,setAdded]=useState(null);const[storyOpen,setStoryOpen]=useState(null);
+const addTrip=(trip)=>{const newDay={id:"trip"+Date.now(),title:trip.title,sub:trip.sub,emoji:trip.emoji,accent:trip.accent,blocks:trip.stops.map((s,j)=>({id:"ts"+Date.now()+j,t:s.t.length<6?s.t+" AM":s.t,l:s.n,d:s.d,tag:"lunch",cat:s.book?"tour":"lunch",map:s.map||null,book:!!s.book}))};setWeek(w=>[...w,newDay]);setAdded(trip.id);setTimeout(()=>{setAdded(null);setTab("week");},1200);};
+return<div style={{padding:"16px 14px",maxWidth:700,margin:"0 auto"}}><div style={{textAlign:"center",marginBottom:18}}><h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,fontWeight:400,fontStyle:"italic",color:T.fg}}>Themed Food Crawls</h2><p style={{fontSize:12,color:T.mt}}>Follow your stomach. Each crawl is a half-day adventure.</p></div>{TRIPS.map((trip,i)=><div key={trip.id} style={{marginBottom:8}}><button onClick={()=>setOpen(open===i?null:i)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:open===i?T.wh:T.bgS,border:"1px solid "+(open===i?trip.accent+"55":T.bd),borderRadius:open===i?"12px 12px 0 0":"12px",padding:"14px 16px",cursor:"pointer"}}><div style={{width:4,borderRadius:4,background:trip.accent,flexShrink:0,alignSelf:"stretch"}}/><div style={{textAlign:"left",flex:1}}><div style={{fontFamily:"'DM Serif Display',serif",fontSize:15,fontWeight:600,color:T.fg}}>{trip.title}</div><div style={{fontSize:11,color:T.mt}}>{trip.sub}</div></div><span style={{color:trip.accent,transform:open===i?"rotate(180deg)":"none",transition:"transform .15s"}}>▾</span></button>{open===i&&<div style={{background:T.wh,borderRadius:"0 0 12px 12px",padding:"12px 10px",border:"1px solid "+trip.accent+"28",borderTop:"none"}}>{trip.stops.map((s,j)=><div key={j} style={{display:"flex",gap:7,marginBottom:7}}><div style={{width:42,textAlign:"right",paddingTop:3,flexShrink:0}}><span style={{fontSize:11,color:T.mt}}>{s.t}</span></div><div style={{display:"flex",flexDirection:"column",alignItems:"center",width:12}}><div style={{width:6,height:6,borderRadius:"50%",background:trip.accent,marginTop:5}}/><div style={{width:1,flex:1,background:trip.accent+"22",marginTop:2}}/></div><div style={{flex:1}}>{STORIES[s.n]?<div onClick={()=>setStoryOpen(s.n)} style={{fontFamily:"'DM Serif Display',serif",fontSize:14,fontWeight:600,color:T.terra,cursor:"pointer",textDecoration:"underline",textDecorationColor:T.terra+"40",textUnderlineOffset:2}}>{s.n}</div>:<div style={{fontFamily:"'DM Serif Display',serif",fontSize:14,fontWeight:600,color:T.fg}}>{s.n}</div>}<p style={{fontSize:12,color:T.fgS,lineHeight:1.4,marginTop:2}}>{s.d}</p><div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:3}}>{s.dr&&<span style={{fontSize:10,color:T.mt}}>{s.dr}</span>}{s.map&&<MapsBtn q={s.map}/>}{s.book&&<BookBadge/>}</div></div></div>)}<button onClick={()=>addTrip(trip)} style={{width:"100%",padding:"10px",marginTop:4,background:added===trip.id?T.olive+"15":T.terra+"12",color:added===trip.id?T.olive:T.terra,border:"1px solid "+(added===trip.id?T.olive:T.terra)+"33",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer",transition:"all .2s"}}>{added===trip.id?"✓ Added to Your Week!":"+ Add This Day to My Week"}</button></div>}</div>)}
+{storyOpen&&<StoryModal name={storyOpen} onClose={()=>setStoryOpen(null)}/>}
+</div>;}
 
-function EsTab({inf,setInf,isO}){
-const[ed,setEd]=useState(null);
-const[et,setEt]=useState("");const[edesc,setEdesc]=useState("");
-const startEdit=(si,ii)=>{if(!isO)return;setEd({si,ii});setEt(inf[si].items[ii].t);setEdesc(inf[si].items[ii].d);};
-const save=()=>{if(!ed)return;const n=inf.map((s,si)=>si===ed.si?{...s,items:s.items.map((m,ii)=>ii===ed.ii?{...m,t:et,d:edesc}:m)}:s);setInf(n);setEd(null);};
-const addItem=(si)=>{const n=inf.map((s,i)=>i===si?{...s,items:[...s.items,{t:"New Item",d:"Description here"}]}:s);setInf(n);};
-const delItem=(si,ii)=>{const n=inf.map((s,i)=>i===si?{...s,items:s.items.filter((_,j)=>j!==ii)}:s);setInf(n);};
-const iS={width:"100%",padding:"8px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:10,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
-return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-<div style={{textAlign:"center",marginBottom:24}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Shanghai Essentials</h2>
-{isO&&<p style={{fontSize:12,color:C.cr,marginTop:4}}>Tap any card to edit</p>}
-</div>
-{inf.map((s,si)=>(<div key={si} style={{marginBottom:20}}>
+/* ═══ INFO TAB ═══ */
+function InfoTab(){
+const sections=[
+{title:"Neighborhoods",items:[
+{t:"French Concession",d:"Tree-lined streets, boutiques, cafes. Shanghai's most walkable area."},
+{t:"Jing\'an",d:"Nanjing Road luxury, temples, art. Where The Puli and Highline live."},
+{t:"The Bund / Waitan",d:"Art Deco waterfront. Best at sunset. Bars, fine dining, skyline views."},
+{t:"Pudong",d:"Skyline side. Pearl Tower, World Financial Center, Flair rooftop bar."},
+{t:"Xintiandi",d:"Restored shikumen houses. Shopping, restaurants, nightlife."},
+{t:"Tianzifang",d:"Artsy laneways. Boutiques, cafes, galleries in old lane houses."},
+]},
+{title:"Food Culture",items:[
+{t:"Xiaolongbao (XLB)",d:"Soup dumplings. Lift carefully, nibble a hole, slurp the broth, then eat. Don\'t pop them!"},
+{t:"Sheng Jian Bao",d:"Fried soup dumplings. Crispy bottom, juicy inside. Shanghai\'s breakfast staple."},
+{t:"Shanghainese Cooking",d:"Sweet, oily, rich. Red-braised pork, drunken chicken, hairy crab (autumn)."},
+{t:"Regional Cuisines",d:"Sichuan (spicy), Yunnan (floral), Cantonese (dim sum), Xi\'an (noodles) — all here."},
+{t:"Spice Levels",d:"\'bula\' = no chili. \'weila\' = mild. \'zhongla\' = medium. \'tela\' = are you sure?"},
+]},
+{title:"Getting Around",items:[
+{t:"Metro",d:"Clean, cheap, extensive. Alipay QR code at gates. Download offline map."},
+{t:"Didi",d:"China\'s Uber. Download, set to English. Pay via Alipay or WeChat."},
+{t:"Walking",d:"French Concession & Bund very walkable. Bring comfy shoes."},
+{t:"Taxi",d:"Flag them down or use Didi. Always have your destination in Chinese characters."},
+]},
+{title:"Practical",items:[
+{t:"VPN",d:"ESSENTIAL. Download before arriving. Google, Instagram, WhatsApp all blocked."},
+{t:"WeChat",d:"China\'s everything app. Messaging, payments, booking, translation."},
+{t:"Alipay",d:"Link international card. QR code payments everywhere."},
+{t:"Tipping",d:"Not expected in China. Don\'t leave tips."},
+{t:"Water",d:"Don\'t drink tap water. Hot water (kai shui) always available free."},
+]},
+];
+return<div style={{padding:"16px 14px",maxWidth:700,margin:"0 auto"}}><h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,fontWeight:400,fontStyle:"italic",color:T.fg,textAlign:"center",marginBottom:18}}>Know Before You Go</h2>
+{sections.map((s,i)=><div key={i} style={{marginBottom:16}}>
 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><h3 style={{fontSize:16,fontWeight:600}}>{s.title}</h3></div>
-{s.items.map((m,ii)=>(
-ed&&ed.si===si&&ed.ii===ii?
-<div key={ii} style={{background:C.wh,borderRadius:14,border:"2px solid "+C.cr,padding:"12px 16px",marginBottom:6}}>
-<input value={et} onChange={e=>setEt(e.target.value)} style={{...iS,fontWeight:600,marginBottom:6}} placeholder="Title"/>
-<textarea value={edesc} onChange={e=>setEdesc(e.target.value)} rows={2} style={{...iS,resize:"vertical"}} placeholder="Description"/>
-<div style={{display:"flex",gap:6,marginTop:8}}>
-<button onClick={save} style={{fontSize:12,padding:"6px 16px",background:C.sg,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600}}>Save</button>
-<button onClick={()=>setEd(null)} style={{fontSize:12,padding:"6px 16px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer"}}>Cancel</button>
-{isO&&<button onClick={()=>{delItem(si,ii);setEd(null);}} style={{fontSize:12,padding:"6px 16px",background:"#FEE",color:"#D4766A",border:"1px solid #ECC",borderRadius:20,cursor:"pointer",marginLeft:"auto"}}>Delete</button>}
-</div>
-</div>
-:<div key={ii} onClick={()=>startEdit(si,ii)} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"12px 16px",marginBottom:6,cursor:isO?"pointer":"default"}}>
+{s.items.map((m,j)=><div key={j} style={{background:T.wh,borderRadius:12,border:"1px solid "+T.bd,padding:"12px 14px",marginBottom:6}}>
 <div style={{fontSize:14,fontWeight:600,marginBottom:2}}>{m.t}</div>
-<div style={{fontSize:13,color:C.fgS,lineHeight:1.5}}>{m.d}</div>
-{isO&&<div style={{fontSize:10,color:C.mtL,marginTop:4}}> click to edit</div>}
-</div>
-))}
-{isO&&<button onClick={()=>addItem(si)} style={{fontSize:12,color:C.cr,background:C.crS,border:"none",borderRadius:20,padding:"8px 16px",cursor:"pointer",fontWeight:600,marginTop:4}}>+ Add Item</button>}
-</div>))}
-</div>);}
+<div style={{fontSize:13,color:T.fgS,lineHeight:1.6}}>{m.d}</div>
+</div>)}
+</div>)}
+</div>;}
 
-function BkTab({rq,setRq,isO}){
-const[f,sF]=useState({v:"",g:"",d:"",n:""});
-const sub=()=>{if(!f.v||!f.g)return;setRq([...rq,{...f,id:Date.now(),st:"pending"}]);sF({v:"",g:"",d:"",n:""});};
-const iS={width:"100%",padding:"11px 14px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:12,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
-return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-<div style={{textAlign:"center",marginBottom:20}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>{isO?"Manage Bookings":"Request a Booking"}</h2>
-</div>
-{!isO&&<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:20}}>
-<div style={{marginBottom:10}}><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Restaurant / Tour *</label><input value={f.v} onChange={e=>sF({...f,v:e.target.value})} placeholder="e.g. Old Jesse" style={iS}/></div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Party Size *</label><input value={f.g} onChange={e=>sF({...f,g:e.target.value})} placeholder="2" style={iS}/></div>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Date</label><input type="date" value={f.d} onChange={e=>sF({...f,d:e.target.value})} style={iS}/></div>
-</div>
-<button onClick={sub} style={{width:"100%",padding:"12px",background:f.v&&f.g?C.cr:C.bd,color:f.v&&f.g?"#fff":C.mt,border:"none",borderRadius:12,fontSize:14,fontWeight:600,cursor:"pointer"}}>Submit</button>
-</div>}
-{rq.length===0&&<div style={{textAlign:"center",padding:30,color:C.mtL}}>No requests yet</div>}
-{rq.map((r,i)=>(<div key={r.id} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"12px 16px",marginBottom:6,display:"flex",alignItems:"center",gap:12}}>
-<div style={{flex:1}}><div style={{fontSize:14,fontWeight:600}}>{r.v}</div><div style={{fontSize:12,color:C.mt}}>{r.g} guests{r.d?" \u00B7 "+fD(r.d):""}</div></div>
-{isO?<select value={r.st} onChange={e=>{const n=[...rq];n[i]={...n[i],st:e.target.value};setRq(n);}} style={{padding:"6px 10px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:10,fontSize:12}}>
-<option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option>
-</select>:<span style={{fontSize:11,padding:"4px 12px",borderRadius:20,fontWeight:600,background:r.st==="confirmed"?C.sgS:r.st==="declined"?C.crS:C.wmS,color:r.st==="confirmed"?C.sg:r.st==="declined"?C.cr:C.wm}}>{r.st}</span>}
-</div>))}
-</div>);}
+/* ═══ REQUESTS TAB ═══ */
+function RequestsTab({requests,setRequests,isOwner}){const[form,setForm]=useState({venue:"",date:"",time:"",guests:"",notes:""});const[submitted,setSubmitted]=useState(false);
+const submit=()=>{if(!form.venue||!form.guests)return;setRequests(p=>[...p,{...form,id:Date.now(),status:"pending",ownerNotes:""}]);setForm({venue:"",date:"",time:"",guests:"",notes:""});setSubmitted(true);setTimeout(()=>setSubmitted(false),3000);};
+const iS={width:"100%",padding:"9px 12px",background:T.bgS,border:"1px solid "+T.bd,borderRadius:8,color:T.fg,fontSize:12,fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none"};
+return<div style={{padding:"16px 14px",maxWidth:700,margin:"0 auto"}}><h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:T.fg,textAlign:"center",marginBottom:4}}>{isOwner?"Booking Requests":"Request a Booking"}</h2><p style={{fontSize:12,color:T.mt,textAlign:"center",marginBottom:16}}>{isOwner?"Manage restaurant & tour bookings":"Ask your host to book a restaurant or CB walk for you"}</p>
+{!isOwner&&<div style={{background:T.wh,borderRadius:12,padding:16,border:"1px solid "+T.bd,marginBottom:16}}>{submitted?<div style={{textAlign:"center",padding:20}}><div style={{fontSize:28,marginBottom:8}}>✅</div><div style={{fontSize:14,color:T.olive}}>Request sent!</div></div>:<><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}><div><label style={{fontSize:10,color:T.mt}}>Restaurant / Tour / Experience *</label><input value={form.venue} onChange={e=>setForm({...form,venue:e.target.value})} placeholder="e.g. Çiya Sofrası dinner" style={iS}/></div><div><label style={{fontSize:10,color:T.mt}}>Guests *</label><input value={form.guests} onChange={e=>setForm({...form,guests:e.target.value})} placeholder="4 adults" style={iS}/></div></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}><div><label style={{fontSize:10,color:T.mt}}>Date</label><input value={form.date} onChange={e=>setForm({...form,date:e.target.value})} placeholder="Tuesday, June 10" style={iS}/></div><div><label style={{fontSize:10,color:T.mt}}>Time</label><input value={form.time} onChange={e=>setForm({...form,time:e.target.value})} placeholder="7:30 PM" style={iS}/></div></div><button onClick={submit} style={{width:"100%",padding:"10px",background:form.venue&&form.guests?T.terra:T.bgS,color:form.venue&&form.guests?"#fff":T.mt,border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:form.venue&&form.guests?"pointer":"default"}}>Submit Request</button></>}</div>}
+{requests.length===0&&<div style={{textAlign:"center",padding:40,color:T.mt,fontSize:12}}>{isOwner?"No requests yet.":"Your requests will appear here."}</div>}
+{requests.map(r=><div key={r.id} style={{background:T.wh,borderRadius:10,padding:14,marginBottom:8,border:"1px solid "+(r.status==="confirmed"?T.olive+"44":r.status==="declined"?T.red+"44":T.bd)}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><div style={{fontFamily:"'DM Serif Display',serif",fontSize:15,fontWeight:600}}>{r.venue}</div><span style={{fontSize:10,padding:"2px 8px",borderRadius:10,fontWeight:600,background:r.status==="confirmed"?T.oliveS:r.status==="declined"?T.red+"10":T.goldS,color:r.status==="confirmed"?T.olive:r.status==="declined"?T.red:T.gold}}>{r.status==="confirmed"?"✓ Confirmed":r.status==="declined"?"✗ Unavailable":"⏳ Pending"}</span></div><div style={{display:"flex",gap:16,fontSize:11,color:T.mt}}>{r.date&&<span>{r.date}</span>}{r.time&&<span>{r.time}</span>}{r.guests&&<span>{r.guests}</span>}</div>{isOwner&&r.status==="pending"&&<div style={{display:"flex",gap:6,marginTop:8}}><button onClick={()=>setRequests(p=>p.map(x=>x.id===r.id?{...x,status:"confirmed"}:x))} style={{flex:1,padding:"7px",background:T.oliveS,color:T.olive,border:"1px solid "+T.olive+"33",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer"}}>✓ Confirm</button><button onClick={()=>setRequests(p=>p.map(x=>x.id===r.id?{...x,status:"declined"}:x))} style={{flex:1,padding:"7px",background:T.red+"10",color:T.red,border:"1px solid "+T.red+"25",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer"}}>✗ Decline</button></div>}</div>)}
+</div>;}
 
-function ChTab(){
-const[ms,setMs]=useState([{r:"a",t:"Hey! \uD83D\uDC4B I'm your Shanghai food concierge. Ask me anything!"}]);
-const[inp,setInp]=useState("");const[ld,setLd]=useState(false);const er=useRef(null);
-useEffect(()=>{er.current&&er.current.scrollIntoView({behavior:"smooth"});},[ms]);
-const send=async()=>{
-if(!inp.trim()||ld)return;const u=inp.trim();setInp("");
-setMs(p=>[...p,{r:"u",t:u}]);setLd(true);
-try{
-const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,system:"You are the UnTour Food Tours Shanghai concierge. Warm, specific. Give restaurants with addresses. Keep concise.",messages:[...ms.slice(-6).map(m=>({role:m.r==="a"?"assistant":"user",content:m.t})),{role:"user",content:u}]})});
-const data=await res.json();
-const txt=(data.content&&data.content[0]&&data.content[0].text)||"Hmm, try again!";
-setMs(p=>[...p,{r:"a",t:txt}]);
-}catch(e){setMs(p=>[...p,{r:"a",t:"Connection hiccup!"}]);}
-setLd(false);};
-return(
-<div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 110px)",maxWidth:680,margin:"0 auto"}}>
-<div style={{flex:1,overflowY:"auto",padding:"20px 20px 10px"}}>
-{ms.map((m,i)=>(<div key={i} style={{marginBottom:12,display:"flex",justifyContent:m.r==="u"?"flex-end":"flex-start"}}>
-{m.r==="a"&&<div style={{width:28,height:28,borderRadius:8,background:C.crS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,marginRight:8,flexShrink:0,marginTop:2}}>{"\uD83E\uDD5F"}</div>}
-<div style={{maxWidth:"75%",padding:"12px 16px",borderRadius:m.r==="u"?"18px 18px 4px 18px":"18px 18px 18px 4px",background:m.r==="u"?C.fg:C.wh,border:m.r==="u"?"none":"1px solid "+C.bd,color:m.r==="u"?"#fff":C.fg,fontSize:14,lineHeight:1.55,whiteSpace:"pre-wrap"}}>{m.t}</div>
-</div>))}
-{ld&&<div style={{display:"flex",gap:8,marginBottom:12}}>
-<div style={{width:28,height:28,borderRadius:8,background:C.crS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{"\uD83E\uDD5F"}</div>
-<div style={{padding:"12px 16px",background:C.wh,border:"1px solid "+C.bd,borderRadius:"18px 18px 18px 4px",color:C.mt}}>Thinking...</div>
-</div>}
-<div ref={er}/>
-</div>
-<div style={{padding:"12px 20px 16px",borderTop:"1px solid "+C.bd,background:C.bg,display:"flex",gap:8}}>
-<input value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="What should we eat tonight?" style={{flex:1,padding:"12px 16px",background:C.wh,border:"1px solid "+C.bd,borderRadius:24,fontSize:14,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"}}/>
-<button onClick={send} disabled={ld} style={{padding:"12px 20px",background:C.cr,color:"#fff",border:"none",borderRadius:24,fontSize:14,fontWeight:600,cursor:"pointer"}}>Send</button>
-</div>
-</div>);}
+/* ═══ CHAT TAB ═══ */
+function ChatTab({guestInfo}){const[msgs,setMsgs]=useState([{role:"assistant",content:"Ni hao! I'm your UnTour Food Tours Shanghai concierge."+(guestInfo?" Welcome, "+guestInfo.name.split(" ")[0]+"!":"")+"\n\nI know every backstreet, every usta, every lokanta. Ask me anything — where to eat tonight, how to avoid tourist traps, which ferry to take, or what to order when you can't read the menu."}]);const[input,setInput]=useState("");const[loading,setLoading]=useState(false);const endRef=useRef(null);
+useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,loading]);
+const chips=["Best dinner tonight?","Where to eat near the Bund?","Best dumplings in Shanghai?","Spicy food recommendations?","Cheap & amazing lunch?","What apps do I need?"];
+const send=async t=>{if(!t.trim()||loading)return;const um={role:"user",content:t.trim()};setMsgs(p=>[...p,um]);setInput("");setLoading(true);try{const h=[...msgs.filter(m=>m.role!=="system"),um].map(m=>({role:m.role,content:m.content}));const res=await fetch(API_PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,system:GUIDE,messages:h})});const data=await res.json();const reply=data.content?.map(b=>b.text||"").join("\n")||"Sorry, try again!";setMsgs(p=>[...p,{role:"assistant",content:reply}]);}catch{setMsgs(p=>[...p,{role:"assistant",content:"Connection issue — try again!"}]);}setLoading(false);};
+const renderMsg=text=>{const parts=linkP(text);if(typeof parts==="string")return parts;return parts.map((p,i)=>typeof p==="string"?<span key={i}>{p}</span>:<a key={i} href={MB+p.query} target="_blank" rel="noopener" style={{color:T.sky,textDecoration:"underline",textDecorationColor:T.sky+"55",textUnderlineOffset:2}}>{p.place}</a>);};
+return<div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 100px)",maxWidth:700,margin:"0 auto"}}><div style={{flex:1,overflowY:"auto",padding:"14px 14px 8px"}}>{msgs.map((m,i)=><div key={i} style={{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",marginBottom:10}}>{m.role==="assistant"&&<div style={{width:28,height:28,borderRadius:8,background:T.terra,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",marginRight:6,flexShrink:0,marginTop:2,fontFamily:"'DM Serif Display',serif",letterSpacing:1}}>UT</div>}<div style={{maxWidth:"80%",padding:"10px 14px",borderRadius:m.role==="user"?"14px 14px 4px 14px":"14px 14px 14px 4px",background:m.role==="user"?T.fg:T.wh,color:m.role==="user"?"#fff":T.fg,fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap",border:m.role==="user"?"none":"1px solid "+T.bd}}>{m.role==="assistant"?renderMsg(m.content):m.content}</div></div>)}{loading&&<div style={{display:"flex",gap:6,marginBottom:10}}><div style={{width:28,height:28,borderRadius:8,background:T.terra,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",fontFamily:"'DM Serif Display',serif",letterSpacing:1}}>UT</div><div style={{padding:"10px 14px",background:T.wh,borderRadius:"14px 14px 14px 4px",border:"1px solid "+T.bd,color:T.mt,fontSize:13}}><span style={{animation:"pulse 1s ease infinite"}}>●</span><span style={{animation:"pulse 1s ease infinite .2s"}}> ●</span><span style={{animation:"pulse 1s ease infinite .4s"}}> ●</span></div></div>}{msgs.length<=1&&!loading&&<div style={{marginTop:4}}><p style={{fontSize:11,color:T.mt,marginBottom:6}}>Quick questions:</p><div style={{display:"flex",flexWrap:"wrap",gap:4}}>{chips.map((c,i)=><button key={i} onClick={()=>send(c)} style={{background:T.wh,border:"1px solid "+T.terra+"20",color:T.terra,fontSize:11,padding:"6px 10px",borderRadius:16,cursor:"pointer"}}>{c}</button>)}</div></div>}<div ref={endRef}/></div>
+<div style={{padding:"8px 14px 14px",borderTop:"1px solid "+T.bd,background:T.bg,display:"flex",gap:6}}><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send(input)} placeholder="Ask about restaurants, neighborhoods, street food..." style={{flex:1,padding:"10px 14px",background:T.wh,border:"1px solid "+T.bd,borderRadius:20,color:T.fg,fontSize:13,fontFamily:"'Plus Jakarta Sans',sans-serif",outline:"none"}}/><button onClick={()=>send(input)} disabled={loading||!input.trim()} style={{padding:"10px 18px",background:input.trim()?T.terra:T.bgS,border:"none",borderRadius:20,color:input.trim()?"#fff":T.mt,fontWeight:600,fontSize:13,cursor:input.trim()?"pointer":"default"}}>Send</button></div>
+</div>;}
 
-function parseICal(text){
-const evts=[];const blocks=text.split("BEGIN:VEVENT");
-for(let i=1;i<blocks.length;i++){
-const b=blocks[i].split("END:VEVENT")[0].replace(/\r\n /g,"");
-const get=(k)=>{const m=b.match(new RegExp(k+"[^:]*:(.+)"));return m?m[1].trim():null;};
-const sum=get("SUMMARY")||"";
-if(/not available|blocked|closed/i.test(sum))continue;
-const ds=get("DTSTART");const de=get("DTEND");
-if(!ds||!de)continue;
-const ci=ds.replace(/(\d{4})(\d{2})(\d{2}).*/,"$1-$2-$3");
-const co=de.replace(/(\d{4})(\d{2})(\d{2}).*/,"$1-$2-$3");
-if(new Date(co)<new Date())continue;
-const desc=(get("DESCRIPTION")||"").replace(/\\n/g,"\n");
-const phone=(desc.match(/(\d{4})\s*$/m)||[])[1]||"";
-const airbnbRes=(desc.match(/reservations\/details\/(\w+)/)||[])[1]||"";
-const email=(desc.match(/[\w.-]+@[\w.-]+\.\w{2,}/)||[])[0]||(b.match(/ATTENDEE.*mailto:([\w.-]+@[\w.-]+\.\w{2,})/)||[])[1]||"";
-const isGeneric=/^(reserved|booking|reservation|blocked|busy)$/i.test(sum.trim());
-const name=isGeneric?"":sum.replace(/\s*-\s*\d+\s*guest.*$/i,"").replace(/\s*\(.*\)$/,"").trim();
-const guestCount=(sum.match(/(\d+)\s*guest/i)||desc.match(/(\d+)\s*guest/i)||desc.match(/party.*?(\d+)/i)||[])[1]||"";
-evts.push({ci,co,phone,resCode:airbnbRes,name,email,guests:guestCount,summary:sum,desc});
-}
-evts.sort((a,b)=>a.ci.localeCompare(b.ci));
-return evts;
-}
+/* ═══ OWNER TAB ═══ */
+function OwnerTab({week,guests,setGuests,alts,setAlts}){
+const[newG,setNewG]=useState({name:"",checkin:"",checkout:"",notes:""});
+const[copied,setCopied]=useState(null);
+const[altFilter,setAltFilter]=useState("all");
+const[editAlt,setEditAlt]=useState(null);const[altForm,setAltForm]=useState({});
+const[newAlt,setNewAlt]=useState(false);
+const allCats=[...new Set(alts.map(a=>a.cat))].sort();
+const filtAlts=altFilter==="all"?alts:alts.filter(a=>a.cat===altFilter);
+const iS={width:"100%",padding:"8px 10px",background:T.bgS,border:"1px solid "+T.bd,borderRadius:7,color:T.fg,fontSize:12,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
 
-function RecsBank({alts,setAlts}){
-const[filter,setFilter]=useState("all");
-const[editIdx,setEditIdx]=useState(null);const[form,setForm]=useState({});
-const[adding,setAdding]=useState(false);
-const allCats=[...new Set(alts.map(a=>a.c))].sort();
-const filt=filter==="all"?alts:alts.filter(a=>a.c===filter);
-const catOpts=["breakfast","lunch","dinner","brunch","drinks","sightseeing","tour"];
-const iS={width:"100%",padding:"8px 12px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:10,fontSize:12,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
-const saveAlt=(idx,data)=>{setAlts(alts.map((a,i)=>i===idx?{...a,...data}:a));setEditIdx(null);};
-const delAlt=(idx)=>{setAlts(alts.filter((_,i)=>i!==idx));setEditIdx(null);};
-const addAlt=(data)=>{setAlts([...alts,data]);setAdding(false);setForm({});};
-return(
-<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginTop:16}}>
+const addGuest=()=>{if(!newG.name||!newG.checkin)return;const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);const numDays=newG.checkout?Math.ceil((new Date(newG.checkout)-new Date(newG.checkin))/(86400000))+1:5;const baseWeek=JSON.parse(JSON.stringify(week)).slice(0,Math.min(numDays,week.length));const guest={id,name:newG.name,checkin:newG.checkin,checkout:newG.checkout||addDays(newG.checkin,4),notes:newG.notes,week:baseWeek,created:Date.now()};setGuests(p=>[...p,guest]);saveGD(id,guest);setNewG({name:"",checkin:"",checkout:"",notes:""});};
+
+const genLink=g=>{const payload={id:g.id,name:g.name,checkin:g.checkin,checkout:g.checkout,week:g.week};const encoded=btoa(encodeURIComponent(JSON.stringify(payload)));const base=window.location.origin+window.location.pathname;const link=base+"?g="+g.id+"&d="+encoded;navigator.clipboard?.writeText(link);setCopied(g.id);setTimeout(()=>setCopied(null),2500);};
+const delGuest=id=>{setGuests(p=>p.filter(g=>g.id!==id));try{localStorage.removeItem(SP+id);}catch{}};
+
+return<div style={{padding:"16px 14px",maxWidth:700,margin:"0 auto"}}>
+<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:T.fg,textAlign:"center",marginBottom:16}}>Owner Dashboard</h2>
+
+{/* GUEST MANAGER */}
+<div style={{background:T.wh,borderRadius:12,padding:16,border:"1px solid "+T.terra+"28",marginBottom:16}}>
+<h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:16,color:T.terra,marginBottom:12}}>Guest Manager</h3>
+<div style={{background:T.bgS,borderRadius:10,padding:14,border:"1px solid "+T.bd,marginBottom:12}}>
+<div style={{fontSize:12,fontWeight:600,marginBottom:8}}>+ New Guest</div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+<div><label style={{fontSize:10,color:T.mt}}>Guest Name *</label><input value={newG.name} onChange={e=>setNewG({...newG,name:e.target.value})} placeholder="Sarah & Mike Johnson" style={iS}/></div>
+<div><label style={{fontSize:10,color:T.mt}}>Notes</label><input value={newG.notes} onChange={e=>setNewG({...newG,notes:e.target.value})} placeholder="Love spicy food, vegetarian" style={iS}/></div>
+</div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+<div><label style={{fontSize:10,color:T.mt}}>Check-in *</label><input type="date" value={newG.checkin} onChange={e=>setNewG({...newG,checkin:e.target.value})} style={iS}/></div>
+<div><label style={{fontSize:10,color:T.mt}}>Check-out</label><input type="date" value={newG.checkout} onChange={e=>setNewG({...newG,checkout:e.target.value})} style={iS}/></div>
+<div style={{display:"flex",alignItems:"flex-end"}}><button onClick={addGuest} style={{width:"100%",padding:"8px",background:newG.name&&newG.checkin?T.terra:T.bgS,color:newG.name&&newG.checkin?"#fff":T.mt,border:"none",borderRadius:7,fontSize:12,fontWeight:600,cursor:newG.name&&newG.checkin?"pointer":"default"}}>Create Guide</button></div>
+</div></div>
+{guests.length===0?<div style={{textAlign:"center",padding:20,color:T.mt,fontSize:12}}>No guests yet.</div>:
+guests.map(g=><div key={g.id} style={{background:T.bgS,borderRadius:10,padding:14,marginBottom:8,border:"1px solid "+T.bd}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+<div><div style={{fontSize:14,fontWeight:600}}>{g.name}</div><div style={{fontSize:10,color:T.mt}}>{fmtDate(g.checkin)} → {fmtDate(g.checkout)} · {g.week.length} days</div></div>
+<div style={{display:"flex",gap:5}}>
+<button onClick={()=>genLink(g)} style={{fontSize:11,color:copied===g.id?T.olive:T.terra,background:copied===g.id?T.oliveS:T.terraS,border:"1px solid "+(copied===g.id?T.olive:T.terra)+"33",borderRadius:7,padding:"5px 12px",cursor:"pointer",fontWeight:600}}>{copied===g.id?"✓ Copied!":"Copy Link"}</button>
+<button onClick={()=>delGuest(g.id)} style={{fontSize:11,color:T.red,background:T.red+"10",border:"1px solid "+T.red+"25",borderRadius:7,padding:"5px 8px",cursor:"pointer"}}>✕</button>
+</div></div>
+{g.notes&&<p style={{fontSize:11,color:T.terra}}>{g.notes}</p>}
+</div>)}
+</div>
+
+{/* RECOMMENDATIONS BANK */}
+<div style={{background:T.wh,borderRadius:12,padding:16,border:"1px solid "+T.terra+"28"}}>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-<h3 style={{fontSize:16,fontWeight:600}}>Recommendations ({alts.length})</h3>
-<button onClick={()=>{setAdding(true);setForm({l:"",d:"",c:"dinner",m:"",b:false});}} style={{fontSize:11,color:C.cr,background:C.crS,border:"none",borderRadius:20,padding:"6px 14px",cursor:"pointer",fontWeight:600}}>+ Add</button>
+<h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:16,color:T.terra}}>Recommendations Bank ({alts.length})</h3>
+<button onClick={()=>{setNewAlt(true);setAltForm({l:"",d:"",tag:"dinner",cat:"dinner",map:""});}} style={{fontSize:11,color:T.terra,background:T.terraS,border:"1px solid "+T.terra+"33",borderRadius:7,padding:"5px 12px",cursor:"pointer",fontWeight:600}}>+ Add</button>
 </div>
-<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>
-<button onClick={()=>setFilter("all")} style={{fontSize:10,padding:"4px 10px",borderRadius:16,border:"1px solid "+(filter==="all"?C.cr:C.bd),background:filter==="all"?C.crS:C.bgS,color:filter==="all"?C.cr:C.mt,cursor:"pointer",fontWeight:600}}>All ({alts.length})</button>
-{allCats.map(c=>{const ct=CT[c]||CT.dinner;const cnt=alts.filter(a=>a.c===c).length;return<button key={c} onClick={()=>setFilter(filter===c?"all":c)} style={{fontSize:10,padding:"4px 10px",borderRadius:16,border:"1px solid "+(filter===c?ct.a+"55":C.bd),background:filter===c?ct.bg:C.bgS,color:filter===c?ct.a:C.mt,cursor:"pointer",fontWeight:500}}>{ct.i} {c} ({cnt})</button>;})}
+<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
+<button onClick={()=>setAltFilter("all")} style={{fontSize:10,padding:"4px 10px",borderRadius:16,border:"1px solid "+(altFilter==="all"?T.terra:T.bd),background:altFilter==="all"?T.terraS:T.bgS,color:altFilter==="all"?T.terra:T.mt,cursor:"pointer",fontWeight:600}}>All ({alts.length})</button>
+{allCats.map(c=>{const cnt=alts.filter(a=>a.cat===c).length;return<button key={c} onClick={()=>setAltFilter(altFilter===c?"all":c)} style={{fontSize:10,padding:"4px 10px",borderRadius:16,border:"1px solid "+(altFilter===c?T.terra:T.bd),background:altFilter===c?T.terraS:T.bgS,color:altFilter===c?T.terra:T.mt,cursor:"pointer",fontWeight:500}}>{c} ({cnt})</button>;})}
 </div>
-{adding&&<div style={{background:C.bgS,borderRadius:12,padding:12,border:"2px solid "+C.cr,marginBottom:10}}>
+{newAlt&&<div style={{background:T.bgS,borderRadius:10,padding:12,border:"2px solid "+T.terra,marginBottom:10}}>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:6}}>
-<div><label style={{fontSize:10,color:C.mt}}>Name *</label><input value={form.l||""} onChange={e=>setForm({...form,l:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:10,color:C.mt}}>Category</label><select value={form.c||"dinner"} onChange={e=>setForm({...form,c:e.target.value})} style={{...iS,cursor:"pointer"}}>{catOpts.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+<div><label style={{fontSize:9,color:T.mt}}>Name *</label><input value={altForm.l||""} onChange={e=>setAltForm({...altForm,l:e.target.value})} style={iS}/></div>
+<div><label style={{fontSize:9,color:T.mt}}>Category</label><select value={altForm.cat||"dinner"} onChange={e=>setAltForm({...altForm,cat:e.target.value})} style={{...iS,cursor:"pointer"}}>{["dinner","lunch","breakfast","street","noodles","drinks","sichuan","brunch","coffee","walk","sight","tour"].map(c=><option key={c} value={c}>{c}</option>)}</select></div>
 </div>
-<div style={{marginBottom:6}}><label style={{fontSize:10,color:C.mt}}>Description</label><input value={form.d||""} onChange={e=>setForm({...form,d:e.target.value})} style={iS}/></div>
-<div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:6,alignItems:"end"}}>
-<div><label style={{fontSize:10,color:C.mt}}>Maps query</label><input value={form.m||""} onChange={e=>setForm({...form,m:e.target.value})} placeholder="Place+Name+Shanghai" style={iS}/></div>
-<label style={{fontSize:10,color:C.mt,display:"flex",alignItems:"center",gap:4,padding:"8px 0"}}><input type="checkbox" checked={!!form.b} onChange={e=>setForm({...form,b:e.target.checked})}/> Book</label>
-<div style={{display:"flex",gap:4}}><button onClick={()=>form.l&&addAlt(form)} style={{padding:"7px 14px",background:form.l?C.cr:C.bd,color:form.l?"#fff":C.mt,border:"none",borderRadius:10,fontSize:11,fontWeight:600,cursor:"pointer"}}>Save</button><button onClick={()=>setAdding(false)} style={{padding:"7px 10px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:10,fontSize:11,cursor:"pointer"}}>✕</button></div>
-</div>
-</div>}
-<div style={{maxHeight:400,overflowY:"auto"}}>
-{filt.map((a,fi)=>{const ri=alts.indexOf(a);const isEd=editIdx===ri;const ct=CT[a.c]||CT.dinner;
-return isEd?<div key={ri} style={{background:C.bgS,borderRadius:10,padding:10,marginBottom:4,border:"2px solid "+C.cr}}>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:6}}>
-<div><label style={{fontSize:10,color:C.mt}}>Name</label><input value={form.l||""} onChange={e=>setForm({...form,l:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:10,color:C.mt}}>Category</label><select value={form.c||""} onChange={e=>setForm({...form,c:e.target.value})} style={{...iS,cursor:"pointer"}}>{catOpts.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
-</div>
-<div style={{marginBottom:6}}><label style={{fontSize:10,color:C.mt}}>Description</label><input value={form.d||""} onChange={e=>setForm({...form,d:e.target.value})} style={iS}/></div>
+<div style={{marginBottom:6}}><label style={{fontSize:9,color:T.mt}}>Description</label><input value={altForm.d||""} onChange={e=>setAltForm({...altForm,d:e.target.value})} style={iS}/></div>
 <div style={{display:"flex",gap:4}}>
-<button onClick={()=>saveAlt(ri,form)} style={{padding:"6px 14px",background:C.sg,color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:600,cursor:"pointer"}}>Save</button>
-<button onClick={()=>setEditIdx(null)} style={{padding:"6px 10px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:10,fontSize:11,cursor:"pointer"}}>Cancel</button>
-<button onClick={()=>delAlt(ri)} style={{padding:"6px 10px",background:"#FEE",color:"#D4766A",border:"1px solid #ECC",borderRadius:10,fontSize:11,cursor:"pointer",marginLeft:"auto"}}>Delete</button>
-</div>
-</div>:
-<div key={ri} onClick={()=>{setEditIdx(ri);setForm({l:a.l,d:a.d,c:a.c,m:a.m||"",b:!!a.b});}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",background:C.bgS,borderRadius:10,marginBottom:3,cursor:"pointer",border:"1px solid "+C.bdL}}>
-<span style={{fontSize:13,width:22,textAlign:"center"}}>{ct.i}</span>
-<div style={{flex:1,minWidth:0}}>
-<div style={{fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.l}</div>
-<div style={{fontSize:11,color:C.mt,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.d}</div>
-</div>
-<span style={{fontSize:9,color:ct.a,background:ct.bg,padding:"2px 7px",borderRadius:10,flexShrink:0,fontWeight:600}}>{a.c}</span>
-{a.b&&<span style={{fontSize:9,color:C.cr,flexShrink:0}}></span>}
+<button onClick={()=>{if(altForm.l){setAlts(p=>[...p,{...altForm,tag:altForm.cat}]);setNewAlt(false);setAltForm({});}}} style={{padding:"7px 14px",background:altForm.l?T.terra:T.bgS,color:altForm.l?"#fff":T.mt,border:"none",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer"}}>Save</button>
+<button onClick={()=>setNewAlt(false)} style={{padding:"7px 10px",background:T.wh,color:T.mt,border:"1px solid "+T.bd,borderRadius:7,fontSize:11,cursor:"pointer"}}>✕</button>
+</div></div>}
+<div style={{maxHeight:400,overflowY:"auto"}}>
+{filtAlts.map((a,fi)=>{const ri=alts.indexOf(a);const s=TS[a.tag]||TS.lunch;
+return<div key={ri} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:T.bgS,borderRadius:8,marginBottom:3,border:"1px solid "+T.bd}}>
+<span style={{fontSize:12,width:20,textAlign:"center"}}>{s.i}</span>
+<div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.l}</div><div style={{fontSize:10,color:T.mt,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.d}</div></div>
+<span style={{fontSize:9,color:s.a,background:s.bg,padding:"2px 6px",borderRadius:8,flexShrink:0}}>{a.cat}</span>
 </div>;})}
-</div>
-</div>);
-}
+</div></div>
+</div>;}
 
-function OwTab({gs,setGs,tpls,setTpls,onEditTpl,alts,setAlts}){
-const[ng,sNg]=useState({name:"",cco:"",n:"",tpl:""});const[cp,sCp]=useState(null);
-const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[renName,setRenName]=useState("");
-const[editId,setEditId]=useState(null);const[editData,setEditData]=useState({});
-const ICAL_STORE="ut_ical_url";
-const[icalUrl,setIcalUrl]=useState(()=>{try{return localStorage.getItem(ICAL_STORE)||"";}catch(e){return "";}});
-const[icalLoading,setIcalLoading]=useState(false);const[icalRes,setIcalRes]=useState(null);const[icalErr,setIcalErr]=useState("");
-const defTpl=tpls.find(t=>t.isDefault)||tpls[0];
-const selTpl=tpls.find(t=>t.id===(ng.tpl||defTpl?.id))||defTpl;
-const add=()=>{if(!ng.name||!ng.ci||!selTpl)return;setGs([...gs,{name:ng.name,ci:ng.ci,co:ng.co,n:ng.n,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(selTpl.wk)),tplName:selTpl.name}]);sNg({name:"",cco:"",n:"",tpl:""});};
-const mkLink=(g)=>{try{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,tpl:g.tplName||"Default"}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;}catch(e){alert("Error: "+e.message);return null;}};
-const cpy=g=>{const link=mkLink(g);if(!link)return;copyText(link);sCp(g.id);setTimeout(()=>sCp(null),3000);};
-const addTpl=()=>{if(!newTpl.trim()||!defTpl)return;const t={id:Date.now()+"",name:newTpl.trim(),wk:JSON.parse(JSON.stringify(defTpl.wk)),isDefault:false};setTpls([...tpls,t]);setNewTpl("");};
-const setDef=(id)=>{setTpls(tpls.map(t=>({...t,isDefault:t.id===id})));};
-const delTpl=(id)=>{if(tpls.length<=1)return;const t=tpls.find(x=>x.id===id);if(t&&t.isDefault){const rest=tpls.filter(x=>x.id!==id);rest[0].isDefault=true;setTpls(rest);}else{setTpls(tpls.filter(x=>x.id!==id));}};
-const rename=(id)=>{if(!renName.trim())return;setTpls(tpls.map(t=>t.id===id?{...t,name:renName.trim()}:t));setRenId(null);setRenName("");};
-const fetchICal=async()=>{
-if(!icalUrl.trim())return;setIcalLoading(true);setIcalErr("");setIcalRes(null);
-try{localStorage.setItem(ICAL_STORE,icalUrl.trim());}catch(e){}
-try{
-const proxy="https://api.allorigins.win/raw?url="+encodeURIComponent(icalUrl.trim());
-const res=await fetch(proxy);if(!res.ok)throw new Error("Fetch failed ("+res.status+")");
-const text=await res.text();const evts=parseICal(text);
-if(!evts.length){setIcalErr("No upcoming reservations found.");} else{setIcalRes(evts);}
-}catch(e){setIcalErr("Could not fetch calendar: "+e.message);}
-setIcalLoading(false);
-};
-const importRes=(r)=>{
-const exists=gs.some(g=>g.ci===r.ci&&g.co===r.co);if(exists)return;
-const defT=tpls.find(t=>t.isDefault)||tpls[0];
-const gName=r.name||(r.phone?"Guest ..."+r.phone:"Guest");
-const notes=[r.resCode?"Ref: "+r.resCode:"",r.email?"Email: "+r.email:"",r.guests?r.guests+" guests":""].filter(Boolean).join(" · ");
-setGs(prev=>[...prev,{name:gName,ci:r.ci,co:r.co,n:notes,email:r.email||"",id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(defT.wk)),tplName:defT.name}]);
-};
-const importAll=()=>{if(!icalRes)return;icalRes.forEach(r=>importRes(r));};
-const iS={width:"100%",padding:"11px 14px",background:C.bgS,border:"1px solid "+C.bd,borderRadius:12,fontSize:13,outline:"none",fontFamily:"'Plus Jakarta Sans',sans-serif"};
-return(
-<div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
-<div style={{textAlign:"center",marginBottom:24}}>
-<h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>Owner Dashboard</h2>
-</div>
-
-{/* Templates */}
-<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:16}}>
-<h3 style={{fontSize:16,fontWeight:600,marginBottom:12}}>Templates</h3>
-<div style={{marginBottom:10}}>
-{tpls.map(t=>(<div key={t.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid "+C.bdL}}>
-<button onClick={()=>setDef(t.id)} style={{background:"none",border:"none",fontSize:16,cursor:"pointer",flexShrink:0}} title={t.isDefault?"Default":"Set as default"}>{t.isDefault?"\u2B50":"\u2606"}</button>
-{renId===t.id?<div style={{flex:1,display:"flex",gap:4}}>
-<input value={renName} onChange={e=>setRenName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&rename(t.id)} style={{...iS,flex:1}} autoFocus/>
-<button onClick={()=>rename(t.id)} style={{fontSize:11,color:C.sg,background:C.sgS,border:"none",borderRadius:20,padding:"6px 12px",cursor:"pointer",fontWeight:600}}>Save</button>
-</div>:<>
-<div style={{flex:1}}>
-<span style={{fontSize:14,fontWeight:t.isDefault?600:400}}>{t.name}</span>
-{t.isDefault&&<span style={{fontSize:10,color:C.cr,marginLeft:6,fontWeight:600}}>DEFAULT</span>}
-<span style={{fontSize:11,color:C.mt,marginLeft:6}}>{t.wk.length} days</span>
-</div>
-<button onClick={()=>onEditTpl(t)} style={{fontSize:10,color:C.cr,background:C.crS,border:"none",borderRadius:8,padding:"4px 8px",cursor:"pointer",fontWeight:600}}>Edit</button>
-<button onClick={()=>{setRenId(t.id);setRenName(t.name);}} style={{fontSize:10,color:C.mt,background:C.bgS,border:"1px solid "+C.bd,borderRadius:8,padding:"4px 8px",cursor:"pointer"}}>Rename</button>
-{tpls.length>1&&<button onClick={()=>delTpl(t.id)} style={{width:24,height:24,borderRadius:6,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:10,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
-</>}
-</div>))}
-</div>
-<div style={{display:"flex",gap:6}}>
-<input value={newTpl} onChange={e=>setNewTpl(e.target.value)} placeholder="New template name..." onKeyDown={e=>e.key==="Enter"&&addTpl()} style={{...iS,flex:1}}/>
-<button onClick={addTpl} style={{fontSize:12,color:newTpl.trim()?C.cr:C.mt,background:newTpl.trim()?C.crS:C.bgS,border:"none",borderRadius:12,padding:"11px 16px",cursor:"pointer",fontWeight:600,flexShrink:0}}>+ Add</button>
-</div>
-<p style={{fontSize:11,color:C.mt,marginTop:8}}>New templates copy the default itinerary. Switch to Your Week tab to edit, then come back.</p>
-</div>
-
-{/* iCal Import */}
-<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:16}}>
-<h3 style={{fontSize:16,fontWeight:600,marginBottom:4}}>Import Reservations</h3>
-<p style={{fontSize:12,color:C.mt,marginBottom:12}}>Paste your iCal URL from Airbnb, Vrbo, Rezdy, Booking.com, or any platform.</p>
-<div style={{display:"flex",gap:6,marginBottom:8}}>
-<input value={icalUrl} onChange={e=>setIcalUrl(e.target.value)} placeholder="https://... .ics calendar URL" onKeyDown={e=>e.key==="Enter"&&fetchICal()} style={{...iS,flex:1,fontSize:12}}/>
-<button onClick={fetchICal} disabled={icalLoading} style={{fontSize:12,color:icalUrl.trim()?C.cr:C.mt,background:icalUrl.trim()?C.crS:C.bgS,border:"none",borderRadius:12,padding:"11px 16px",cursor:"pointer",fontWeight:600,flexShrink:0}}>{icalLoading?"Syncing...":"Sync"}</button>
-</div>
-{icalErr&&<div style={{fontSize:12,color:"#D4766A",marginBottom:8}}>{icalErr}</div>}
-{icalRes&&<div>
-<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-<span style={{fontSize:13,fontWeight:600}}>{icalRes.length} upcoming reservation{icalRes.length>1?"s":""}</span>
-<button onClick={importAll} style={{fontSize:11,color:"#fff",background:C.sg,border:"none",borderRadius:20,padding:"7px 16px",cursor:"pointer",fontWeight:600}}>Import All</button>
-</div>
-{icalRes.map((r,i)=>{const exists=gs.some(g=>g.ci===r.ci&&g.co===r.co);const nights=Math.round((new Date(r.co)-new Date(r.ci))/864e5);return(
-<div key={i} style={{background:C.bgS,borderRadius:12,padding:"10px 14px",marginBottom:6}}>
-<div style={{display:"flex",alignItems:"center",gap:10}}>
-<div style={{width:36,height:36,borderRadius:10,background:C.wmS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:C.wm}}>{r.name?r.name.charAt(0):"\uD83D\uDCC5"}</div>
-<div style={{flex:1}}>
-<div style={{fontSize:13,fontWeight:600}}>{r.name||"Guest"+(r.phone?" ..."+r.phone:"")}</div>
-<div style={{fontSize:12,color:C.mt}}>{fD(r.ci)} {"\u2192"} {fD(r.co)} · {nights} night{nights>1?"s":""}</div>
-<div style={{fontSize:11,color:C.mt}}>{[r.email,r.resCode?"Ref: "+r.resCode:"",r.guests?r.guests+" guests":"",r.phone&&!r.name?"..."+r.phone:""].filter(Boolean).join(" · ")}</div>
-</div>
-{exists?<span style={{fontSize:11,color:C.sg,fontWeight:600,flexShrink:0}}>{"\u2713"} Added</span>:
-<button onClick={()=>importRes(r)} style={{fontSize:11,color:"#fff",background:C.cr,border:"none",borderRadius:20,padding:"7px 14px",cursor:"pointer",fontWeight:600,flexShrink:0}}>Import</button>}
-</div>
-</div>);})}
-</div>}
-</div>
-
-{/* Create Guest */}
-<div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginBottom:20}}>
-<h3 style={{fontSize:16,fontWeight:600,marginBottom:14}}>Create Guest Guide</h3>
-<div style={{marginBottom:10}}>
-<label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Template</label>
-<select value={ng.tpl||defTpl?.id||""} onChange={e=>sNg({...ng,tpl:e.target.value})} style={{...iS,cursor:"pointer"}}>
-{tpls.map(t=><option key={t.id} value={t.id}>{t.name}{t.isDefault?" (default)":""}</option>)}
-</select>
-</div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Name</label><input value={ng.name} onChange={e=>sNg({...ng,name:e.target.value})} placeholder="Sarah Chen" style={iS}/></div>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Notes</label><input value={ng.n} onChange={e=>sNg({...ng,n:e.target.value})} placeholder="Vegetarian..." style={iS}/></div>
-</div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>Start</label><input type="date" value={ng.ci} onChange={e=>sNg({...ng,ci:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:12,color:C.mt,display:"block",marginBottom:4}}>End</label><input type="date" value={ng.co} onChange={e=>sNg({...ng,co:e.target.value})} style={iS}/></div>
-</div>
-<button onClick={add} style={{width:"100%",padding:"12px",background:ng.name&&ng.ci?C.cr:C.bd,color:ng.name&&ng.ci?"#fff":C.mt,border:"none",borderRadius:12,fontSize:14,fontWeight:600,cursor:"pointer"}}>Create & Share</button>
-</div>
-
-{/* Guest List */}
-{gs.length===0&&<div style={{textAlign:"center",padding:30,color:C.mtL}}>No guests yet</div>}
-{gs.map(g=>{const link=mkLink(g);const mailBody=link?"Hi "+g.name.split(" ")[0]+",\n\nHere's your personalized guide:\n"+link+"\n\nLooking forward to your visit!":"";const mailto=g.email?"mailto:"+g.email+"?subject=Your+Guide&body="+encodeURIComponent(mailBody):"";
-const isEd=editId===g.id;
-return(<div key={g.id} style={{background:C.wh,borderRadius:14,border:isEd?"2px solid "+C.cr:"1px solid "+C.bd,padding:"14px 16px",marginBottom:8}}>
-{isEd?<div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Name</label><input value={editData.name||""} onChange={e=>setEditData({...editData,name:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Email</label><input value={editData.email||""} onChange={e=>setEditData({...editData,email:e.target.value})} placeholder="guest@email.com" style={iS}/></div>
-</div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Start</label><input type="date" value={editData.ci||""} onChange={e=>setEditData({...editData,ci:e.target.value})} style={iS}/></div>
-<div><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>End</label><input type="date" value={editData.co||""} onChange={e=>setEditData({...editData,co:e.target.value})} style={iS}/></div>
-</div>
-<div style={{marginBottom:8}}><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Notes</label><input value={editData.n||""} onChange={e=>setEditData({...editData,n:e.target.value})} placeholder="Dietary needs, preferences..." style={iS}/></div>
-<div style={{marginBottom:10}}><label style={{fontSize:11,color:C.mt,display:"block",marginBottom:3}}>Template</label>
-<select value={editData.tplId||""} onChange={e=>{const t=tpls.find(x=>x.id===e.target.value);if(t)setEditData({...editData,tplId:t.id,tplName:t.name,wk:JSON.parse(JSON.stringify(t.wk))});}} style={{...iS,cursor:"pointer"}}>
-{tpls.map(t=><option key={t.id} value={t.id}>{t.name}{t.isDefault?" (default)":""}</option>)}
-</select></div>
-<div style={{display:"flex",gap:6}}>
-<button onClick={()=>{setGs(gs.map(x=>x.id===g.id?{...x,name:editData.name,ci:editData.ci,co:editData.co,n:editData.n,email:editData.email,tplName:editData.tplName,wk:editData.wk||x.wk}:x));setEditId(null);}} style={{flex:1,fontSize:13,color:"#fff",background:C.sg,border:"none",borderRadius:20,padding:"10px",cursor:"pointer",fontWeight:600}}>Save</button>
-<button onClick={()=>setEditId(null)} style={{fontSize:13,color:C.mt,background:C.bgS,border:"1px solid "+C.bd,borderRadius:20,padding:"10px 16px",cursor:"pointer"}}>Cancel</button>
-</div>
-</div>:<>
-<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8,cursor:"pointer"}} onClick={()=>{setEditId(g.id);setEditData({name:g.name,ci:g.ci,co:g.co,n:g.n||"",email:g.email||"",tplId:(tpls.find(t=>t.name===g.tplName)||tpls[0]).id,tplName:g.tplName,wk:g.wk});}}>
-<div style={{width:36,height:36,borderRadius:10,background:C.wmS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:C.wm}}>{g.name.charAt(0)}</div>
-<div style={{flex:1}}>
-<div style={{fontSize:14,fontWeight:600}}>{g.name} <span style={{fontSize:10,color:C.mtL}}></span></div>
-<div style={{fontSize:12,color:C.mt}}>{fD(g.ci)} {"\u2192"} {fD(g.co)}{g.tplName?" \u00B7 "+g.tplName:""}</div>
-{g.n&&<div style={{fontSize:11,color:C.mt}}>{g.n}</div>}
-</div>
-<button onClick={e=>{e.stopPropagation();setGs(gs.filter(x=>x.id!==g.id));}} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>
-</div>
-<div style={{display:"flex",gap:6}}>
-<button onClick={()=>cpy(g)} style={{flex:1,fontSize:13,color:cp===g.id?C.sg:C.cr,background:cp===g.id?C.sgS:C.crS,border:"none",borderRadius:20,padding:"10px 14px",cursor:"pointer",fontWeight:600}}>{cp===g.id?"\u2713 Link Copied!":"\uD83D\uDD17 Copy Link"}</button>
-{g.email&&<a href={mailto} style={{flex:1,fontSize:13,color:"#fff",background:C.sg,border:"none",borderRadius:20,padding:"10px 14px",cursor:"pointer",fontWeight:600,textDecoration:"none",textAlign:"center",display:"block"}}>{"\u2709\uFE0F"} Email Guide</a>}
-</div>
-</>}
-</div>)})}
-
-{/* Recommendations Bank */}
-<RecsBank alts={alts} setAlts={setAlts}/>
-</div>);}
-
-const TPL_KEY="ut_templates";const GS_KEY="ut_guests";const INF_KEY="ut_essentials";const RQ_KEY="ut_bookings";
-function loadTpls(){try{const s=localStorage.getItem(TPL_KEY);if(s){const t=JSON.parse(s);if(t.length)return t;}}catch(e){}return[{id:"default",name:"Default",wk:JSON.parse(JSON.stringify(IW)),isDefault:true}];}
-function loadGs(){try{const s=localStorage.getItem(GS_KEY);if(s)return JSON.parse(s);}catch(e){}return[];}
-function loadInf(){try{const s=localStorage.getItem(INF_KEY);if(s)return JSON.parse(s);}catch(e){}return JSON.parse(JSON.stringify(INF));}
-function loadRq(){try{const s=localStorage.getItem(RQ_KEY);if(s)return JSON.parse(s);}catch(e){}return[];}
-
+/* ═══ APP ═══ */
 function App(){
-const[tab,setTab]=useState("week");const[isO,setIsO]=useState(false);
-const[wk,setWk]=useState(JSON.parse(JSON.stringify(IW)));
+const[tab,setTab]=useState("week");
+const[isOwner,setIsOwner]=useState(false);
+const[week,setWeek]=useState(initWeek);
+const[requests,setRequests]=useState([]);
+const[guests,setGuests]=useState([]);
+const[guestMode,setGuestMode]=useState(false);
+const[guestInfo,setGuestInfo]=useState(null);
 const[alts,setAlts]=useState([...ALTS]);
-const[editingTpl,setEditingTpl]=useState(null);const[preEditWk,setPreEditWk]=useState(null);
-const[rq,setRq]=useState(loadRq);
-const[gs,setGs]=useState(loadGs);
-const[tpls,setTpls]=useState(loadTpls);
-const[inf,setInf]=useState(loadInf);
-const pr=new URLSearchParams(window.location.search);
-const gid=pr.get("g");
-const[gi,setGi]=useState(null);
-const origin=DEF_ORIGIN;
 
-useEffect(()=>{try{localStorage.setItem(TPL_KEY,JSON.stringify(tpls))}catch(e){}},[tpls]);
-useEffect(()=>{try{localStorage.setItem(GS_KEY,JSON.stringify(gs))}catch(e){}},[gs]);
-useEffect(()=>{try{localStorage.setItem(INF_KEY,JSON.stringify(inf))}catch(e){}},[inf]);
-useEffect(()=>{try{localStorage.setItem(RQ_KEY,JSON.stringify(rq))}catch(e){}},[rq]);
+useEffect(()=>{const gId=getURLGuest();if(!gId)return;const saved=loadGD(gId);if(saved){setGuestInfo({name:saved.name,checkin:saved.checkin,checkout:saved.checkout});setWeek(saved.week);setGuestMode(true);return;}const decoded=decodeGuestURL();if(decoded){setGuestInfo({name:decoded.name,checkin:decoded.checkin,checkout:decoded.checkout});setWeek(decoded.week);saveGD(gId,decoded);setGuestMode(true);};},[]);
 
-useEffect(()=>{
-if(!gid)return;
-try{const s=localStorage.getItem("ut_"+gid);if(s){const d=JSON.parse(s);if(d.wk)setWk(d.wk);setGi({name:d.name,ci:d.ci,co:d.co});return;}}catch(e){}
-const d=pr.get("d");if(d){try{const dc=JSON.parse(fromB64(d));setGi({name:dc.name,ci:dc.ci,co:dc.co});
-localStorage.setItem("ut_"+gid,JSON.stringify({name:dc.name,ci:dc.ci,co:dc.co,wk}));}catch(e){}}
-},[]);
+useEffect(()=>{if(!guestMode)return;const gId=getURLGuest();if(!gId)return;saveGD(gId,{...guestInfo,id:gId,week});},[week,guestMode,guestInfo]);
 
-useEffect(()=>{if(gid&&gi)try{localStorage.setItem("ut_"+gid,JSON.stringify({...gi,wk}))}catch(e){}},[wk]);
-
-const tw=gi&&gi.ci&&gi.co?(function(){const n=Math.round((new Date(gi.co)-new Date(gi.ci))/864e5);return wk.slice(0,Math.max(1,n));}()):wk;
-
-return(
-<div style={{minHeight:"100vh",background:C.bg}}>
-<Header tab={tab} setTab={setTab} isO={isO} setIsO={setIsO} gi={gi}/>
-{tab==="week"&&<WkTab wk={editingTpl?wk:tw} setWk={setWk} gi={editingTpl?null:gi} origin={origin} confirmed={rq.filter(r=>r.st==="confirmed")} editingTpl={editingTpl} isOwner={isO}
-onSaveTpl={()=>{if(editingTpl){setTpls(tpls.map(t=>t.id===editingTpl.id?{...t,wk:JSON.parse(JSON.stringify(wk))}:t));setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditWk(null);}}}}
-onCancelTpl={()=>{setEditingTpl(null);if(preEditWk){setWk(preEditWk);setPreEditWk(null);}}}/>}
-{tab==="crawls"&&<CrTab origin={origin}/>}
-{tab==="essentials"&&<EsTab inf={inf} setInf={setInf} isO={isO}/>}
-{tab==="bookings"&&<BkTab rq={rq} setRq={setRq} isO={isO}/>}
-{tab==="chat"&&<ChTab/>}
-{tab==="owner"&&isO&&<OwTab gs={gs} setGs={setGs} tpls={tpls} setTpls={setTpls} alts={alts} setAlts={setAlts} onEditTpl={(t)=>{setPreEditWk(JSON.parse(JSON.stringify(wk)));setWk(JSON.parse(JSON.stringify(t.wk)));setEditingTpl({id:t.id,name:t.name});setTab("week");}}/>}
-<div style={{textAlign:"center",padding:"24px 20px",fontSize:11,color:C.mtL}}>Powered by <span style={{color:C.cr,fontWeight:600}}>Arrivo</span></div>
-</div>);
-}
+return<div style={{minHeight:"100vh",background:T.bg}}>
+<Header tab={tab} setTab={setTab} isOwner={isOwner} setIsOwner={setIsOwner} guestMode={guestMode} guestInfo={guestInfo}/>
+{tab==="week"&&<WeekTab week={week} setWeek={setWeek} guestInfo={guestInfo} isOwner={isOwner}/>}
+{tab==="trips"&&<TripsTab setWeek={setWeek} setTab={setTab}/>}
+{tab==="info"&&<InfoTab/>}
+{tab==="requests"&&<RequestsTab requests={requests} setRequests={setRequests} isOwner={isOwner}/>}
+{tab==="chat"&&<ChatTab guestInfo={guestInfo}/>}
+{tab==="owner"&&isOwner&&<OwnerTab week={week} guests={guests} setGuests={setGuests} alts={alts} setAlts={setAlts}/>}
+<div style={{textAlign:"center",padding:"28px 20px 20px"}}>
+<div style={{fontSize:11,color:T.mtL,lineHeight:1.8}}>
+<span style={{color:T.terra,fontWeight:700}}>DEMO</span> · Built for UnTour Food Tours by <span style={{fontWeight:600,color:T.mt}}>Arrivo</span>
+</div></div>
+</div>;}
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
