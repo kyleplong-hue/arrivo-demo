@@ -327,6 +327,36 @@ function ChatTab({terms,guestInfo}){const[msgs,setMsgs]=useState([{role:"assista
   </div>;
 }
 
+/* ═══ ICAL IMPORT ═══ */
+function ICalImport({onImport}){
+  const[url,setUrl]=useState("");const[loading,setLoading]=useState(false);const[result,setResult]=useState(null);
+  const sync=async()=>{
+    if(!url.trim()||loading)return;
+    setLoading(true);setResult(null);
+    try{
+      const res=await fetch('/ical/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url.trim()})});
+      const data=await res.json();
+      if(data.error)throw new Error(data.error);
+      setResult(data);
+      if(onImport)onImport(data.guests||[]);
+    }catch(e){setResult({error:e.message});}
+    setLoading(false);
+  };
+  return<div style={{background:T.card,borderRadius:12,padding:16,border:"1px solid "+T.gold+"28",marginBottom:16}}>
+    <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:16,color:T.gl,marginBottom:8}}>📅 Import from Calendar</h3>
+    <p style={{fontSize:11,color:T.mut,marginBottom:10,lineHeight:1.5}}>Paste your Airbnb, Vrbo, or Booking.com iCal URL. We'll import all upcoming reservations as guests.</p>
+    <div style={{display:"flex",gap:6}}>
+      <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://www.airbnb.com/calendar/ical/..." style={{flex:1,padding:"8px 10px",background:T.dw,border:"1px solid "+T.bdr,borderRadius:7,color:T.cream,fontSize:11,outline:"none",fontFamily:"'DM Sans',sans-serif"}}/>
+      <button onClick={sync} disabled={loading} style={{padding:"8px 16px",background:loading?T.card:T.gold,border:"none",borderRadius:7,color:loading?T.mut:T.dark,fontWeight:600,fontSize:11,cursor:loading?"wait":"pointer"}}>{loading?"Syncing...":"Import"}</button>
+    </div>
+    {result&&!result.error&&<div style={{marginTop:10,padding:10,background:T.dw,borderRadius:8,border:"1px solid "+T.ol+"33"}}>
+      <div style={{fontSize:11,color:T.ol,fontWeight:600,marginBottom:4}}>✓ {result.created} imported · {result.updated} updated · {result.skipped} unchanged</div>
+      {(result.guests||[]).map((g,i)=><div key={i} style={{fontSize:10,color:T.mut,marginTop:2}}>{g.name} · {g.checkin} → {g.checkout}</div>)}
+    </div>}
+    {result?.error&&<div style={{marginTop:8,fontSize:11,color:"#C44"}}>{result.error}</div>}
+  </div>;
+}
+
 /* ═══ OWNER TAB ═══ */
 function OwnerTab({terms,setTerms,week,guests,setGuests,alts,setAlts}){
   const[nk,setNk]=useState("");const[nv,setNv]=useState("");
@@ -390,6 +420,14 @@ function OwnerTab({terms,setTerms,week,guests,setGuests,alts,setAlts}){
 
   return<div style={{padding:"16px 12px",maxWidth:780,margin:"0 auto"}}>
     <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.cream,textAlign:"center",marginBottom:16}}>Owner Dashboard</h2>
+
+    {/* ═══ ICAL IMPORT ═══ */}
+    <ICalImport onImport={(gs)=>{
+      if(gs.length){
+        const newGuests=gs.map(g=>({id:g.link.split('/g/')[1]||Date.now().toString(36),name:g.name,checkin:g.checkin,checkout:g.checkout,notes:'Imported from calendar',week:[],created:Date.now()}));
+        setGuests(p=>[...p,...newGuests]);
+      }
+    }}/>
 
     {/* ═══ GUEST MANAGER ═══ */}
     <div style={{background:T.card,borderRadius:12,padding:16,border:"1px solid "+T.gold+"28",marginBottom:16}}>
