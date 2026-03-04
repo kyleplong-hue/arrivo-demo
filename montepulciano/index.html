@@ -237,7 +237,7 @@ const repB=(di,bi)=>{const b=week[di].blocks[bi];const alt=getA(b.cat||b.tag,use
 
   return<div style={{padding:"16px 12px",maxWidth:780,margin:"0 auto"}}>
     <div style={{textAlign:"center",marginBottom:16}}><h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.cream}}>{guestInfo?"Your Week, "+guestInfo.name.split(" ")[0]:"Your Week at Molino Nobile"}</h2><p style={{fontSize:11,color:T.mut,maxWidth:460,margin:"4px auto 0",lineHeight:1.5}}>Drag days to reorder · drag blocks within a day · swap or delete anything</p></div>
-    <div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center",marginBottom:14}}>{Object.entries(TS).map(([k,v])=><span key={k} style={{fontSize:9,color:v.a,background:v.bg,padding:"2px 7px",borderRadius:10,border:"1px solid "+v.a+"20"}}>{v.i} {k}</span>)}</div>
+    
     {week.map((day,di)=>{const du=dirUrl(day);const dn=di+1;const dayDate=guestInfo?.checkin?fmtDate(addDays(guestInfo.checkin,di)):null;return(
       <div key={day.id||di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO(e,di)} onDragEnd={()=>setDragDay(null)} style={{marginBottom:8,opacity:dragDay===di?.5:1,cursor:"grab"}}>
         <button onClick={()=>setOpen(open===di?-1:di)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:open===di?T.card:T.dw,border:"1px solid "+(open===di?day.accent+"44":T.bdr),borderRadius:open===di?"11px 11px 0 0":"11px",padding:"12px 14px",cursor:"pointer"}}>
