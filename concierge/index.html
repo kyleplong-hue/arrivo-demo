@@ -81,7 +81,6 @@ const ALTS=[
 {l:"Yu Garden",d:"Classic Chinese garden & bazaar.",tag:"sight",cat:"sight",map:"Yu+Garden+Shanghai"},
 {l:"Tianzifang",d:"Artsy laneways in old shikumen houses.",tag:"walk",cat:"walk",map:"Tianzifang+Shanghai"},
 ];
-];
 
 const CAT_MAP={dinner:["dinner","sichuan"],lunch:["lunch","dinner","noodles"],breakfast:["breakfast","brunch"],street:["street","noodles","lunch"],noodles:["noodles","street","lunch"],drinks:["drinks"],sichuan:["sichuan","dinner"],brunch:["brunch","breakfast"],coffee:["coffee","breakfast"],walk:["walk","sight"],sight:["sight","walk"],tour:["tour","walk"]};
 function getAlt(cat,usedLabels){const fb=CAT_MAP[cat]||[cat];for(const c of fb){const opts=ALTS.filter(a=>a.cat===c&&!usedLabels.has(a.l));if(opts.length>0)return opts[Math.floor(Math.random()*opts.length)];}const any=ALTS.filter(a=>!usedLabels.has(a.l));return any.length>0?any[Math.floor(Math.random()*any.length)]:ALTS[0];}
@@ -144,7 +143,6 @@ const initWeek=()=>[
 {id:"d5b7",t:"12:00 AM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"The+Puli+Hotel+Spa+Shanghai",dr:"20 min taxi"},
 ]},
 ];
-];
 
 const TRIPS=[
 {id:"dumplings",title:"Dumpling Deep Dive",sub:"XLB, sheng jian, potstickers & boiled",accent:T.terra,stops:[
@@ -167,7 +165,6 @@ const TRIPS=[
 {t:"3:00 PM",n:"FU 1088",d:"Art deco villa. Celebrity chef.",dr:"French Concession",map:"FU+1088+Shanghai",book:true},
 {t:"7:00 PM",n:"Tai\'An Table",d:"Three Michelin stars. Surprise menu.",dr:"Jing\'an",map:"Tai+An+Table+Shanghai",book:true},
 ]},
-];
 ];
 
 const GUIDE=`You are the UnTour Food Tours Shanghai concierge — warm, specific, deeply knowledgeable about Shanghai's food scene. Speak like a friendly local expert who has eaten at every lane house joint and knows every chef. Give specific restaurants with addresses and neighborhoods. Use Chinese food terms naturally (explain briefly). Keep concise.
