@@ -516,5 +516,94 @@ function App(){
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
+
+<!-- ═══ GUIDED WALKTHROUGH (first-time tooltip tour) ═══ -->
+<style>
+.wt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;transition:opacity .3s}
+.wt-tooltip{position:fixed;z-index:9999;background:#FDFCF9;color:#1A1A18;border-radius:14px;padding:20px 22px;max-width:300px;box-shadow:0 12px 40px rgba(0,0,0,.3);font-family:'DM Sans',sans-serif;animation:wtFade .3s ease}
+.wt-tooltip h4{font-size:15px;font-weight:600;margin-bottom:6px}
+.wt-tooltip p{font-size:13px;color:#555;line-height:1.5;margin-bottom:14px}
+.wt-tooltip .wt-btns{display:flex;gap:8px;justify-content:flex-end}
+.wt-tooltip .wt-next{padding:8px 18px;background:#B8963E;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.wt-tooltip .wt-skip{padding:8px 14px;background:none;border:1px solid #ddd;border-radius:8px;color:#888;font-size:12px;cursor:pointer;font-family:inherit}
+.wt-dots{display:flex;gap:4px;margin-bottom:12px}
+.wt-dot{width:6px;height:6px;border-radius:3px;background:#ddd}
+.wt-dot.active{background:#B8963E;width:16px}
+.wt-highlight{position:fixed;z-index:9998;border:2px solid #B8963E;border-radius:10px;box-shadow:0 0 0 4000px rgba(0,0,0,.55);pointer-events:none;transition:all .3s ease}
+@keyframes wtFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+<script>
+(function(){
+  if(localStorage.getItem('wt-done'))return;
+
+  const steps=[
+    {title:"Welcome to your trip planner!",text:"This is a real Arrivable demo for a Tuscan villa. Browse the itinerary, swap restaurants, and chat with the concierge. Let's take a quick tour.",target:null,pos:"center"},
+    {title:"Your Week",text:"Day-by-day itinerary with timed activities. Tap any day to expand it. Guests can drag items to rearrange.",target:"nav button:first-child",pos:"below"},
+    {title:"Swap Recommendations",text:"Don't like a restaurant? Tap the ⟳ icon to get a category-matched alternative from the host's curated list.",target:null,pos:"center",note:"Try it on any dinner item!"},
+    {title:"Day Trips",text:"Pre-built themed routes — Wine Day, Hill Towns, Val d'Orcia. Each stop has Maps links and timing.",target:"nav button:nth-child(2)",pos:"below"},
+    {title:"Concierge Chat",text:"Ask anything: 'Best winery nearby?', 'Rainy day plan?', 'Book La Grotta for 4 at 8pm.' Trained on the host's local knowledge.",target:"nav button:nth-child(5)",pos:"below"},
+    {title:"You're all set!",text:"Explore freely. Everything you see here is what your guests would get — personalized, interactive, and always available.",target:null,pos:"center"}
+  ];
+
+  let step=0;
+  const overlay=document.createElement('div');
+  overlay.className='wt-overlay';
+  const tooltip=document.createElement('div');
+  tooltip.className='wt-tooltip';
+  const highlight=document.createElement('div');
+  highlight.className='wt-highlight';
+  highlight.style.display='none';
+
+  function render(){
+    const s=steps[step];
+    const dots=steps.map((_,i)=>`<div class="wt-dot ${i===step?'active':''}"></div>`).join('');
+    const isLast=step===steps.length-1;
+    tooltip.innerHTML=`
+      <div class="wt-dots">${dots}</div>
+      <h4>${s.title}</h4>
+      <p>${s.text}${s.note?'<br><em style="color:#B8963E;font-size:11px">'+s.note+'</em>':''}</p>
+      <div class="wt-btns">
+        <button class="wt-skip" onclick="window._wtDone()">${isLast?'Close':'Skip'}</button>
+        ${!isLast?'<button class="wt-next" onclick="window._wtNext()">Next →</button>':'<button class="wt-next" onclick="window._wtDone()">Got it! ✓</button>'}
+      </div>`;
+
+    if(s.target&&s.pos!=='center'){
+      const el=document.querySelector(s.target);
+      if(el){
+        const r=el.getBoundingClientRect();
+        highlight.style.display='block';
+        highlight.style.top=(r.top-4)+'px';
+        highlight.style.left=(r.left-4)+'px';
+        highlight.style.width=(r.width+8)+'px';
+        highlight.style.height=(r.height+8)+'px';
+        overlay.style.background='transparent';
+        tooltip.style.top=(r.bottom+12)+'px';
+        tooltip.style.left=Math.max(12,Math.min(r.left,window.innerWidth-320))+'px';
+        tooltip.style.transform='none';
+      }
+    }else{
+      highlight.style.display='none';
+      overlay.style.background='rgba(0,0,0,.55)';
+      tooltip.style.top='50%';
+      tooltip.style.left='50%';
+      tooltip.style.transform='translate(-50%,-50%)';
+    }
+  }
+
+  window._wtNext=function(){step++;if(step<steps.length)render();else window._wtDone();};
+  window._wtDone=function(){
+    overlay.remove();tooltip.remove();highlight.remove();
+    localStorage.setItem('wt-done','1');
+  };
+
+  // Start after React renders
+  setTimeout(()=>{
+    document.body.appendChild(overlay);
+    document.body.appendChild(highlight);
+    document.body.appendChild(tooltip);
+    render();
+  },1500);
+})();
+</script>
 </body>
 </html>
