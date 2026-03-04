@@ -355,14 +355,35 @@ function OwnerTab({terms,setTerms,week,guests,setGuests,alts,setAlts}){
     setNewG({name:"",checkin:"",checkout:"",notes:""});
   };
 
-  const genLink=(g)=>{
-    const payload={id:g.id,name:g.name,checkin:g.checkin,checkout:g.checkout,week:g.week};
-    const encoded=btoa(encodeURIComponent(JSON.stringify(payload)));
-    const base=window.location.origin+window.location.pathname;
-    const link=base+"?g="+g.id+"&d="+encoded;
-    navigator.clipboard?.writeText(link);
-    setCopied(g.id);
-    setTimeout(()=>setCopied(null),2500);
+  const genLink=async(g)=>{
+    setCopied(g.id+'-saving');
+    try{
+      // Build itinerary from week data
+      const itin=(g.week||[]).map((d,i)=>({
+        title:d.title||('Day '+(i+1)),
+        stops:(d.stops||[]).map(s=>({time:s.time||'',name:s.name||'',desc:s.desc||'',address:s.address||''}))
+      }));
+      const linkId=g.id.slice(0,4)+'-'+Date.now().toString(36);
+      const res=await fetch('/api/collections/guests/records',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:g.name,checkin:g.checkin,checkout:g.checkout,notes:g.notes||'',link_id:linkId,status:'confirmed',itinerary:itin})
+      });
+      if(!res.ok)throw new Error('Save failed');
+      const link=window.location.origin+'/g/'+linkId;
+      navigator.clipboard?.writeText(link);
+      setCopied(g.id);
+      setTimeout(()=>setCopied(null),3000);
+    }catch(e){
+      console.error('genLink error:',e);
+      // Fallback to old base64 method
+      const payload={id:g.id,name:g.name,checkin:g.checkin,checkout:g.checkout,week:g.week};
+      const encoded=btoa(encodeURIComponent(JSON.stringify(payload)));
+      const link=window.location.origin+window.location.pathname+"?g="+g.id+"&d="+encoded;
+      navigator.clipboard?.writeText(link);
+      setCopied(g.id);
+      setTimeout(()=>setCopied(null),2500);
+    }
   };
 
   const delGuest=(id)=>{setGuests(p=>p.filter(g=>g.id!==id));try{localStorage.removeItem(STORAGE_PREFIX+id);}catch{}};
