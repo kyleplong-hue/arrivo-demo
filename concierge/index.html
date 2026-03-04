@@ -353,6 +353,19 @@ return<div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 10
 function OwnerTab({week,guests,setGuests,alts,setAlts}){
 const[newG,setNewG]=useState({name:"",checkin:"",checkout:"",notes:""});
 const[copied,setCopied]=useState(null);
+const[apiConnected,setApiConnected]=useState(false);
+
+const connectApi=()=>{
+    setApiConnected(true);
+    const fakeGuests = [
+        {id:"guest1",name:"David & Emma",checkin:"2026-03-10",checkout:"2026-03-14",notes:"Looking for dumpling spots.",week:JSON.parse(JSON.stringify(week)).slice(0,5),created:Date.now()},
+        {id:"guest2",name:"Chen Family",checkin:"2026-03-15",checkout:"2026-03-18",notes:"Interested in tea ceremonies.",week:JSON.parse(JSON.stringify(week)).slice(0,4),created:Date.now()},
+        {id:"guest3",name:"Maria S.",checkin:"2026-03-20",checkout:"2026-03-22",notes:"Vegan, loves spicy Sichuan food.",week:JSON.parse(JSON.stringify(week)).slice(0,3),created:Date.now()},
+    ];
+    setGuests(p=>[...p,...fakeGuests]);
+    fakeGuests.forEach(g=>saveGD(g.id,g)); // Also save to local storage for persistence
+};
+
 const[altFilter,setAltFilter]=useState("all");
 const[editAlt,setEditAlt]=useState(null);const[altForm,setAltForm]=useState({});
 const[newAlt,setNewAlt]=useState(false);
@@ -371,6 +384,11 @@ return<div style={{padding:"16px 14px",maxWidth:700,margin:"0 auto"}}>
 {/* GUEST MANAGER */}
 <div style={{background:T.wh,borderRadius:12,padding:16,border:"1px solid "+T.terra+"28",marginBottom:16}}>
 <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:16,color:T.terra,marginBottom:12}}>Guest Manager</h3>
+{guests.length===0&&!apiConnected&&<div style={{background:T.bgS,borderRadius:10,padding:14,border:"1px solid "+T.bd,marginBottom:12,textAlign:"center"}}>
+<p style={{fontSize:12,color:T.mt,marginBottom:10}}>Connect your booking system to import upcoming guests:</p>
+<button onClick={connectApi} style={{padding:"8px 16px",background:T.sky,color:"#fff",border:"none",borderRadius:20,fontSize:13,fontWeight:600,cursor:"pointer"}}>Connect Tour API</button>
+</div>}
+{guests.length===0&&apiConnected&&<div style={{textAlign:"center",padding:20}}><div style={{fontSize:28,marginBottom:8}}>✅</div><div style={{fontSize:14,color:T.olive}}>3 guests imported!</div></div>}
 <div style={{background:T.bgS,borderRadius:10,padding:14,border:"1px solid "+T.bd,marginBottom:12}}>
 <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>+ New Guest</div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
