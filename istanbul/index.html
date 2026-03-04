@@ -58,7 +58,7 @@ const STORIES={
 function linkP(text){if(!text)return text;let parts=[];let rem=text;const sk=Object.keys(PLACES).sort((a,b)=>b.length-a.length);while(rem.length>0){let e={idx:Infinity,key:null};for(const k of sk){const i=rem.indexOf(k);if(i!==-1&&i<e.idx)e={idx:i,key:k};}if(!e.key){parts.push(rem);break;}if(e.idx>0)parts.push(rem.slice(0,e.idx));parts.push({place:e.key,query:PLACES[e.key]});rem=rem.slice(e.idx+e.key.length);}return parts;}
 
 /* ═══ TAG SYSTEM ═══ */
-const TS={breakfast:{bg:"#FBF6EC",a:T.gold,l:"Breakfast"},lunch:{bg:"#F2F5EC",a:T.olive,l:"Lunch"},dinner:{bg:"#FDF5EF",a:T.terra,l:"Dinner"},street:{bg:"#FDF5EF",a:T.terraL,l:"Street Food"},sweet:{bg:"#FBF0F2",a:T.wine,l:"Sweet"},drinks:{bg:"#FBF0F2",a:T.wine,l:"Drinks"},bazaar:{bg:"#FBF6EC",a:T.gold,l:"Bazaar"},meyhane:{bg:"#FBF0F2",a:T.wine,l:"Meyhane"},coffee:{bg:"#F3F0EB",a:"#6B5C4D",l:"Coffee"},market:{bg:"#F2F5EC",a:T.olive,l:"Market"},walk:{bg:"#EDF4F9",a:T.sky,l:"Walk"},ferry:{bg:"#EDF4F9",a:T.sky,l:"Ferry"},sight:{bg:"#F3F0EB",a:T.mt,l:"Sight"},tour:{bg:"#FDF5EF",a:T.terra,l:"Tour"}};
+const TS={breakfast:{bg:"#FBF6EC",a:T.gold,l:"Breakfast"},lunch:{bg:"#F2F5EC",a:T.olive,l:"Lunch"},dinner:{bg:"#FDF5EF",a:T.terra,l:"Dinner"},street:{bg:"#FDF5EF",a:T.terraL,l:"Street Food"},sweet:{bg:"#FBF0F2",a:T.wine,l:"Sweet"},drinks:{bg:"#FBF0F2",a:T.wine,l:"Drinks"},bazaar:{bg:"#FBF6EC",a:T.gold,l:"Bazaar"},meyhane:{bg:"#FBF0F2",a:T.wine,l:"Meyhane"},coffee:{bg:"#F3F0EB",a:"#6B5C4D",l:"Coffee"},market:{bg:"#F2F5EC",a:T.olive,l:"Market"},walk:{bg:"#EDF4F9",a:T.sky,l:"Walk"},ferry:{bg:"#EDF4F9",a:T.sky,l:"Ferry"},sight:{bg:"#F3F0EB",a:T.mt,l:"Sight"},tour:{bg:"#FDF5EF",a:T.terra,l:"Tour"},hotel:{bg:"#F0EDE6",a:"#4A4540",l:"Hotel"}};
 
 /* ═══ ALTS BANK ═══ */
 const ALTS=[
@@ -96,41 +96,51 @@ function decodeGuestURL(){const d=new URLSearchParams(window.location.search).ge
 /* ═══ DEFAULT WEEK ═══ */
 const initWeek=()=>[
 {id:"d1",title:"Old City & Grand Bazaar",sub:"Monuments, masters & hidden gems",emoji:"🏛️",accent:T.terra,blocks:[
+{id:"d1b0",t:"8:30 AM",l:"Pera Palace Hotel",d:"Your hotel in Beyoğlu. Central to all neighborhoods.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul"},
 {id:"d1b1",t:"9:00 AM",l:"Boris'in Yeri",d:"Start with kaymak & egg breakfast. White Russian heritage since early Republic era. Ayaspaşa.",tag:"breakfast",cat:"breakfast",map:"Boris'in+Yeri+Ayaspaşa+Istanbul"},
 {id:"d1b2",t:"10:00 AM",l:"CB Walk: Culinary Secrets of the Old City",d:"Your booked tour! 5-hour walk through the old city's hidden food gems. Meet at Sultanahmet tram stop, exit toward Hippodrome. Guide: look for the CB tote bag. Confirmation #CB-2026-4471.",tag:"tour",cat:"tour",map:"Sultanahmet+Istanbul",book:true,dr:"20 min taxi"},
 {id:"d1b3",t:"3:30 PM",l:"Aynen Dürüm",d:"Microscopic kebab shack at Grand Bazaar's edge. Best lamb dürüm in the old city. Perfect post-walk fuel.",tag:"street",cat:"street",map:"Aynen+Dürüm+Grand+Bazaar+Istanbul",dr:"5 min walk from tour end"},
 {id:"d1b4",t:"2:30 PM",l:"Tea near Süleymaniye",d:"Find a tea garden with a view near the mosque. This is how Istanbullus pause.",tag:"coffee",cat:"coffee",map:"Süleymaniye+Camii+Istanbul",dr:"15 min walk"},
 {id:"d1b5",t:"4:00 PM",l:"Lezzet-i Şark",d:"Mind-blowing künefe. Crispy shredded pastry, melting cheese, sugar syrup, pistachios.",tag:"sweet",cat:"sweet",map:"Lezzet-i+Şark+Istanbul",dr:"10 min walk"},
 {id:"d1b6",t:"7:30 PM",l:"Karaköy Lokantası",d:"Lokanta by day, meyhane by night. Order the meze spread and let them guide you.",tag:"dinner",cat:"dinner",map:"Karaköy+Lokantası+Istanbul",dr:"15 min tram"},
+{id:"d1b7",t:"9:30 PM",l:"Pera Palace Hotel",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul",dr:"10 min tram"},
 ]},
 {id:"d2",title:"Two Continents",sub:"Ferries, markets & the Asian side",emoji:"⛴️",accent:T.sky,blocks:[
+{id:"d2b0",t:"8:30 AM",l:"Pera Palace Hotel",d:"Your hotel in Beyoğlu. Central to all neighborhoods.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul"},
 {id:"d2b1",t:"9:00 AM",l:"Namlı Gurme",d:"Karaköy deli breakfast. Cheeses, olives, sausages, pastries. Load up.",tag:"breakfast",cat:"breakfast",map:"Namlı+Gurme+Karaköy+Istanbul"},
 {id:"d2b2",t:"10:30 AM",l:"Karaköy Market Walk",d:"Wander the backstreets. Pickle shops, spice stalls, börek windows.",tag:"market",cat:"market",map:"Karaköy+Istanbul",dr:"5 min walk"},
 {id:"d2b3",t:"11:30 AM",l:"Karaköy Güllüoğlu",d:"The baklava institution. Pistachio, walnut, or chocolate — every bite is perfect.",tag:"sweet",cat:"sweet",map:"Karaköy+Güllüoğlu+Istanbul",dr:"3 min walk"},
 {id:"d2b4",t:"12:30 PM",l:"CB Walk: Two Continents Market Tour",d:"Your booked tour! Full-day food walk across two continents. Meet at Karaköy ferry terminal, main entrance. Guide: CB tote bag. Includes ferry crossing, market tastings, and lunch. Confirmation #CB-2026-4472.",tag:"tour",cat:"tour",map:"Karaköy+Istanbul",book:true,dr:"5 min walk to pier"},
 {id:"d2b5",t:"6:00 PM",l:"Free time in Kadıköy",d:"Tour ends in Kadıköy. Browse Moda backstreets, vinyl shops, or grab a Turkish coffee.",tag:"walk",cat:"walk",map:"Moda+Kadıköy+Istanbul",dr:"tour ends here"},
 {id:"d2b6",t:"7:30 PM",l:"Çiya Sofrası",d:"Very likely the best restaurant in Istanbul. Rotating Anatolian menu. A profound taste experience.",tag:"dinner",cat:"dinner",map:"Çiya+Sofrası+Kadıköy+Istanbul",dr:"8 min walk"},
+{id:"d2b7",t:"9:30 PM",l:"Pera Palace Hotel",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul",dr:"30 min ferry + walk"},
 ]},
 {id:"d3",title:"Bazaar Quarter Deep Dive",sub:"Grand Bazaar masters & street food",emoji:"🏪",accent:T.gold,blocks:[
+{id:"d3b0",t:"8:00 AM",l:"Pera Palace Hotel",d:"Your hotel in Beyoğlu. Central to all neighborhoods.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul"},
 {id:"d3b1",t:"8:30 AM",l:"Esnaf Lokantası Breakfast",d:"Start like locals: lentil soup, bread, tea. Find any steaming window near Eminönü.",tag:"breakfast",cat:"breakfast",map:"Eminönü+Istanbul"},
 {id:"d3b2",t:"10:00 AM",l:"CB: Bazaar Quarter Walk",d:"6-hour CB food tour. Meet craftsmen-masters, eat at the area's most classic spots.",tag:"tour",cat:"tour",book:true,dr:"10 min walk"},
 {id:"d3b3",t:"4:30 PM",l:"Spice Bazaar",d:"Mısır Çarşısı. Saffron, dried fruits, lokum. Smell your way through centuries.",tag:"bazaar",cat:"bazaar",map:"Mısır+Çarşısı+Istanbul",dr:"5 min walk"},
 {id:"d3b4",t:"6:00 PM",l:"Galata Bridge Sunset",d:"Walk across at sunset. Fishermen on top, fish restaurants below. Grab a balık ekmek.",tag:"walk",cat:"walk",map:"Galata+Bridge+Istanbul",dr:"8 min walk"},
 {id:"d3b5",t:"8:30 PM",l:"Sofyalı 9",d:"Classic Beyoğlu meyhane. Meze, rakı, and conversation. This is the Turkish way.",tag:"meyhane",cat:"meyhane",map:"Sofyalı+9+Beyoğlu+Istanbul",dr:"15 min walk uphill"},
+{id:"d3b6",t:"10:30 PM",l:"Pera Palace Hotel",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul",dr:"5 min walk"},
 ]},
 {id:"d4",title:"Kebab Trail & Backstreets",sub:"Döner masters, kokoreç legends & hidden gems",emoji:"🔥",accent:T.terraL,blocks:[
+{id:"d4b0",t:"8:30 AM",l:"Pera Palace Hotel",d:"Your hotel in Beyoğlu. Central to all neighborhoods.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul"},
 {id:"d4b1",t:"9:00 AM",l:"Simit & Tea",d:"Sesame-crusted simit from a red street cart. Eat it with cheese and olives at any çay bahçesi.",tag:"breakfast",cat:"breakfast"},
 {id:"d4b2",t:"11:00 AM",l:"Kaya Döner",d:"Bomonti's excellent new spot (2024). Young couple, stellar döner, great attention to detail.",tag:"street",cat:"street",map:"Kaya+Döner+Bomonti+Istanbul",dr:"15 min metro"},
 {id:"d4b3",t:"1:00 PM",l:"Mahir Lokantası",d:"Osmanbey. Wood-fired oven, Diyarbakır recipes. The esnaf lokantası at its finest.",tag:"lunch",cat:"lunch",map:"Mahir+Lokantası+Osmanbey+Istanbul",dr:"10 min walk"},
 {id:"d4b4",t:"3:30 PM",l:"Mezme",d:"Kurtuluş gem. Meze deli by chef Sasun — Armenian & Hatay traditions. Recently reopened.",tag:"meyhane",cat:"meyhane",map:"Mezme+Kurtuluş+Istanbul",dr:"12 min walk"},
 {id:"d4b5",t:"6:00 PM",l:"Ozzie's Kokoreç",d:"Usta Oğuzhan's legendary kokoreç in Asmalımescit. Grilled lamb intestines — trust us.",tag:"street",cat:"street",map:"Ozzie's+Kokoreç+Asmalımescit+Istanbul",dr:"20 min taxi"},
 {id:"d4b6",t:"8:00 PM",l:"Kavurmacı Goze",d:"Hidden beneath a copper-domed bank in Sirkeci. One menu item: braised beef (kavurma).",tag:"dinner",cat:"dinner",map:"Kavurmacı+Goze+Sirkeci+Istanbul",dr:"15 min tram"},
+{id:"d4b7",t:"9:30 PM",l:"Pera Palace Hotel",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul",dr:"10 min tram"},
 ]},
 {id:"d5",title:"Bosphorus & Asian Side",sub:"Waterside neighborhoods & ferry feasts",emoji:"🌊",accent:T.skyL,blocks:[
+{id:"d5b0",t:"8:30 AM",l:"Pera Palace Hotel",d:"Your hotel in Beyoğlu. Central to all neighborhoods.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul"},
 {id:"d5b1",t:"9:00 AM",l:"CB: Born on the Bosphorus",d:"Full-day CB tour. Workingman's breakfast to fish lunch in waterside neighborhoods.",tag:"tour",cat:"tour",book:true},
 {id:"d5b2",t:"4:00 PM",l:"Kadıköy Backstreets",d:"Vintage record shops, craft coffee, street art. The hipster-meets-grandma side of Istanbul.",tag:"walk",cat:"walk",map:"Moda+Kadıköy+Istanbul",dr:"10 min walk"},
 {id:"d5b3",t:"7:00 PM",l:"Çiya Sofrası — Return Visit",d:"The menu changes daily. Spring: meat stew with unripe green plums. Always a revelation.",tag:"dinner",cat:"dinner",map:"Çiya+Sofrası+Kadıköy+Istanbul",dr:"8 min walk"},
 {id:"d5b4",t:"9:30 PM",l:"Moda Nightcap",d:"Walk the Moda seafront. Pick a rooftop bar, watch the lights of the European shore.",tag:"drinks",cat:"drinks",map:"Moda+Kadıköy+Istanbul",dr:"5 min walk"},
+{id:"d5b5",t:"11:00 PM",l:"Pera Palace Hotel",d:"Back to your hotel.",tag:"hotel",cat:"hotel",map:"Pera+Palace+Hotel+Beyoğlu+Istanbul",dr:"30 min ferry + walk"},
 ]},
 ];
 

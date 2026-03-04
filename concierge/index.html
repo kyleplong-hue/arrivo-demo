@@ -89,7 +89,7 @@ return{km,walkMin,driveMin};
 }
 
 function linkP(t){if(!t)return[t];let p=[],r=t;const sk=Object.keys(PL).sort((a,b)=>b.length-a.length);while(r.length>0){let b={i:Infinity,k:null};for(const k of sk){const i=r.indexOf(k);if(i!==-1&&i<b.i)b={i:i,k:k};}if(!b.k){p.push(r);break;}if(b.i>0)p.push(r.slice(0,b.i));p.push({n:b.k,q:PL[b.k]});r=r.slice(b.i+b.k.length);}return p;}
-const CT={breakfast:{bg:"#FBF6EC",a:"#C49A3C",i:"\u2600\uFE0F",l:"Morning"},lunch:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83E\uDD62",l:"Midday"},dinner:{bg:"#FFF0ED",a:"#E8634A",i:"\uD83C\uDF77",l:"Evening"},drinks:{bg:"#F3EEF8",a:"#8B6BAF",i:"\uD83C\uDF78",l:"Night Out"},sightseeing:{bg:"#EDF4FA",a:"#5B8DB8",i:"\uD83D\uDCCD",l:"Explore"},tour:{bg:"#FFF0ED",a:"#E8634A",i:"\uD83D\uDEB6",l:"Tour"},brunch:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83E\uDD42",l:"Brunch"}};
+const CT={breakfast:{bg:"#FBF6EC",a:"#C49A3C",i:"\u2600\uFE0F",l:"Morning"},lunch:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83E\uDD62",l:"Midday"},dinner:{bg:"#FFF0ED",a:"#E8634A",i:"\uD83C\uDF77",l:"Evening"},drinks:{bg:"#F3EEF8",a:"#8B6BAF",i:"\uD83C\uDF78",l:"Night Out"},sightseeing:{bg:"#EDF4FA",a:"#5B8DB8",i:"\uD83D\uDCCD",l:"Explore"},tour:{bg:"#FFF0ED",a:"#E8634A",i:"\uD83D\uDEB6",l:"Tour"},brunch:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83E\uDD42",l:"Brunch"},hotel:{bg:"#F0EDE6",a:"#4A4540",i:"\uD83C\uDFE8",l:"Hotel"}};
 
 const ALTS=[
 {l:"Jia Jia Tangbao",d:"Best soup dumplings. Pork XLB, salted egg yolk. 127 Huanghe Rd.",c:"breakfast",m:"Jia+Jia+Tangbao+Shanghai"},
@@ -124,39 +124,49 @@ const ALTS=[
 
 const IW=[
 {title:"Dumpling Day",emoji:"\uD83E\uDD5F",items:[
+{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 {l:"Jia Jia Tangbao",d:"Best soup dumplings. Pork XLB, salted duck egg yolk. 127 Huanghe Rd.",c:"breakfast",m:"Jia+Jia+Tangbao+Shanghai"},
 {l:"French Concession Walk",d:"Stroll tree-lined streets from Wukang Mansion through boutiques.",c:"sightseeing",m:"Wukang+Mansion+Shanghai"},
 {l:"Pengyuan Guotie",d:"Best potstickers. Husband-wife stall. 102 Gao'an Rd.",c:"lunch",m:"Pengyuan+Guotie+Shanghai"},
 {l:"Yu Garden",d:"Classic Chinese garden & bazaar. Nanxiang dumplings nearby.",c:"sightseeing",m:"Yu+Garden+Shanghai"},
 {l:"Old Jesse",d:"Best Shanghainese. Pre-order codfish head & red-braised pork shank!",c:"dinner",m:"Lao+Ji+Shi+Old+Jesse+Shanghai",b:true},
+{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
 {title:"Street Food & Noodles",emoji:"\uD83C\uDF5C",items:[
+{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 {l:"Jianbing Stall",d:"Best Chinese crepe. 1370 Xikang Rd, 7-11am. Say 'bula' no chili.",c:"breakfast",m:"Jianbing+1370+Xikang+Rd+Shanghai"},
 {l:"UnTour Street Eats",d:"Guided street food crawl through the French Concession.",c:"tour",b:true},
 {l:"Wei Xiang Zhai",d:"Legendary sesame-peanut noodles. 14 Yandang Rd.",c:"lunch",m:"Wei+Xiang+Zhai+Shanghai"},
 {l:"Tianzifang",d:"Artsy laneways. Great for souvenirs and coffee.",c:"sightseeing",m:"Tianzifang+Shanghai"},
 {l:"Liu Tang Men",d:"Fiery Sichuan noodles. Start at mild! 419-1 Xinhua Rd.",c:"dinner",m:"Liu+Tang+Men+Shanghai"},
+{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
 {title:"Regional Flavors",emoji:"\uD83C\uDF36\uFE0F",items:[
+{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 {l:"Dong Tai Xiang",d:"Sheng jian bao (fried soup dumplings). Open 24hrs!",c:"breakfast",m:"Dong+Tai+Xiang+Shanghai"},
 {l:"Lotus Eatery",d:"Yunnan: fried insects, edible flowers, goat cheese.",c:"lunch",m:"Lotus+Eatery+Shanghai"},
 {l:"Propaganda Poster Museum",d:"Hidden gem. Fascinating Cold War-era collection.",c:"sightseeing",m:"Propaganda+Poster+Museum+Shanghai"},
 {l:"Ben Zhen",d:"Spicy Sichuan in style. Craft beer to cool the burn.",c:"dinner",m:"Ben+Zhen+Sichuan+Shanghai"},
 {l:"Avenue Joffre",d:"Japanese cocktail bar. Classics done to perfection.",c:"drinks",m:"Avenue+Joffre+Shanghai"},
+{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
 {title:"The Bund & Fine Dining",emoji:"\u2728",items:[
+{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 {l:"Egg Cafe",d:"Western all-day breakfast & great coffee.",c:"breakfast",m:"Egg+Cafe+Shanghai"},
 {l:"The Bund Walk",d:"Iconic waterfront. Art Deco meets Pudong skyline.",c:"sightseeing",m:"The+Bund+Shanghai"},
 {l:"Canton Table",d:"High-end dim sum with Bund views & tea sommelier.",c:"lunch",m:"Canton+Table+Three+on+the+Bund+Shanghai",b:true},
 {l:"Nanjing Road",d:"Pedestrian street, then cab to Jing'an for upscale shopping.",c:"sightseeing"},
 {l:"Tai'An Table",d:"Three Michelin stars. THE Shanghai splurge.",c:"dinner",m:"Tai+An+Table+Shanghai",b:true},
+{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
 {title:"Hotpot & Nightlife",emoji:"\uD83E\uDE98",items:[
+{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 {l:"Highline",d:"Shanghai's best brunch. Southern hospitality, fireplace patio.",c:"brunch",m:"Highline+Shanghai+Ascott",b:true},
 {l:"Xintiandi",d:"Restored shikumen neighborhood. Wandering, shopping.",c:"sightseeing",m:"Xintiandi+Shanghai"},
 {l:"Yanji Old Beijing Hotpot",d:"Coal steamboat, thin-sliced lamb, sesame dip.",c:"dinner",m:"Yanji+Old+Beijing+Hotpot+Shanghai"},
 {l:"Flair at the Ritz",d:"58th floor \u2014 highest patio bar. Pearl Tower views.",c:"drinks",m:"Flair+Ritz+Carlton+Pudong"},
 {l:"KEV or INS",d:"KEV: Bund 18 champagne. INS: six floors of clubs.",c:"drinks",m:"KEV+Bund+18+Shanghai"},
+{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
 ];
 
