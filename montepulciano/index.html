@@ -101,8 +101,9 @@ const TS={home:{bg:"#2D2A22",a:T.gl},relax:{bg:"#1E2B1E",a:"#A8D5BA"},food:{bg:"
 const STORAGE_PREFIX="mn_guest_";
 function saveGuestData(guestId,data){try{localStorage.setItem(STORAGE_PREFIX+guestId,JSON.stringify(data));}catch(e){console.warn("Storage full");}}
 function loadGuestData(guestId){try{const d=localStorage.getItem(STORAGE_PREFIX+guestId);return d?JSON.parse(d):null;}catch{return null;}}
-function getURLGuest(){const p=new URLSearchParams(window.location.search);return p.get("g");}
+function getURLGuest(){const p=new URLSearchParams(window.location.search);return p.get("g")||p.get("pb");}
 function decodeGuestURL(){const p=new URLSearchParams(window.location.search);const d=p.get("d");if(!d)return null;try{return JSON.parse(decodeURIComponent(atob(d)));}catch{return null;}}
+async function loadFromPocketBase(linkId){try{const res=await fetch('/api/collections/guests/records?filter=(link_id=%27'+encodeURIComponent(linkId)+'%27)&perPage=1');const data=await res.json();if(!data.items?.length)return null;const g=data.items[0];const week=(g.itinerary||[]).map((d,i)=>({title:d.title||'Day '+(i+1),emoji:['🏡','🍷','⛰️','🏖️','🎨','🍕','☀️'][i%7],stops:(d.stops||[]).map(s=>({time:s.time||'',name:s.name||'',desc:s.desc||'',address:s.address||''}))}));return{name:g.name,checkin:g.checkin?.slice(0,10),checkout:g.checkout?.slice(0,10),notes:g.notes,week};}catch(e){console.error('PB load error:',e);return null;}}
 
 /* ═══ DEFAULT WEEK ═══ */
 const initWeek=()=>[
@@ -544,14 +545,24 @@ function App(){
       setGuestMode(true);
       return;
     }
-    // Try URL-encoded data (first visit)
+    // Try URL-encoded data (first visit via old link)
     const decoded=decodeGuestURL();
     if(decoded){
       setGuestInfo({name:decoded.name,checkin:decoded.checkin,checkout:decoded.checkout});
       setWeek(decoded.week);
       saveGuestData(gId,decoded);
       setGuestMode(true);
+      return;
     }
+    // Try PocketBase (persistent guest link)
+    loadFromPocketBase(gId).then(pb=>{
+      if(pb){
+        setGuestInfo({name:pb.name,checkin:pb.checkin,checkout:pb.checkout});
+        if(pb.week?.length)setWeek(pb.week);
+        saveGuestData(gId,{...pb,id:gId});
+        setGuestMode(true);
+      }
+    });
   },[]);
 
   // Auto-save guest edits
