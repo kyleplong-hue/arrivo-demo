@@ -208,8 +208,8 @@ window.prompt("Copy this link:",text);
 
 function Header({tab,setTab,isO,setIsO,gi}){
 const[sp,setSp]=useState(false);const[p,setP]=useState("");
-const gt=[{id:"week",l:"Your Week",i:"\uD83D\uDCC5"},{id:"crawls",l:"Food Crawls",i:"\uD83D\uDDFA\uFE0F"},{id:"essentials",l:"Essentials",i:"\uD83D\uDCF1"},{id:"bookings",l:"Bookings",i:"\uD83D\uDCCB"},{id:"chat",l:"Ask Us",i:"\uD83D\uDCAC"}];
-const tabs=isO?[...gt,{id:"owner",l:"Dashboard",i:"\u2699\uFE0F"}]:gt;
+const gt=[{id:"week",l:"Your Week"},{id:"crawls",l:"Food Crawls"},{id:"essentials",l:"Essentials"},{id:"bookings",l:"Bookings"},{id:"chat",l:"Ask Us"}];
+const tabs=isO?[...gt,{id:"owner",l:"Dashboard"}]:gt;
 return(
 <header style={{background:"rgba(250,250,248,.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid "+C.bd,position:"sticky",top:0,zIndex:100}}>
 <div style={{maxWidth:680,margin:"0 auto",padding:"16px 20px 0"}}>
@@ -288,7 +288,7 @@ return(
 </div>
 </div>
 <div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0,paddingTop:2}}>
-{isOwner&&<button onClick={()=>{setEf({l:item.l,d:item.d,c:item.c,m:item.m||"",b:!!item.b});setEd(true);}} style={{width:28,height:28,borderRadius:8,background:C.wmS,border:"1px solid "+C.bd,color:C.wm,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}} title="Edit">✏️</button>}
+{isOwner&&<button onClick={()=>{setEf({l:item.l,d:item.d,c:item.c,m:item.m||"",b:!!item.b});setEd(true);}} style={{width:28,height:28,borderRadius:8,background:C.wmS,border:"1px solid "+C.bd,color:C.wm,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}} title="Edit"></button>}
 <button onClick={()=>setO(!o)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:C.mt,fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u21BB"}</button>
 {onDl&&<button onClick={()=>onDl(di,idx)} style={{width:28,height:28,borderRadius:8,background:C.bgS,border:"1px solid "+C.bd,color:"#D4766A",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{"\u2715"}</button>}
 </div>
@@ -329,7 +329,7 @@ const editCard=(di,ii,data)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map
 return(
 <div style={{padding:"24px 20px",maxWidth:680,margin:"0 auto"}}>
 {editingTpl&&<div style={{background:C.crS,border:"2px solid "+C.cr,borderRadius:14,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
-<span style={{fontSize:14}}>📝</span>
+<span style={{fontSize:14}}></span>
 <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:C.cr}}>Editing: {editingTpl.name}</div><div style={{fontSize:12,color:C.mt}}>Swap or remove cards, then save your template.</div></div>
 <button onClick={onSaveTpl} style={{fontSize:12,padding:"8px 16px",background:C.sg,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600}}>Save Template</button>
 <button onClick={onCancelTpl} style={{fontSize:12,padding:"8px 16px",background:C.bgS,color:C.mt,border:"1px solid "+C.bd,borderRadius:20,cursor:"pointer"}}>Cancel</button>
@@ -345,7 +345,7 @@ const isOpen=open===di;
 return(<div key={di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO(e,di)} onDragEnd={()=>setDragDay(null)} style={{marginBottom:8,opacity:dragDay===di?.5:1,cursor:"grab"}}>
 <button onClick={()=>setOpen(isOpen?-1:di)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,background:isOpen?C.wh:C.bgS,border:"1px solid "+(isOpen?C.cr+"44":C.bd),borderRadius:isOpen?"14px 14px 0 0":"14px",padding:"12px 16px",cursor:"pointer"}}>
 <span style={{fontSize:11,color:C.mt,cursor:"grab",userSelect:"none"}}>{"\u2800\u2807\u2800\u2807"}</span>
-<span style={{fontSize:20}}>{day.emoji}</span>
+
 <div style={{textAlign:"left",flex:1}}>
 <div style={{fontSize:11,color:C.cr,fontWeight:600,letterSpacing:.5,textTransform:"uppercase"}}>Day {di+1}{ds?" \u00B7 "+ds:""}</div>
 <div style={{fontSize:16,fontWeight:600,marginTop:1}}>{day.title}</div>
@@ -413,7 +413,7 @@ ed&&ed.si===si&&ed.ii===ii?
 :<div key={ii} onClick={()=>startEdit(si,ii)} style={{background:C.wh,borderRadius:14,border:"1px solid "+C.bd,padding:"12px 16px",marginBottom:6,cursor:isO?"pointer":"default"}}>
 <div style={{fontSize:14,fontWeight:600,marginBottom:2}}>{m.t}</div>
 <div style={{fontSize:13,color:C.fgS,lineHeight:1.5}}>{m.d}</div>
-{isO&&<div style={{fontSize:10,color:C.mtL,marginTop:4}}>✏️ click to edit</div>}
+{isO&&<div style={{fontSize:10,color:C.mtL,marginTop:4}}> click to edit</div>}
 </div>
 ))}
 {isO&&<button onClick={()=>addItem(si)} style={{fontSize:12,color:C.cr,background:C.crS,border:"none",borderRadius:20,padding:"8px 16px",cursor:"pointer",fontWeight:600,marginTop:4}}>+ Add Item</button>}
@@ -518,7 +518,7 @@ const addAlt=(data)=>{setAlts([...alts,data]);setAdding(false);setForm({});};
 return(
 <div style={{background:C.wh,borderRadius:16,border:"1px solid "+C.bd,padding:20,marginTop:16}}>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-<h3 style={{fontSize:16,fontWeight:600}}>📋 Recommendations ({alts.length})</h3>
+<h3 style={{fontSize:16,fontWeight:600}}>Recommendations ({alts.length})</h3>
 <button onClick={()=>{setAdding(true);setForm({l:"",d:"",c:"dinner",m:"",b:false});}} style={{fontSize:11,color:C.cr,background:C.crS,border:"none",borderRadius:20,padding:"6px 14px",cursor:"pointer",fontWeight:600}}>+ Add</button>
 </div>
 <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>
@@ -558,7 +558,7 @@ return isEd?<div key={ri} style={{background:C.bgS,borderRadius:10,padding:10,ma
 <div style={{fontSize:11,color:C.mt,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.d}</div>
 </div>
 <span style={{fontSize:9,color:ct.a,background:ct.bg,padding:"2px 7px",borderRadius:10,flexShrink:0,fontWeight:600}}>{a.c}</span>
-{a.b&&<span style={{fontSize:9,color:C.cr,flexShrink:0}}>📞</span>}
+{a.b&&<span style={{fontSize:9,color:C.cr,flexShrink:0}}></span>}
 </div>;})}
 </div>
 </div>);
@@ -711,7 +711,7 @@ return(<div key={g.id} style={{background:C.wh,borderRadius:14,border:isEd?"2px 
 <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8,cursor:"pointer"}} onClick={()=>{setEditId(g.id);setEditData({name:g.name,ci:g.ci,co:g.co,n:g.n||"",email:g.email||"",tplId:(tpls.find(t=>t.name===g.tplName)||tpls[0]).id,tplName:g.tplName,wk:g.wk});}}>
 <div style={{width:36,height:36,borderRadius:10,background:C.wmS,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:C.wm}}>{g.name.charAt(0)}</div>
 <div style={{flex:1}}>
-<div style={{fontSize:14,fontWeight:600}}>{g.name} <span style={{fontSize:10,color:C.mtL}}>✏️</span></div>
+<div style={{fontSize:14,fontWeight:600}}>{g.name} <span style={{fontSize:10,color:C.mtL}}></span></div>
 <div style={{fontSize:12,color:C.mt}}>{fD(g.ci)} {"\u2192"} {fD(g.co)}{g.tplName?" \u00B7 "+g.tplName:""}</div>
 {g.n&&<div style={{fontSize:11,color:C.mt}}>{g.n}</div>}
 </div>
