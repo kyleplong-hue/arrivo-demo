@@ -89,7 +89,7 @@ return{km,walkMin,driveMin};
 }
 
 function linkP(t){if(!t)return[t];let p=[],r=t;const sk=Object.keys(PL).sort((a,b)=>b.length-a.length);while(r.length>0){let b={i:Infinity,k:null};for(const k of sk){const i=r.indexOf(k);if(i!==-1&&i<b.i)b={i:i,k:k};}if(!b.k){p.push(r);break;}if(b.i>0)p.push(r.slice(0,b.i));p.push({n:b.k,q:PL[b.k]});r=r.slice(b.i+b.k.length);}return p;}
-const CT={breakfast:{bg:"#FBF6EC",a:"#C49A3C",i:"\u2600\uFE0F",l:"Morning"},lunch:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83E\uDD62",l:"Midday"},dinner:{bg:"#FFF0ED",a:"#E8634A",i:"\uD83C\uDF77",l:"Evening"},drinks:{bg:"#F3EEF8",a:"#8B6BAF",i:"\uD83C\uDF78",l:"Night Out"},sightseeing:{bg:"#EDF4FA",a:"#5B8DB8",i:"\uD83D\uDCCD",l:"Explore"},tour:{bg:"#FFF0ED",a:"#E8634A",i:"\uD83D\uDEB6",l:"Tour"},brunch:{bg:"#F0F5ED",a:"#6B8F6B",i:"\uD83E\uDD42",l:"Brunch"},hotel:{bg:"#F0EDE6",a:"#4A4540",i:"\uD83C\uDFE8",l:"Hotel"}};
+const CT={breakfast:{bg:"#FBF6EC",a:"#C49A3C",l:"Morning"},lunch:{bg:"#F0F5ED",a:"#6B8F6B",l:"Midday"},dinner:{bg:"#FFF0ED",a:"#E8634A",l:"Evening"},drinks:{bg:"#F3EEF8",a:"#8B6BAF",l:"Night Out"},sightseeing:{bg:"#EDF4FA",a:"#5B8DB8",l:"Explore"},tour:{bg:"#FFF0ED",a:"#E8634A",l:"Tour"},brunch:{bg:"#F0F5ED",a:"#6B8F6B",l:"Brunch"},hotel:{bg:"#F0EDE6",a:"#4A4540",l:"Hotel"}};
 
 const ALTS=[
 {l:"Jia Jia Tangbao",d:"Best soup dumplings. Pork XLB, salted egg yolk. 127 Huanghe Rd.",c:"breakfast",m:"Jia+Jia+Tangbao+Shanghai"},
@@ -123,66 +123,66 @@ const ALTS=[
 ];
 
 const IW=[
-{title:"Dumpling Day",emoji:"\uD83E\uDD5F",items:[
-{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{l:"Jia Jia Tangbao",d:"Best soup dumplings. Pork XLB, salted duck egg yolk. 127 Huanghe Rd.",c:"breakfast",m:"Jia+Jia+Tangbao+Shanghai"},
-{l:"French Concession Walk",d:"Stroll tree-lined streets from Wukang Mansion through boutiques.",c:"sightseeing",m:"Wukang+Mansion+Shanghai"},
-{l:"Pengyuan Guotie",d:"Best potstickers. Husband-wife stall. 102 Gao'an Rd.",c:"lunch",m:"Pengyuan+Guotie+Shanghai"},
-{l:"Yu Garden",d:"Classic Chinese garden & bazaar. Nanxiang dumplings nearby.",c:"sightseeing",m:"Yu+Garden+Shanghai"},
-{l:"Old Jesse",d:"Best Shanghainese. Pre-order codfish head & red-braised pork shank!",c:"dinner",m:"Lao+Ji+Shi+Old+Jesse+Shanghai",b:true},
-{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{title:"Dumpling Day",items:[
+{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{t:"10:00 AM",l:"Jia Jia Tangbao",d:"Best soup dumplings. Pork XLB, salted duck egg yolk. 127 Huanghe Rd.",c:"breakfast",m:"Jia+Jia+Tangbao+Shanghai"},
+{t:"11:30 AM",l:"French Concession Walk",d:"Stroll tree-lined streets from Wukang Mansion through boutiques.",c:"sightseeing",m:"Wukang+Mansion+Shanghai"},
+{t:"1:00 PM",l:"Pengyuan Guotie",d:"Best potstickers. Husband-wife stall. 102 Gao'an Rd.",c:"lunch",m:"Pengyuan+Guotie+Shanghai"},
+{t:"3:00 PM",l:"Yu Garden",d:"Classic Chinese garden & bazaar. Nanxiang dumplings nearby.",c:"sightseeing",m:"Yu+Garden+Shanghai"},
+{t:"5:00 PM",l:"Old Jesse",d:"Best Shanghainese. Pre-order codfish head & red-braised pork shank!",c:"dinner",m:"Lao+Ji+Shi+Old+Jesse+Shanghai",b:true},
+{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
-{title:"Street Food & Noodles",emoji:"\uD83C\uDF5C",items:[
-{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{l:"Jianbing Stall",d:"Best Chinese crepe. 1370 Xikang Rd, 7-11am. Say 'bula' no chili.",c:"breakfast",m:"Jianbing+1370+Xikang+Rd+Shanghai"},
-{l:"UnTour Street Eats",d:"Guided street food crawl through the French Concession.",c:"tour",b:true},
-{l:"Wei Xiang Zhai",d:"Legendary sesame-peanut noodles. 14 Yandang Rd.",c:"lunch",m:"Wei+Xiang+Zhai+Shanghai"},
-{l:"Tianzifang",d:"Artsy laneways. Great for souvenirs and coffee.",c:"sightseeing",m:"Tianzifang+Shanghai"},
-{l:"Liu Tang Men",d:"Fiery Sichuan noodles. Start at mild! 419-1 Xinhua Rd.",c:"dinner",m:"Liu+Tang+Men+Shanghai"},
-{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{title:"Street Food & Noodles",items:[
+{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{t:"10:00 AM",l:"Jianbing Stall",d:"Best Chinese crepe. 1370 Xikang Rd, 7-11am. Say 'bula' no chili.",c:"breakfast",m:"Jianbing+1370+Xikang+Rd+Shanghai"},
+{t:"11:30 AM",l:"UnTour Street Eats",d:"Guided street food crawl through the French Concession.",c:"tour",b:true},
+{t:"1:00 PM",l:"Wei Xiang Zhai",d:"Legendary sesame-peanut noodles. 14 Yandang Rd.",c:"lunch",m:"Wei+Xiang+Zhai+Shanghai"},
+{t:"3:00 PM",l:"Tianzifang",d:"Artsy laneways. Great for souvenirs and coffee.",c:"sightseeing",m:"Tianzifang+Shanghai"},
+{t:"5:00 PM",l:"Liu Tang Men",d:"Fiery Sichuan noodles. Start at mild! 419-1 Xinhua Rd.",c:"dinner",m:"Liu+Tang+Men+Shanghai"},
+{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
-{title:"Regional Flavors",emoji:"\uD83C\uDF36\uFE0F",items:[
-{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{l:"Dong Tai Xiang",d:"Sheng jian bao (fried soup dumplings). Open 24hrs!",c:"breakfast",m:"Dong+Tai+Xiang+Shanghai"},
-{l:"Lotus Eatery",d:"Yunnan: fried insects, edible flowers, goat cheese.",c:"lunch",m:"Lotus+Eatery+Shanghai"},
-{l:"Propaganda Poster Museum",d:"Hidden gem. Fascinating Cold War-era collection.",c:"sightseeing",m:"Propaganda+Poster+Museum+Shanghai"},
-{l:"Ben Zhen",d:"Spicy Sichuan in style. Craft beer to cool the burn.",c:"dinner",m:"Ben+Zhen+Sichuan+Shanghai"},
-{l:"Avenue Joffre",d:"Japanese cocktail bar. Classics done to perfection.",c:"drinks",m:"Avenue+Joffre+Shanghai"},
-{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{title:"Regional Flavors",items:[
+{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{t:"10:00 AM",l:"Dong Tai Xiang",d:"Sheng jian bao (fried soup dumplings). Open 24hrs!",c:"breakfast",m:"Dong+Tai+Xiang+Shanghai"},
+{t:"11:30 AM",l:"Lotus Eatery",d:"Yunnan: fried insects, edible flowers, goat cheese.",c:"lunch",m:"Lotus+Eatery+Shanghai"},
+{t:"1:00 PM",l:"Propaganda Poster Museum",d:"Hidden gem. Fascinating Cold War-era collection.",c:"sightseeing",m:"Propaganda+Poster+Museum+Shanghai"},
+{t:"3:00 PM",l:"Ben Zhen",d:"Spicy Sichuan in style. Craft beer to cool the burn.",c:"dinner",m:"Ben+Zhen+Sichuan+Shanghai"},
+{t:"5:00 PM",l:"Avenue Joffre",d:"Japanese cocktail bar. Classics done to perfection.",c:"drinks",m:"Avenue+Joffre+Shanghai"},
+{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
-{title:"The Bund & Fine Dining",emoji:"\u2728",items:[
-{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{l:"Egg Cafe",d:"Western all-day breakfast & great coffee.",c:"breakfast",m:"Egg+Cafe+Shanghai"},
-{l:"The Bund Walk",d:"Iconic waterfront. Art Deco meets Pudong skyline.",c:"sightseeing",m:"The+Bund+Shanghai"},
-{l:"Canton Table",d:"High-end dim sum with Bund views & tea sommelier.",c:"lunch",m:"Canton+Table+Three+on+the+Bund+Shanghai",b:true},
-{l:"Nanjing Road",d:"Pedestrian street, then cab to Jing'an for upscale shopping.",c:"sightseeing"},
-{l:"Tai'An Table",d:"Three Michelin stars. THE Shanghai splurge.",c:"dinner",m:"Tai+An+Table+Shanghai",b:true},
-{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{title:"The Bund & Fine Dining",items:[
+{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{t:"10:00 AM",l:"Egg Cafe",d:"Western all-day breakfast & great coffee.",c:"breakfast",m:"Egg+Cafe+Shanghai"},
+{t:"11:30 AM",l:"The Bund Walk",d:"Iconic waterfront. Art Deco meets Pudong skyline.",c:"sightseeing",m:"The+Bund+Shanghai"},
+{t:"1:00 PM",l:"Canton Table",d:"High-end dim sum with Bund views & tea sommelier.",c:"lunch",m:"Canton+Table+Three+on+the+Bund+Shanghai",b:true},
+{t:"3:00 PM",l:"Nanjing Road",d:"Pedestrian street, then cab to Jing'an for upscale shopping.",c:"sightseeing"},
+{t:"5:00 PM",l:"Tai'An Table",d:"Three Michelin stars. THE Shanghai splurge.",c:"dinner",m:"Tai+An+Table+Shanghai",b:true},
+{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
-{title:"Hotpot & Nightlife",emoji:"\uD83E\uDE98",items:[
-{l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
-{l:"Highline",d:"Shanghai's best brunch. Southern hospitality, fireplace patio.",c:"brunch",m:"Highline+Shanghai+Ascott",b:true},
-{l:"Xintiandi",d:"Restored shikumen neighborhood. Wandering, shopping.",c:"sightseeing",m:"Xintiandi+Shanghai"},
-{l:"Yanji Old Beijing Hotpot",d:"Coal steamboat, thin-sliced lamb, sesame dip.",c:"dinner",m:"Yanji+Old+Beijing+Hotpot+Shanghai"},
-{l:"Flair at the Ritz",d:"58th floor \u2014 highest patio bar. Pearl Tower views.",c:"drinks",m:"Flair+Ritz+Carlton+Pudong"},
-{l:"KEV or INS",d:"KEV: Bund 18 champagne. INS: six floors of clubs.",c:"drinks",m:"KEV+Bund+18+Shanghai"},
-{l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{title:"Hotpot & Nightlife",items:[
+{t:"8:30 AM",l:"The Puli Hotel & Spa",d:"Your hotel in Jing'an. Walk to French Concession & Nanjing Rd.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
+{t:"10:00 AM",l:"Highline",d:"Shanghai's best brunch. Southern hospitality, fireplace patio.",c:"brunch",m:"Highline+Shanghai+Ascott",b:true},
+{t:"11:30 AM",l:"Xintiandi",d:"Restored shikumen neighborhood. Wandering, shopping.",c:"sightseeing",m:"Xintiandi+Shanghai"},
+{t:"1:00 PM",l:"Yanji Old Beijing Hotpot",d:"Coal steamboat, thin-sliced lamb, sesame dip.",c:"dinner",m:"Yanji+Old+Beijing+Hotpot+Shanghai"},
+{t:"3:00 PM",l:"Flair at the Ritz",d:"58th floor \u2014 highest patio bar. Pearl Tower views.",c:"drinks",m:"Flair+Ritz+Carlton+Pudong"},
+{t:"5:00 PM",l:"KEV or INS",d:"KEV: Bund 18 champagne. INS: six floors of clubs.",c:"drinks",m:"KEV+Bund+18+Shanghai"},
+{t:"7:00 PM",l:"The Puli Hotel & Spa",d:"Back to your hotel.",c:"hotel",m:"The+Puli+Hotel+Spa+Shanghai"},
 ]},
 ];
 
 const TRIPS=[
-{title:"Dumpling Deep Dive",emoji:"\uD83E\uDD5F",d:"XLB \u2192 sheng jian \u2192 potstickers \u2192 boiled dumplings.",spots:["Jia Jia Tangbao","Dong Tai Xiang","Pengyuan Guotie","Four Seasons Dumpling King"]},
-{title:"Spice Route",emoji:"\uD83C\uDF36\uFE0F",d:"Sichuan \u2192 Guizhou \u2192 Xi'an. Start mild, end sweating.",spots:["Liu Tang Men","Ben Zhen","Maolago","Lazy Monkey Paomo"]},
-{title:"Modern Chinese Bistros",emoji:"\uD83C\uDF77",d:"Chinese food meets wine bar. English menus.",spots:["Bastard","Oha","Maolago"]},
-{title:"Bund Bar Crawl",emoji:"\uD83C\uDF78",d:"Budget to bougie: The Captain \u2192 KEV \u2192 Flair.",spots:["The Captain","Mr & Mrs Bund","KEV","Flair"]},
-{title:"Fine Dining Circuit",emoji:"\u2B50",d:"Imperial Treasure \u2192 Seventh Son \u2192 Tai'An Table.",spots:["Imperial Treasure","Seventh Son","Tai'An Table"]},
+{title:"Dumpling Deep Dive",d:"XLB \u2192 sheng jian \u2192 potstickers \u2192 boiled dumplings.",spots:["Jia Jia Tangbao","Dong Tai Xiang","Pengyuan Guotie","Four Seasons Dumpling King"]},
+{title:"Spice Route",d:"Sichuan \u2192 Guizhou \u2192 Xi'an. Start mild, end sweating.",spots:["Liu Tang Men","Ben Zhen","Maolago","Lazy Monkey Paomo"]},
+{title:"Modern Chinese Bistros",d:"Chinese food meets wine bar. English menus.",spots:["Bastard","Oha","Maolago"]},
+{title:"Bund Bar Crawl",d:"Budget to bougie: The Captain \u2192 KEV \u2192 Flair.",spots:["The Captain","Mr & Mrs Bund","KEV","Flair"]},
+{title:"Fine Dining Circuit",d:"Imperial Treasure \u2192 Seventh Son \u2192 Tai'An Table.",spots:["Imperial Treasure","Seventh Son","Tai'An Table"]},
 ];
 
 const INF=[
-{title:"Getting Around",icon:"\uD83D\uDE95",items:[{t:"Didi",d:"China's Uber. Download, set English. Alipay/WeChat to pay."},{t:"Metro",d:"Clean, cheap, extensive. Alipay QR at gates."},{t:"Walking",d:"French Concession & Bund very walkable."}]},
-{title:"Essential Apps",icon:"\uD83D\uDCF1",items:[{t:"WeChat",d:"China's everything app. Set up before arrival."},{t:"Alipay",d:"Link international card for QR payments."},{t:"VPN",d:"Needed for Google, Instagram, WhatsApp. Download first!"}]},
-{title:"Food Tips",icon:"\uD83E\uDD62",items:[{t:"Ordering",d:"Point at other tables! Show Chinese from this guide."},{t:"Spice",d:"'b\u00FAl\u00E0' (\u4E0D\u8FA3) = none \u00B7 'w\u0113il\u00E0' (\u5FAE\u8FA3) = mild."},{t:"Chopsticks",d:"Never stick upright in rice. Lay across bowl."},{t:"Water",d:"Don't drink tap. Hot water (\u5F00\u6C34) always free."},{t:"Tipping",d:"Not expected in China."}]},
-{title:"Contacts",icon:"\uD83D\uDCDE",items:[{t:"UnTour Food Tours",d:"info@untourfoodtours.com \u00B7 WeChat: UnTour"},{t:"Emergency",d:"Police 110 \u00B7 Ambulance 120 \u00B7 Fire 119"}]},
+{title:"Getting Around",items:[{t:"Didi",d:"China's Uber. Download, set English. Alipay/WeChat to pay."},{t:"Metro",d:"Clean, cheap, extensive. Alipay QR at gates."},{t:"Walking",d:"French Concession & Bund very walkable."}]},
+{title:"Essential Apps",items:[{t:"WeChat",d:"China's everything app. Set up before arrival."},{t:"Alipay",d:"Link international card for QR payments."},{t:"VPN",d:"Needed for Google, Instagram, WhatsApp. Download first!"}]},
+{title:"Food Tips",items:[{t:"Ordering",d:"Point at other tables! Show Chinese from this guide."},{t:"Spice",d:"'b\u00FAl\u00E0' (\u4E0D\u8FA3) = none \u00B7 'w\u0113il\u00E0' (\u5FAE\u8FA3) = mild."},{t:"Chopsticks",d:"Never stick upright in rice. Lay across bowl."},{t:"Water",d:"Don't drink tap. Hot water (\u5F00\u6C34) always free."},{t:"Tipping",d:"Not expected in China."}]},
+{title:"Contacts",items:[{t:"UnTour Food Tours",d:"info@untourfoodtours.com \u00B7 WeChat: UnTour"},{t:"Emergency",d:"Police 110 \u00B7 Ambulance 120 \u00B7 Fire 119"}]},
 ];
 
 function fD(s){if(!s)return"";return new Date(s+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
@@ -244,7 +244,7 @@ return(
 </div>
 </div>}
 <nav style={{display:"flex",gap:2,overflowX:"auto"}}>
-{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:"0 0 auto",padding:"10px 14px 12px",background:"none",border:"none",borderBottom:tab===t.id?"2px solid "+C.cr:"2px solid transparent",color:tab===t.id?C.fg:C.mt,fontSize:12,fontWeight:tab===t.id?600:400,cursor:"pointer",whiteSpace:"nowrap",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{t.i} {t.l}</button>)}
+{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:"0 0 auto",padding:"10px 14px 12px",background:"none",border:"none",borderBottom:tab===t.id?"2px solid "+C.cr:"2px solid transparent",color:tab===t.id?C.fg:C.mt,fontSize:12,fontWeight:tab===t.id?600:400,cursor:"pointer",whiteSpace:"nowrap",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{t.l}</button>)}
 </nav>
 </div>
 </header>);
@@ -282,12 +282,11 @@ return(
 </div>
 </div>:<>
 <div style={{display:"flex",gap:12,padding:"14px 16px",alignItems:"flex-start"}}>
-<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,paddingTop:2}}>
-<div style={{width:36,height:36,borderRadius:10,background:ct.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{ct.i}</div>
-<span style={{fontSize:9,color:ct.a,fontWeight:600,letterSpacing:.5,textTransform:"uppercase"}}>{ct.l}</span>
+<div style={{paddingTop:6,flexShrink:0}}>
+<span style={{fontSize:9,color:ct.a,background:ct.bg,padding:"2px 7px",borderRadius:10,fontWeight:600,letterSpacing:.3}}>{ct.l}</span>
 </div>
 <div style={{flex:1,minWidth:0}}>
-<div style={{fontSize:15,fontWeight:600,lineHeight:1.3,marginBottom:3}}>{item.l}</div>
+<div style={{fontSize:15,fontWeight:600,lineHeight:1.3,marginBottom:3}}>{item.t&&<span style={{fontSize:10,color:C.mt,fontWeight:400,marginRight:6}}>{item.t}</span>}{item.l}</div>
 <div style={{fontSize:13,color:C.fgS,lineHeight:1.55}}>
 {ps.map((p,i)=>typeof p==="string"?<span key={i}>{p}</span>:<a key={i} href={MB+p.q} target="_blank" rel="noopener" style={{color:C.sk,textDecoration:"none",borderBottom:"1px solid rgba(91,141,184,.3)",fontWeight:500}}>{p.n}</a>)}
 </div>
@@ -332,7 +331,7 @@ const onDDS=(e,i)=>{setDragDay(i);setDragItem(null);e.dataTransfer.effectAllowed
 const onDDO=(e,i)=>{e.preventDefault();if(dragDay===null||dragDay===i)return;setWk(w=>{const n=[...w];const it=n.splice(dragDay,1)[0];n.splice(i,0,it);setDragDay(i);return n;});};
 const onIDS=(e,di,ii)=>{e.stopPropagation();setDragItem({di,ii});setDragDay(null);e.dataTransfer.effectAllowed="move";};
 const onIDO=(e,di,ii)=>{e.preventDefault();e.stopPropagation();if(!dragItem||dragItem.di!==di||dragItem.ii===ii)return;
-setWk(w=>w.map((d,i)=>{if(i!==di)return d;const ni=[...d.items];const it=ni.splice(dragItem.ii,1)[0];ni.splice(ii,0,it);setDragItem({di,ii});return{...d,items:ni};}));};
+setWk(w=>w.map((d,i)=>{if(i!==di)return d;const ni=[...d.items];const times=ni.map(x=>x.t);const it=ni.splice(dragItem.ii,1)[0];ni.splice(ii,0,it);ni.forEach((x,j)=>{if(times[j])x.t=times[j];});setDragItem({di,ii});return{...d,items:ni};}));};
 const sw=(di,ii,a)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{l:a.l,d:a.d,c:a.c,m:a.m,b:a.b}:t)}:d));};
 const dl=(di,ii)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.filter((_,j)=>j!==ii)}:d));};
 const editCard=(di,ii,data)=>{setWk(wk.map((d,i)=>i===di?{...d,items:d.items.map((t,j)=>j===ii?{...t,...data}:t)}:d));};
@@ -348,7 +347,7 @@ return(
 <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,fontWeight:400}}>{editingTpl?"Template: "+editingTpl.name:"Your Shanghai Food Week"}</h2>
 <p style={{fontSize:13,color:C.mt,marginTop:6}}>{editingTpl?"Remove or swap cards to customize this template.":"Drag days to reorder \u00B7 drag cards within a day \u00B7 swap or delete anything"}</p>
 </div>
-<div style={{display:"flex",flexWrap:"wrap",gap:5,justifyContent:"center",marginBottom:16}}>{Object.entries(CT).map(([k,v])=><span key={k} style={{fontSize:10,color:v.a,background:v.bg,padding:"3px 9px",borderRadius:20,fontWeight:600}}>{v.i} {v.l}</span>)}</div>
+
 {wk.map((day,di)=>{
 const ds=gi&&gi.ci?aD(gi.ci,di).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):null;
 const isOpen=open===di;
@@ -372,7 +371,7 @@ return(<div key={di} draggable onDragStart={e=>onDDS(e,di)} onDragOver={e=>onDDO
 {confirmed&&confirmed.filter(b=>{if(!b.d||!gi||!gi.ci)return false;const bd=new Date(b.d);const ci=new Date(gi.ci);const diff=Math.round((bd-ci)/864e5);return diff===di;}).map((b,i)=><ConfCard key={"bk"+i} bk={b}/>)}
 </div>}
 </div>);})}
-<button onClick={()=>{const nd={title:"New Day",emoji:"\uD83D\uDCCC",items:[]};setWk(w=>[...w,nd]);setOpenDay(wk.length);}} style={{width:"100%",padding:"14px",background:C.wh,border:"2px dashed "+C.bd,borderRadius:14,fontSize:13,fontWeight:600,color:C.cr,cursor:"pointer",marginTop:4}}>+ Add Day</button>
+<button onClick={()=>{const nd={title:"New Day",items:[]};setWk(w=>[...w,nd]);setOpenDay(wk.length);}} style={{width:"100%",padding:"14px",background:C.wh,border:"2px dashed "+C.bd,borderRadius:14,fontSize:13,fontWeight:600,color:C.cr,cursor:"pointer",marginTop:4}}>+ Add Day</button>
 </div>);
 }
 
@@ -408,7 +407,7 @@ return(
 {isO&&<p style={{fontSize:12,color:C.cr,marginTop:4}}>Tap any card to edit</p>}
 </div>
 {inf.map((s,si)=>(<div key={si} style={{marginBottom:20}}>
-<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:18}}>{s.icon}</span><h3 style={{fontSize:16,fontWeight:600}}>{s.title}</h3></div>
+<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><h3 style={{fontSize:16,fontWeight:600}}>{s.title}</h3></div>
 {s.items.map((m,ii)=>(
 ed&&ed.si===si&&ed.ii===ii?
 <div key={ii} style={{background:C.wh,borderRadius:14,border:"2px solid "+C.cr,padding:"12px 16px",marginBottom:6}}>
@@ -575,7 +574,7 @@ return isEd?<div key={ri} style={{background:C.bgS,borderRadius:10,padding:10,ma
 }
 
 function OwTab({gs,setGs,tpls,setTpls,onEditTpl,alts,setAlts}){
-const[ng,sNg]=useState({name:"",ci:"",co:"",n:"",tpl:""});const[cp,sCp]=useState(null);
+const[ng,sNg]=useState({name:"",cco:"",n:"",tpl:""});const[cp,sCp]=useState(null);
 const[newTpl,setNewTpl]=useState("");const[renId,setRenId]=useState(null);const[renName,setRenName]=useState("");
 const[editId,setEditId]=useState(null);const[editData,setEditData]=useState({});
 const ICAL_STORE="ut_ical_url";
@@ -583,7 +582,7 @@ const[icalUrl,setIcalUrl]=useState(()=>{try{return localStorage.getItem(ICAL_STO
 const[icalLoading,setIcalLoading]=useState(false);const[icalRes,setIcalRes]=useState(null);const[icalErr,setIcalErr]=useState("");
 const defTpl=tpls.find(t=>t.isDefault)||tpls[0];
 const selTpl=tpls.find(t=>t.id===(ng.tpl||defTpl?.id))||defTpl;
-const add=()=>{if(!ng.name||!ng.ci||!selTpl)return;setGs([...gs,{name:ng.name,ci:ng.ci,co:ng.co,n:ng.n,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(selTpl.wk)),tplName:selTpl.name}]);sNg({name:"",ci:"",co:"",n:"",tpl:""});};
+const add=()=>{if(!ng.name||!ng.ci||!selTpl)return;setGs([...gs,{name:ng.name,ci:ng.ci,co:ng.co,n:ng.n,id:Date.now()+"_"+Math.random().toString(36).slice(2,6),wk:JSON.parse(JSON.stringify(selTpl.wk)),tplName:selTpl.name}]);sNg({name:"",cco:"",n:"",tpl:""});};
 const mkLink=(g)=>{try{const d=toB64(JSON.stringify({name:g.name,ci:g.ci,co:g.co,tpl:g.tplName||"Default"}));return window.location.origin+window.location.pathname+"?g="+g.id+"&d="+d;}catch(e){alert("Error: "+e.message);return null;}};
 const cpy=g=>{const link=mkLink(g);if(!link)return;copyText(link);sCp(g.id);setTimeout(()=>sCp(null),3000);};
 const addTpl=()=>{if(!newTpl.trim()||!defTpl)return;const t={id:Date.now()+"",name:newTpl.trim(),wk:JSON.parse(JSON.stringify(defTpl.wk)),isDefault:false};setTpls([...tpls,t]);setNewTpl("");};
