@@ -221,14 +221,14 @@ function Header({tab,setTab,isOwner,setIsOwner,guestMode,guestInfo}){
 
 /* ═══ WEEK TAB ═══ */
 function WeekTab({week,setWeek,terms,guestInfo,alts,isOwner}){
-  const[open,setOpen]=useState(0);const[dragDay,setDragDay]=useState(null);const[dragBlock,setDragBlock]=useState(null);
+  const[open,setOpen]=useState(0);const[dragDay,setDragDay]=useState(null);const[dragBlock,setDragBlock]=useState(null);const[editTime,setEditTime]=useState(null);
   const[editB,setEditB]=useState(null);const[ebf,setEbf]=useState({});
   const editBlock=(di,bi,data)=>{setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.map((bl,j)=>j===bi?{...bl,...data}:bl)}:d));setEditB(null);};
   const onDDS=(e,i)=>{setDragDay(i);setDragBlock(null);e.dataTransfer.effectAllowed="move";};
   const onDDO=(e,i)=>{e.preventDefault();if(dragDay===null||dragDay===i)return;setWeek(w=>{const n=[...w];const it=n.splice(dragDay,1)[0];n.splice(i,0,it);setDragDay(i);return n;});};
   const onBDS=(e,di,bi)=>{e.stopPropagation();setDragBlock({di,bi});setDragDay(null);e.dataTransfer.effectAllowed="move";};
   const onBDO=(e,di,bi)=>{e.preventDefault();e.stopPropagation();if(!dragBlock||dragBlock.di!==di||dragBlock.bi===bi)return;
-    setWeek(w=>w.map((d,i)=>{if(i!==di)return d;const nb=[...d.blocks];const it=nb.splice(dragBlock.bi,1)[0];nb.splice(bi,0,it);setDragBlock({di,bi});return{...d,blocks:nb};}));};
+    setWeek(w=>w.map((d,i)=>{if(i!==di)return d;const nb=[...d.blocks];const fromI=dragBlock.bi;const toI=bi;const times=nb.map(b=>b.t);const it=nb.splice(fromI,1)[0];nb.splice(toI,0,it);nb.forEach((b,j)=>b.t=times[j]);setDragBlock({di,bi});return{...d,blocks:nb};}));};
   const usedLabels=new Set(week.flatMap(d=>d.blocks.map(b=>b.l)));
   const delB=(di,bi)=>setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.filter((_,j)=>j!==bi)}:d));
   const getA=(cat,used)=>{const al=alts||ALTS;const fb=CAT_MAP[cat]||[cat];for(const c of fb){const opts=al.filter(a=>a.cat===c&&!used.has(a.l));if(opts.length>0)return opts[Math.floor(Math.random()*opts.length)];}const any=al.filter(a=>!used.has(a.l));return any.length>0?any[Math.floor(Math.random()*any.length)]:al[0];};
@@ -256,7 +256,7 @@ const repB=(di,bi)=>{const b=week[di].blocks[bi];const alt=getA(b.cat||b.tag,use
           return(
             <div key={b.id||bi} draggable={!isEditing} onDragStart={e=>!isEditing&&onBDS(e,di,bi)} onDragOver={e=>onBDO(e,di,bi)} onDragEnd={()=>setDragBlock(null)}
               style={{display:"flex",gap:6,marginBottom:5,opacity:iDB?.4:1,cursor:isEditing?"default":"grab"}}>
-              <div style={{width:52,textAlign:"right",paddingTop:8,flexShrink:0}}><span style={{fontSize:10,color:T.mut}}>{b.t}</span></div>
+              <div style={{width:52,textAlign:"right",paddingTop:8,flexShrink:0}}>{editTime&&editTime.di===di&&editTime.bi===bi?<input autoFocus type="text" defaultValue={b.t} onBlur={e=>{const v=e.target.value.trim();if(v)setWeek(w=>w.map((d,i)=>i===di?{...d,blocks:d.blocks.map((bb,j)=>j===bi?{...bb,t:v}:bb)}:d));setEditTime(null);}} onKeyDown={e=>{if(e.key==="Enter")e.target.blur();if(e.key==="Escape")setEditTime(null);}} style={{width:48,fontSize:10,color:T.mut,background:"transparent",border:"1px solid "+T.bd,borderRadius:4,padding:"2px 4px",textAlign:"right",outline:"none"}}/>:<span onClick={()=>setEditTime({di,bi})} style={{fontSize:10,color:T.mut,cursor:"pointer",borderBottom:"1px dashed "+T.bd}} title="Click to edit time">{b.t}</span>}</div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:14}}><div style={{width:7,height:7,borderRadius:"50%",background:s.a,marginTop:10,flexShrink:0}}/><div style={{width:1,flex:1,background:T.mut+"18",marginTop:2}}/></div>
               {isEditing?<div style={{flex:1,background:s.bg,borderRadius:9,padding:"10px 12px",border:"2px solid "+T.gold}}>
                 <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:6,marginBottom:6}}>
